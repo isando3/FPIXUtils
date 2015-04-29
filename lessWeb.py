@@ -28,7 +28,7 @@ DEBUG=True
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
 else:
-    inputDir=sys.argv[1]
+    inputDir=sys.argv[1].rstrip('/')
 
 ################################################################
 ################################################################
@@ -186,10 +186,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 if i!=len(deadPixels)-1: comment.write(', ')
             comment.write(']\n')
 
-        # - - - - - - - - - - - - - - - - - - - - - - - - -
+            # - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        if 'MaskTest_C' in key.GetName():
-            h=key.ReadObj()
+            h=f.Get('PixelAlive/'+h.GetName().replace('PixelAlive','MaskTest'))
             h.Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             n=int(key.GetName().split('_')[1][1:])
@@ -197,6 +196,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             maskDefectPixels=[]
             for xBin in range(1,h.GetNbinsX()+1):
                 for yBin in range(1,h.GetNbinsY()+1):
+                    if [xBin-1,yBin-1] in deadPixels: continue
                     if h.GetBinContent(xBin, yBin)<1: maskDefectPixels.append([xBin-1,yBin-1])
 
             if len(maskDefectPixels)!=nMaskDefectPixels[n]:
@@ -223,9 +223,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 if i!=len(maskDefectPixels)-1: comment.write(', ')
             comment.write(']\n')
 
-        # - - - - - - - - - - - - - - - - - - - - - - - - -   
+            # - - - - - - - - - - - - - - - - - - - - - - - - -   
 
-        if 'AddressDecodingTest_C' in key.GetName():
+            h=f.Get('PixelAlive/'+h.GetName().replace('MaskTest','AddressDecodingTest'))
             h=key.ReadObj()
             h.Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
@@ -234,13 +234,14 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             addressDefectPixels=[]
             for xBin in range(1,h.GetNbinsX()+1):
                 for yBin in range(1,h.GetNbinsY()+1):
+                    if [xBin-1,yBin-1] in deadPixels: continue
                     if h.GetBinContent(xBin, yBin)<1: addressDefectPixels.append([xBin-1,yBin-1])
 
             if len(addressDefectPixels)!=nAddressDefectPixels[n]:
                 print 'ERROR: Wrong number of un-addressable pixels found'
                 print '       From pXar log:', nAddressDefectPixels[n]
                 print '       From root file:',len(addressDefectPixels)
-                #exit()
+                exit()
 
             pic=SE(top, 'PIC')
             attachName(pic)
