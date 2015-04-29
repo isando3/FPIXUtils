@@ -240,7 +240,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 print 'ERROR: Wrong number of un-addressable pixels found'
                 print '       From pXar log:', nAddressDefectPixels[n]
                 print '       From root file:',len(addressDefectPixels)
-                exit()
+                #exit()
 
             pic=SE(top, 'PIC')
             attachName(pic)
@@ -391,7 +391,10 @@ def getPulseHeightOptPlots(f, outputDir):
 
 def getGainPedestalPlots(f,outputDir):
 
-    goodPlots=['gainPedestalP1_C']
+    goodPlots=['gainPedestalP0_C',
+               'gainPedestalP1_C',
+               'gainPedestalP2_C',
+               'gainPedestalP3_C']
 
     c=TCanvas()
     for key in f.Get('GainPedestal').GetListOfKeys():
@@ -743,6 +746,7 @@ def makeXML(inputDir):
         print 'WARNING: outputDir exists'
         #exit()
     else:
+        print outputDir
         os.makedirs(outputDir)
 
     log={}
