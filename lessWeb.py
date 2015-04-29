@@ -539,7 +539,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     c=TCanvas()
     c.SetLogy()
     h.Draw()
-    l=TLine(b,h.GetYaxis().GetXmin(),b,h.GetMaximum())
+    l=TLine(b,h.GetYaxis().GetXmin(),b,h.GetMaximum()); l.SetLineColor(kRed)
     l.Draw('same')
     c.SaveAs(outputName.replace('xml','png'))
 
@@ -563,11 +563,10 @@ def getBreakdown(h):
     tolerance=1./10000
     width=max(1,int(round(25./h.GetBinWidth(1),0)))
     
-    
     h0=h.Clone('h0')
 
     lastFilledBin=0
-    for binNo in range(h0.GetNbinsX()+1):
+    for binNo in range(1,h0.GetNbinsX()+1):
         if h0.GetBinContent(binNo)>0: lastFilledBin=binNo
         
         if h0.GetBinContent(binNo)<=0: h0.SetBinContent(binNo,0)
@@ -580,28 +579,48 @@ def getBreakdown(h):
 
     h2=h1.Clone('h2')
     h2.Reset()
-    for binNo in range(width+2,lastFilledBin-width):
+    for binNo in range(width+2,lastFilledBin-width-1):
         h2.SetBinContent(binNo,(h1.GetBinContent(binNo+1)-h1.GetBinContent(binNo-1))/(2*h0.GetBinWidth(binNo)))
+
+    if DEBUG:
+        c_debug=TCanvas()
+        h2.SetMinimum(-5*tolerance)
+        h2.SetMaximum(5*tolerance)
+        h2.Draw()
+        l1=TLine(h2.GetXaxis().GetXmin(),tolerance,h2.GetXaxis().GetXmax(),tolerance); l1.Draw('same')
+        l2=TLine(h2.GetXaxis().GetXmin(),-tolerance,h2.GetXaxis().GetXmax(),-tolerance); l2.Draw('same')
+        c_debug.SaveAs('debug.pdf')
 
     depletion=0
     breakdown=0
 
     firstBin=0
     lastBin=0
-    for binNo in range(width+2,lastFilledBin-width):
+    for binNo in range(width+2,lastFilledBin-width-1):
         if abs(h2.GetBinContent(binNo))<tolerance:
             if not firstBin:
                 if h0.GetBinCenter(binNo)<200:
                     firstBin=binNo
-            else:            lastBin =binNo
+            else:   lastBin =binNo
         elif firstBin:
             if lastBin-firstBin>breakdown-depletion:
                 depletion=firstBin
                 breakdown=lastBin
             firstBin=0
             lastBin=0
+
+        #handle the case of no breakdown
+        if binNo==lastFilledBin-width-2 and firstBin:
+            if lastBin-firstBin>breakdown-depletion:
+                depletion=firstBin
+                breakdown=binNo+1
+
+        if DEBUG: print 'binNo:',binNo,'   firstBin:',firstBin,'   lastBin:',lastBin,'   depletion:',depletion,'   breakdown:',breakdown
+
     depletion-=width-1
     breakdown+=width+1
+
+    if DEBUG: print 'breakdown:',h0.GetBinCenter(breakdown)
 
     return h0.GetBinCenter(breakdown)
 
