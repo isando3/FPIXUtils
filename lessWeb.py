@@ -533,7 +533,11 @@ def analyzeIV(inputDir, outputDir, log, data):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     b=getBreakdown(h)
     breakdown=SE(scan,'BREAKDOWN')
-    breakdown.text=str(int(round(b,0)))
+    breakdown.text=str(round(b,1))
+
+    c=getCompliance(values)
+    compliance=SE(scan,'COMPLIANCE')
+    compliance.text=str(round(c,1))
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
     c=TCanvas()
@@ -623,6 +627,19 @@ def getBreakdown(h):
     if DEBUG: print 'breakdown:',h0.GetBinCenter(breakdown)
 
     return h0.GetBinCenter(breakdown)
+
+#---------------------------------------------------------------
+
+def getCompliance(values):
+    v=values[-1][0]
+    i=values[-1][1]
+        
+    if abs(abs(i)-1.0000e-04)<.01*1.0000e-04: c=v
+    else: c=1000
+
+    if DEBUG: print 'compliance:',c
+    
+    return c
 
 #---------------------------------------------------------------
 
