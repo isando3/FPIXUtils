@@ -260,7 +260,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
 
 #---------------------------------------------------------------
 
-def getBumpBondingPlots(f, badBumpsPreTrim, badBumpsPostTrim, bbCutPreTrim, bbCutPostTrim, outputDir):
+def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
 
     c=TCanvas()
     for key in f.Get('BumpBonding').GetListOfKeys():
@@ -283,23 +283,16 @@ def getBumpBondingPlots(f, badBumpsPreTrim, badBumpsPostTrim, bbCutPreTrim, bbCu
             h.Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             n=int(key.GetName().split('_')[3][1:])
-            print n, len(bbCutPreTrim), len(bbCutPostTrim)
-                        
-            if 'V0' in key.GetName(): preTrim=True
-            elif 'V1' in key.GetName(): preTrim=False
-            else:
-                print 'ERROR: Unexpected bump bonding results'
-                exit()
-
+            
             badBumps=[]
             for xBin in range(1, h.GetNbinsX()+1):
                 for yBin in range(1, h.GetNbinsY()+1):
-                    if h.GetBinContent(xBin,yBin)+1>=(preTrim*bbCutPreTrim[n])+((not preTrim)*bbCutPostTrim[n]):
+                    if h.GetBinContent(xBin,yBin)+1>=bbCuts[n]:
                         badBumps.append([xBin-1,yBin-1])
-
-            if len(badBumps)!=(preTrim*badBumpsPreTrim[n])+((not preTrim)*badBumpsPostTrim[n]):
+            
+            if len(badBumps)!=badBumpsFromLog[n]:
                 print 'ERROR: Wrong number of bad bump bonds found'
-                print '       From pXar log:', (preTrim*badBumpsPreTrim[n])+((not preTrim)*badBumpsPostTrim[n])
+                print '       From pXar log:', badBumpsFromLog[n]
                 print '       From root file:',len(badBumps)
                 exit()                        
 
@@ -314,8 +307,7 @@ def getBumpBondingPlots(f, badBumpsPreTrim, badBumpsPostTrim, bbCutPreTrim, bbCu
 
             comment=open(outputDir+'/'+txt.text,'w')
             n=int(key.GetName().split('_')[3][1:])
-            if preTrim: comment.write('nBadBumpsPreTrim='+str(badBumpsPreTrim[n])+'\n')
-            else:       comment.write('nBadBumpsPostTrim='+str(badBumpsPostTrim[n])+'\n')
+            comment.write('nBadBumps='+str(badBumpsFromLog[n])+'\n')
             comment.write('badBumps=[')
             for i in range(len(badBumps)):
                 x,y=badBumps[i][0],badBumps[i][1]
@@ -620,45 +612,44 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     log=log['fulltest']
     data=TFile(data['fulltest'])
 
-    badBumpsPreTrim=[]
-    badBumpsPostTrim=[]
-
-    bbCutPreTrim=[]
-    bbCutPostTrim=[]
-
     f=iter(open(log,'r'))
     for line in f:
 
         if 'number of dead pixels (per ROC)' in line:
             deadPixels=[int(x) for x in line.split()[-16:]]
+            print 'deadPixels:',deadPixels
 
         if 'number of mask-defect pixels (per ROC)' in line:
             maskDefectPixels=[int(x) for x in line.split()[-16:]]
+            print 'maskDefectPixels:',maskDefectPixels
 
         if 'number of address-decoding pixels (per ROC)' in line:
             addressDefectPixels=[int(x) for x in line.split()[-16:]]
+            print 'addressDefectPixels:',addressDefectPixels
 
         if 'number of dead bumps (per ROC)' in line:
             badBumps=[int(x) for x in line.split()[-16:]]
-            if not badBumpsPreTrim: badBumpsPreTrim=badBumps
-            else: badBumpsPostTrim=badBumps
+            print 'badBumps:',badBumps
             
         if 'separation cut       (per ROC):' in line:
-            if not bbCutPreTrim: bbCutPreTrim=[int(x) for x in line.split()[-16:]]
-            else: bbCutPostTrim=[int(x) for x in line.split()[-16:]]
-    
+            bbCuts=[int(x) for x in line.split()[-16:]]
+            print 'bbCuts:',bbCuts
+
+    try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts
+    except: print 'ERROR: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts'
+
     n=0
     for i in deadPixels: n+=i
     dead_pix=SE(test,'DEAD_PIX')
     dead_pix.text=str(n)
 
     n=0
-    for i in badBumpsPostTrim: n+=i
+    for i in badBumps: n+=i
     dead_bumps_elec=SE(test,'DEAD_BUMPS_ELEC')
     dead_bumps_elec.text=str(n)
 
     getPixelAlivePlots(data, deadPixels, maskDefectPixels, addressDefectPixels, outputDir)
-    getBumpBondingPlots(data, badBumpsPreTrim, badBumpsPostTrim, bbCutPreTrim, bbCutPostTrim, outputDir)
+    getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
     getSCurvePlots(data,outputDir)
     getTrimPlots(data,outputDir)
     getPulseHeightOptPlots(data,outputDir)
@@ -697,7 +688,7 @@ def getConfigs(inputDir, outputDir, log, data):
 def makeXML(inputDir):
     
     global moduleName
-    moduleName='_'.join(inputDir.split('/')[-1].split('_')[:3])
+    moduleName=os.path.basename(inputDir).split('_')[0]
 
     outputDir=moduleName
     if os.path.exists(outputDir):
@@ -715,7 +706,7 @@ def makeXML(inputDir):
     log['fulltest']=log['pretest'].replace('Pretest','Fulltest')
     data['fulltest']=log['fulltest'].replace('.log','.root')
     
-    log['iv']=inputDir+'/*_IV_p*/ivCurve.log' #log['pretest'].replace('Pretest','IV')
+    log['iv']=inputDir+'/*_IV_p*/ivCurve.log'
     #data['iv']=log['iv'].replace('.log','.root')
     
     for key in log.keys():
