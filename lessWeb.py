@@ -64,7 +64,7 @@ def getProgramROCPlot(f, deadROCs, outputDir):
     part.text='sidet_p'
 
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('deadROCs='+str(deadROCs))
+    comment.write('deadROCs='+str(deadROCs)+'\n')
     
     #to do:
     # -list of non-programmable ROCs needs to be searchable
@@ -91,7 +91,7 @@ def getVthrCompCalDelPlot(f, VthrComps, CalDels, outputDir):
 
             comment=open(outputDir+'/'+txt.text,'w')
             n=int(key.GetName().split('_')[3][1:])
-            comment.write('VthrComp='+str(VthrComps[n])+', CalDel='+str(CalDels[n]))
+            comment.write('VthrComp='+str(VthrComps[n])+', CalDel='+str(CalDels[n])+'\n')
 
 #---------------------------------------------------------------
     
@@ -117,7 +117,7 @@ def getVanaPlot(f, outputDir):
     txt.text='Vana.txt'
     
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('Vana='+str(Vana))
+    comment.write('Vana='+str(Vana)+'\n')
 
 #---------------------------------------------------------------
 
@@ -143,7 +143,7 @@ def getIanaPlot(f, outputDir):
     txt.text='Iana.txt'
     
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('Iana='+str(Iana))
+    comment.write('Iana='+str(Iana)+'\n')
 
 #---------------------------------------------------------------
 
@@ -184,12 +184,13 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 x,y=deadPixels[i][0],deadPixels[i][1]
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(deadPixels)-1: comment.write(', ')
-            comment.write(']')
+            comment.write(']\n')
 
         # - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if 'MaskTest_C' in key.GetName():
-            key.ReadObj().Draw('colz')
+            h=key.ReadObj()
+            h.Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             n=int(key.GetName().split('_')[1][1:])
 
@@ -220,12 +221,13 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 x,y=maskDefectPixels[i][0],maskDefectPixels[i][1]
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(maskDefectPixels)-1: comment.write(', ')
-            comment.write(']')
+            comment.write(']\n')
 
         # - - - - - - - - - - - - - - - - - - - - - - - - -   
 
         if 'AddressDecodingTest_C' in key.GetName():
-            key.ReadObj().Draw('colz')
+            h=key.ReadObj()
+            h.Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             n=int(key.GetName().split('_')[1][1:])
 
@@ -256,7 +258,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 x,y=addressDefectPixels[i][0],addressDefectPixels[i][1]
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(addressDefectPixels)-1: comment.write(', ')
-            comment.write(']')
+            comment.write(']\n')
 
 #---------------------------------------------------------------
 
@@ -313,7 +315,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
                 x,y=badBumps[i][0],badBumps[i][1]
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(badBumps)-1: comment.write(', ')
-            comment.write(']')
+            comment.write(']\n')
 
 
 #---------------------------------------------------------------
@@ -556,7 +558,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     part=SE(pic,'PART')
     part.text='sidet_p'
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('IV scan')
+    comment.write('IV scan\n')
 
     #to do:
     # -V(100uA)
@@ -718,7 +720,7 @@ def getConfigs(inputDir, outputDir, log, data):
 
         if len(glob(inputDir+'/*_Fulltest_p*/'+config))==0: 
             print 'ERROR: no config files found:', config
-            #exit()
+            exit()
 
         for file in glob(inputDir+'/*_Fulltest_p*/'+config):
             subprocess.call(['cp', file, outputDir])
@@ -734,7 +736,7 @@ def getConfigs(inputDir, outputDir, log, data):
 def makeXML(inputDir):
     
     global moduleName
-    moduleName=os.path.basename(inputDir).split('_')[0]
+    moduleName=os.path.basename(inputDir).split('_ElComandanteTest_')[0]
 
     outputDir=moduleName
     if os.path.exists(outputDir):
