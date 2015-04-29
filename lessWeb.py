@@ -23,7 +23,7 @@ import subprocess
 import sys
 import zipfile
 
-DEBUG=True
+DEBUG=False
 
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
@@ -562,7 +562,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     part=SE(pic,'PART')
     part.text='sidet_p'
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('IV scan\n')
+    comment.write('breakdown='+str(b)+'\n')
 
     #to do:
     # -V(100uA)
@@ -747,7 +747,6 @@ def makeXML(inputDir):
         print 'WARNING: outputDir exists'
         #exit()
     else:
-        print outputDir
         os.makedirs(outputDir)
 
     log={}
