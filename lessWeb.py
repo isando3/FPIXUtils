@@ -13,9 +13,9 @@ SE=SubElement
 
 import ROOT
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
-
 from ROOT import *
 gStyle.SetOptStat(0)
+gROOT.SetBatch(1)
 
 from glob import glob
 import os
@@ -23,12 +23,12 @@ import subprocess
 import sys
 import zipfile
 
+DEBUG=True
+
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
 else:
     inputDir=sys.argv[1]
-
-gROOT.SetBatch(1)
 
 ################################################################
 ################################################################
@@ -510,7 +510,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     scan=SE(top,'SCAN')
     attachName(scan)
     level=SE(scan,'LEVEL')
-    level.text='ASSEMBLED'
+    level.text='FNAL'
     type=SE(scan,'TYPE')
     type.text='IV'
     file=SE(scan,'FILE')
@@ -617,23 +617,23 @@ def analyzeFullTest(inputDir, outputDir, log, data):
 
         if 'number of dead pixels (per ROC)' in line:
             deadPixels=[int(x) for x in line.split()[-16:]]
-            print 'deadPixels:',deadPixels
+            if DEBUG: print 'deadPixels:',deadPixels
 
         if 'number of mask-defect pixels (per ROC)' in line:
             maskDefectPixels=[int(x) for x in line.split()[-16:]]
-            print 'maskDefectPixels:',maskDefectPixels
+            if DEBUG: print 'maskDefectPixels:',maskDefectPixels
 
         if 'number of address-decoding pixels (per ROC)' in line:
             addressDefectPixels=[int(x) for x in line.split()[-16:]]
-            print 'addressDefectPixels:',addressDefectPixels
+            if DEBUG: print 'addressDefectPixels:',addressDefectPixels
 
         if 'number of dead bumps (per ROC)' in line:
             badBumps=[int(x) for x in line.split()[-16:]]
-            print 'badBumps:',badBumps
+            if DEBUG: print 'badBumps:',badBumps
             
         if 'separation cut       (per ROC):' in line:
             bbCuts=[int(x) for x in line.split()[-16:]]
-            print 'bbCuts:',bbCuts
+            if DEBUG: print 'bbCuts:',bbCuts
 
     try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts
     except: print 'ERROR: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts'
@@ -647,6 +647,16 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     for i in badBumps: n+=i
     dead_bumps_elec=SE(test,'DEAD_BUMPS_ELEC')
     dead_bumps_elec.text=str(n)
+
+    n=0
+    for i in maskDefectPixels: n+=i
+    unmaskable_pix=SE(test,'UNMASKABLE_PIX')
+    unmaskable_pix.text=str(n)
+
+    n=0
+    for i in addressDefectPixels: n+=i
+    unaddressable_pix=SE(test,'UNADDRESSABLE_PIX')
+    unaddressable_pix.text=str(n)
 
     getPixelAlivePlots(data, deadPixels, maskDefectPixels, addressDefectPixels, outputDir)
     getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
