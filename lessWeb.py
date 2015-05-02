@@ -12,7 +12,7 @@ from xml.dom import minidom
 SE=SubElement
 
 import ROOT
-ROOT.gErrorIgnoreLevel = ROOT.kWarning
+#ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
 gStyle.SetOptStat(0)
 gROOT.SetBatch(1)
@@ -171,9 +171,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
-            file.text=key.GetName()+'.png'
+            file.text=h.GetName()+'.png'
             txt=SE(pic, 'TXT')
-            txt.text=key.GetName()+'.txt'
+            txt.text=h.GetName()+'.txt'
             part=SE(pic,'PART')
             part.text='sidet_p'
 
@@ -190,8 +190,8 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
 
             h=f.Get('PixelAlive/'+h.GetName().replace('PixelAlive','MaskTest'))
             h.Draw('colz')
-            c.SaveAs(outputDir+'/'+key.GetName()+'.png')
-            n=int(key.GetName().split('_')[1][1:])
+            c.SaveAs(outputDir+'/'+h.GetName()+'.png')
+            n=int(h.GetName().split('_')[1][1:])
 
             maskDefectPixels=[]
             for xBin in range(1,h.GetNbinsX()+1):
@@ -208,9 +208,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
-            file.text=key.GetName()+'.png'
+            file.text=h.GetName()+'.png'
             txt=SE(pic, 'TXT')
-            txt.text=key.GetName()+'.txt'
+            txt.text=h.GetName()+'.txt'
             part=SE(pic,'PART')
             part.text='sidet_p'
 
@@ -226,10 +226,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             # - - - - - - - - - - - - - - - - - - - - - - - - -   
 
             h=f.Get('PixelAlive/'+h.GetName().replace('MaskTest','AddressDecodingTest'))
-            h=key.ReadObj()
             h.Draw('colz')
-            c.SaveAs(outputDir+'/'+key.GetName()+'.png')
-            n=int(key.GetName().split('_')[1][1:])
+            c.SaveAs(outputDir+'/'+h.GetName()+'.png')
+            n=int(h.GetName().split('_')[1][1:])
 
             addressDefectPixels=[]
             for xBin in range(1,h.GetNbinsX()+1):
@@ -246,9 +245,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
-            file.text=key.GetName()+'.png'
+            file.text=h.GetName()+'.png'
             txt=SE(pic, 'TXT')
-            txt.text=key.GetName()+'.txt'
+            txt.text=h.GetName()+'.txt'
             part=SE(pic,'PART')
             part.text='sidet_p'
 
