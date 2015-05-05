@@ -18,7 +18,9 @@ import math
 
 goodModules=[]
 
-def click(moduleNo, goodModules, testPad):
+def click(moduleNo):
+
+    global goodModules
 
     if gPad.GetEvent()==11:
         if moduleNo in goodModules:
@@ -92,7 +94,7 @@ class Comparison:
             gPad.Modified()
             gPad.Update()
 
-            gPad.AddExec('exec','TPython::Exec( "click('+str(i)+', goodModules, testPad)" )')
+            gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" )')
 
         c.Modified()
         c.Update()

@@ -3,7 +3,7 @@
 """
 Author: John Stupak (jstupak@fnal.gov)
 Date: 5-2-15
-Usage: ./checkPretest.py <input dir>
+Usage: ./checkPretest.py <input root file 1> ... <input root file N>
 """
 
 from Comparison import *
@@ -18,6 +18,7 @@ else:
     testFiles=['/Users/jstupak/CMS/pixel/ShareTestResults/M_LL_922_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',
                '/Users/jstupak/CMS/pixel/ShareTestResults/M_TT_915_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',
                '/Users/jstupak/CMS/pixel/ShareTestResults/P-A-03-42_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',
+               '/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874/001_Pretest_p17/commander_Pretest.root'
                ]
 
 referenceFile='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874/001_Pretest_p17/commander_Pretest.root'
