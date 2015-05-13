@@ -15,7 +15,7 @@ Tconf=os.getenv('HOME')+'/elComandante/config/elComandante.conf.default'
 testString={}
 testString['pretest']='Pretest'
 testString['fulltest']='Fulltest'
-testString['iv']='.'.join(['IV_'+str(x) for x in range(len(modules))])
+testString['iv']=','.join(['IV_'+str(x) for x in range(len(modules))])
 
 ############################################################
 ############################################################
@@ -27,7 +27,7 @@ if test not in testString.keys():
 if len(modules)==0 or len(modules)>4:
     raise Exception('Too few or too many modules specified')
 
-replacements=[['TESTS',testString[test].lower()]]
+replacements=[['TESTS',testString[test.lower()]]]
 for i in range(len(modules)):
     replacements.append(['USEM'+str(i),'True'])
     replacements.append(['MODULE'+str(i),modules[i]])
