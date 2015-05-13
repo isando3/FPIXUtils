@@ -11,6 +11,7 @@ ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
 gStyle.SetOptStat(0)
 import math
+from config import *
 
 ################################################################
 ################################################################
@@ -56,20 +57,22 @@ class Comparison:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
     def do(self, testFiles):
+        print testFiles
         testFiles=[TFile(f) for f in testFiles]
 
-        moduleNames=['_'.join(f.GetName().split('/')[-3].split('_')[:-4]) for f in testFiles]
+        #moduleNames=['_'.join(f.GetName().split('/')[-3].split('_')[:-4]) for f in testFiles]
         nModules=len(moduleNames)
         
         global goodModules
         goodModules=[]
         
-        c=TCanvas('c','',600,800)
+        c=TCanvas('c','',1000,850)
 
         refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
         refPad.Draw()
         refPad.cd()
 
+        print self.hName
         ref=self.refFile.Get(self.hName).Clone('REF__'+self.hName.split('/')[-1])
         is2D=(type(ref)==type(TH2D()))
         ref.Draw('COLZ'*is2D)
@@ -83,6 +86,7 @@ class Comparison:
         for i in range(nModules):
             testPad.cd(i+1)
 
+            print self.hName, moduleNames[i]
             h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
             h.SetTitle(moduleNames[i])
             h.Draw('COLZ'*is2D)
@@ -94,7 +98,7 @@ class Comparison:
             gPad.Modified()
             gPad.Update()
 
-            gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" )')
+            gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
 
         c.Modified()
         c.Update()
