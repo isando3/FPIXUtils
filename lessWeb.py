@@ -721,11 +721,11 @@ def getConfigs(inputDir, outputDir, log, data):
                    'phCalibrationFitErr35_C*.dat', 
                    'dacParameters_C*.dat']:
 
-        if len(glob(inputDir+'/*_Fulltest_p*/'+config))==0: 
+        if len(glob(inputDir+'/*_FPIXTest_p*/'+config))==0: 
             print 'ERROR: no config files found:', config
             exit()
 
-        for file in glob(inputDir+'/*_Fulltest_p*/'+config):
+        for file in glob(inputDir+'/*_FPIXTest_p*/'+config):
             subprocess.call(['cp', file, outputDir])
             
             c=SE(top,'CONFIG')
@@ -741,7 +741,7 @@ def makeXML(inputDir):
     global moduleName
     moduleName=os.path.basename(inputDir).split('_ElComandanteTest_')[0]
 
-    outputDir=moduleName
+    outputDir='/home/fnalpix2/dbUploads/'+moduleName
     if os.path.exists(outputDir):
         print 'WARNING: outputDir exists'
         #exit()
@@ -751,10 +751,10 @@ def makeXML(inputDir):
     log={}
     data={}
     
-    log['pretest']=inputDir+'/*_Pretest_p*/commander_Pretest.log'
+    log['pretest']=inputDir+'/*_FPIXTest_p*/commander_FPIXTest.log'
     data['pretest']=log['pretest'].replace('.log','.root')
     
-    log['fulltest']=log['pretest'].replace('Pretest','Fulltest')
+    log['fulltest']=log['pretest'].replace('Pretest','FPIXTest')
     data['fulltest']=log['fulltest'].replace('.log','.root')
     
     log['iv']=inputDir+'/*_IV_p*/ivCurve.log'
