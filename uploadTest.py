@@ -11,6 +11,6 @@ else:
     raise Exception("You must specify if test was performed cold")
 
 for module in moduleNames:
-    input=sorted(glob('/home/fnalpix?/ShareTestResults/'+module+'_ElComandanteTest_*/*_'+testName+'_*'))[-1]
+    input=sorted(glob('/home/fnalpix?/ShareTestResults/'+module+'_ElComandanteTest_*'))[-1]
     makeXML(input)
     
