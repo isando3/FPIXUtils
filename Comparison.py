@@ -9,7 +9,7 @@ Usage: ./checkPretest.py <input dir>
 import ROOT
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
-gStyle.SetOptStat(0)
+#gStyle.SetOptStat(0)
 import math
 from config import *
 
@@ -88,7 +88,7 @@ class Comparison:
 
             print self.hName, moduleNames[i]
             h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
-            h.SetTitle(moduleNames[i])
+            h.SetTitle(moduleNames[i]+': '+h.GetTitle())
             h.Draw('COLZ'*is2D)
             histograms.append(h)
 
