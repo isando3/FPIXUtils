@@ -44,7 +44,7 @@ referenceFile='/home/fnalpix2/ShareTestResults/P-A-3-22_ElComandanteTest_2015-05
 
 if testName=='FPIXTest':
     theComparisons=[Comparison('Trim/dist_thr_TrimThrFinal_vcal_C'+str(i)+'_V0','Trim/dist_thr_TrimThrFinal_vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
-    theComparisons+=[Comparison('Scurves/dist_thr_scurveVthrComp_VthrComp_C'+str(i)+'_V0','Scurves/dist_thr_scurveVthrComp_VthrComp_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
+    theComparisons+=[Comparison('Scurves/dist_thr_scurveVthrComp_VthrComp_C'+str(i)+'_V0','Scurves/dist_thr_scurveVthrComp_VthrComp_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 100') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_thr_scurveVcal_Vcal_C'+str(i)+'_V0','Scurves/dist_thr_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_sig_scurveVcal_Vcal_C'+str(i)+'_V0','Scurves/dist_sig_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should peak above 2') for i in range(16)]
     #theComparisons+=[Comparison('PhOptimization/',referenceFile,outputDir,'') for i in range(16)]
