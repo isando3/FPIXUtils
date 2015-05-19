@@ -450,7 +450,7 @@ def analyzePreTest(inputDir, outputDir, log, data):
 ################################################################
 
 def analyzeIV(inputDir, outputDir, log, data):
-    inputName=glob(inputDir+'/*_IV_p*/ivCurve.log')[0]
+    inputName=glob(inputDir+'/*_IV_*/ivCurve.log')[0]
     input=open(inputName, 'r')
     outputName=outputDir+'/'+moduleName+'_IV.xml'
     output=open(outputName,'w')
@@ -721,11 +721,11 @@ def getConfigs(inputDir, outputDir, log, data):
                    'phCalibrationFitErr35_C*.dat', 
                    'dacParameters_C*.dat']:
 
-        if len(glob(inputDir+'/*_FPIXTest_p*/'+config))==0: 
+        if len(glob(inputDir+'/*_FPIXTest_*/'+config))==0: 
             print 'ERROR: no config files found:', config
             exit()
 
-        for file in glob(inputDir+'/*_FPIXTest_p*/'+config):
+        for file in glob(inputDir+'/*_FPIXTest_*/'+config):
             subprocess.call(['cp', file, outputDir])
             
             c=SE(top,'CONFIG')
@@ -751,13 +751,13 @@ def makeXML(inputDir):
     log={}
     data={}
     
-    log['pretest']=inputDir+'/*_FPIXTest_p*/commander_FPIXTest.log'
+    log['pretest']=inputDir+'/*_FPIXTest_*/commander_FPIXTest.log'
     data['pretest']=log['pretest'].replace('.log','.root')
     
     log['fulltest']=log['pretest'].replace('Pretest','FPIXTest')
     data['fulltest']=log['fulltest'].replace('.log','.root')
     
-    log['iv']=inputDir+'/*_IV_p*/ivCurve.log'
+    log['iv']=inputDir+'/*_IV_*/ivCurve.log'
     #data['iv']=log['iv'].replace('.log','.root')
     
     for key in log.keys():

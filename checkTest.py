@@ -31,7 +31,7 @@ testFiles=['/Users/jstupak/CMS/pixel/ShareTestResults/M_LL_922_ElComandanteTest_
 ]
 """
 
-referenceFile='/home/fnalpix2/ShareTestResults/M_TT_915_ElComandanteTest_2015-05-14_10h23m_14316170104/000_FPIXTest_p17/commander_FPIXTest.root'
+referenceFile='/home/fnalpix2/ShareTestResults/M_TT_915_ElComandanteTest_2015-05-14_10h23m_1431617010/001_FPIXTest_p17/commander_FPIXTest.root'
 
 outputDir='/home/fnalpix2/forExperts'
 
