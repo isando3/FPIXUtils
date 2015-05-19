@@ -40,8 +40,6 @@ if testName=='Pretest':
                     Comparison('Pretest/Iana_V0','Pretest/Iana_V0',referenceFile,outputDir,'All y values should be approximately 24')]
     #theComparisons+=[Comparison('Pretest/pretestVthrCompCalDel_c12_r22_C'+str(i)+'_V0','Pretest/pretestVthrCompCalDel_c12_r22_C0_V0',referenceFile,outputDir) for i in range(16)]
 
-referenceFile='/home/fnalpix2/ShareTestResults/P-A-3-22_ElComandanteTest_2015-05-13_16h20m_1431552047/000_FPIXTest_p17/commander_FPIXTest.root'
-
 if testName=='FPIXTest':
     theComparisons=[Comparison('Trim/dist_thr_TrimThrFinal_vcal_C'+str(i)+'_V0','Trim/dist_thr_TrimThrFinal_vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_thr_scurveVthrComp_VthrComp_C'+str(i)+'_V0','Scurves/dist_thr_scurveVthrComp_VthrComp_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 100') for i in range(16)]
