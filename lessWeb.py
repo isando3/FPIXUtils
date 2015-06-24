@@ -64,7 +64,7 @@ def getProgramROCPlot(f, deadROCs, outputDir):
     part.text='sidet_p'
 
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('deadROCs='+str(deadROCs)+'\n')
+    comment.write('\ndeadROCs='+str(deadROCs)+'\n')
     
     #to do:
     # -list of non-programmable ROCs needs to be searchable
@@ -91,7 +91,7 @@ def getVthrCompCalDelPlot(f, VthrComps, CalDels, outputDir):
 
             comment=open(outputDir+'/'+txt.text,'w')
             n=int(key.GetName().split('_')[3][1:])
-            comment.write('VthrComp='+str(VthrComps[n])+', CalDel='+str(CalDels[n])+'\n')
+            comment.write('\nVthrComp='+str(VthrComps[n])+', CalDel='+str(CalDels[n])+'\n')
 
 #---------------------------------------------------------------
     
@@ -117,7 +117,7 @@ def getVanaPlot(f, outputDir):
     txt.text='Vana.txt'
     
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('Vana='+str(Vana)+'\n')
+    comment.write('\nVana='+str(Vana)+'\n')
 
 #---------------------------------------------------------------
 
@@ -143,7 +143,7 @@ def getIanaPlot(f, outputDir):
     txt.text='Iana.txt'
     
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('Iana='+str(Iana)+'\n')
+    comment.write('\nIana='+str(Iana)+'\n')
 
 #---------------------------------------------------------------
 
@@ -178,13 +178,13 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             part.text='sidet_p'
 
             comment=open(outputDir+'/'+txt.text,'w')
-            comment.write('nDeadPixels='+str(nDeadPixels[n])+'\n')
-            comment.write('deadPixels=[')
+            comment.write('\nnDeadPixels='+str(nDeadPixels[n])+'\n')
+            comment.write('\ndeadPixels=[')
             for i in range(len(deadPixels)):
                 x,y=deadPixels[i][0],deadPixels[i][1]
-                comment.write('['+str(x)+','+str(y)+']')
-                if i!=len(deadPixels)-1: comment.write(', ')
-            comment.write(']\n')
+                comment.write('\n['+str(x)+','+str(y)+']')
+                if i!=len(deadPixels)-1: comment.write('\n, ')
+            comment.write('\n]\n')
 
             # - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -215,13 +215,13 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             part.text='sidet_p'
 
             comment=open(outputDir+'/'+txt.text,'w')
-            comment.write('nUnmaskable='+str(nMaskDefectPixels[n])+'\n')
-            comment.write('unmaskablePixels=[')
+            comment.write('\nnUnmaskable='+str(nMaskDefectPixels[n])+'\n')
+            comment.write('\nunmaskablePixels=[')
             for i in range(len(maskDefectPixels)):
                 x,y=maskDefectPixels[i][0],maskDefectPixels[i][1]
-                comment.write('['+str(x)+','+str(y)+']')
-                if i!=len(maskDefectPixels)-1: comment.write(', ')
-            comment.write(']\n')
+                comment.write('\n['+str(x)+','+str(y)+']')
+                if i!=len(maskDefectPixels)-1: comment.write('\n, ')
+            comment.write('\n]\n')
 
             # - - - - - - - - - - - - - - - - - - - - - - - - -   
 
@@ -252,13 +252,13 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             part.text='sidet_p'
 
             comment=open(outputDir+'/'+txt.text,'w')
-            comment.write('nUnadressable='+str(nAddressDefectPixels[n])+'\n')
-            comment.write('unaddressablePixels=[')
+            comment.write('\nnUnadressable='+str(nAddressDefectPixels[n])+'\n')
+            comment.write('\nunaddressablePixels=[')
             for i in range(len(addressDefectPixels)):
                 x,y=addressDefectPixels[i][0],addressDefectPixels[i][1]
-                comment.write('['+str(x)+','+str(y)+']')
-                if i!=len(addressDefectPixels)-1: comment.write(', ')
-            comment.write(']\n')
+                comment.write('\n['+str(x)+','+str(y)+']')
+                if i!=len(addressDefectPixels)-1: comment.write('\n, ')
+            comment.write('\n]\n')
 
 #---------------------------------------------------------------
 
@@ -268,8 +268,10 @@ def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
     for key in f.Get('BumpBonding').GetListOfKeys():
 
         if 'dist_thr_calSMap_VthrComp_C' in key.GetName():
+            c.SetLogy(True)
             key.ReadObj().Draw()
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
+            c.SetLogy(False)
 
             pic=SE(top, 'PIC')
             attachName(pic)
@@ -309,13 +311,13 @@ def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
 
             comment=open(outputDir+'/'+txt.text,'w')
             n=int(key.GetName().split('_')[3][1:])
-            comment.write('nBadBumps='+str(badBumpsFromLog[n])+'\n')
-            comment.write('badBumps=[')
+            comment.write('\nnBadBumps='+str(badBumpsFromLog[n])+'\n')
+            comment.write('\nbadBumps=[')
             for i in range(len(badBumps)):
                 x,y=badBumps[i][0],badBumps[i][1]
-                comment.write('['+str(x)+','+str(y)+']')
-                if i!=len(badBumps)-1: comment.write(', ')
-            comment.write(']\n')
+                comment.write('\n['+str(x)+','+str(y)+']')
+                if i!=len(badBumps)-1: comment.write('\n, ')
+            comment.write('\n]\n')
 
 
 #---------------------------------------------------------------
@@ -561,7 +563,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     part=SE(pic,'PART')
     part.text='sidet_p'
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('breakdown='+str(b)+'\n')
+    comment.write('\nbreakdown='+str(b)+'\n')
 
     #to do:
     # -V(100uA)
@@ -639,8 +641,9 @@ def getCompliance(values):
     v=values[-1][0]
     i=values[-1][1]
         
-    if abs(abs(i)-1.0000e-04)<.01*1.0000e-04: c=v
-    else: c=1000
+    #if abs(abs(i)-1.0000e-04)<.01*1.0000e-04: c=v
+    #else: c=6000
+    c=v
 
     if DEBUG: print 'compliance:',c
     

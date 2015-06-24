@@ -66,10 +66,10 @@ def analyze(inputFile, outputDir):
         position.text=str(i)
         xray_offset=SE(roc, 'XRAY_OFFSET')
         xray_offset.text=str(offset.GetBinContent(i+1))
-        offsets.append(xray_offset.text)
+        offsets.append('%0.1f'%offset.GetBinContent(i+1))
         xray_slope=SE(roc, 'XRAY_SLOPE')
         xray_slope.text=str(slope.GetBinContent(i+1))
-        slopes.append(xray_slope.text)
+        slopes.append('%0.1f'%slope.GetBinContent(i+1))
 
     pic=SE(top, 'PIC')
     attachName(pic)
@@ -80,7 +80,7 @@ def analyze(inputFile, outputDir):
     txt=SE(pic, 'TXT')
     txt.text='slope.txt'
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('slopes='+str(slopes))
+    comment.write('\nslopes='+str(slopes))
     part=SE(pic,'PART')
     part.text='sidet_p'
 
@@ -93,7 +93,7 @@ def analyze(inputFile, outputDir):
     txt=SE(pic, 'TXT')
     txt.text='offset.txt'
     comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('offsets='+str(offsets))
+    comment.write('\noffsets='+str(offsets))
     part=SE(pic,'PART')
     part.text='sidet_p'
 
@@ -111,11 +111,12 @@ def analyze(inputFile, outputDir):
     part.text='sidet_p'
 
     comment=open(outputDir+'/'+txt.text,'w')
+    comment.write('\n')
     for yBin in range(mean.GetNbinsY()):
         s=mean.GetYaxis().GetBinLabel(yBin+1)
         l=[]
         for xBin in range(16):
-            l.append("%0.1f"%(mean.GetBinContent(xBin+1,yBin+1)))
+            l.append('%0.1f'%(mean.GetBinContent(xBin+1,yBin+1)))
         comment.write(s+'='+str(l)+'\n')
 
 ################################################################
