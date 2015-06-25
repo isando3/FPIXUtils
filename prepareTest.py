@@ -14,9 +14,9 @@ Tini=os.getenv('HOME')+'/elComandante/config/elComandante.ini.default'
 Tconf=os.getenv('HOME')+'/elComandante/config/elComandante.conf.default'
 
 testString={}
-testString['Pretest']='Pretest@T'
-testString['Fulltest']='Fulltest@T'
-testString['IV']=','.join(['IV_'+str(x)+'@T' for x in range(len(moduleNames))])
+testString['Pretest']='powercycle,Pretest@T'
+testString['Fulltest']='powercycle,Fulltest@T'
+testString['IV']='powercycle,'+','.join(['IV_'+str(x)+'@T' for x in range(len(moduleNames))])
 testString['FPIXTest']=testString['IV']+',FPIXTest@T'
 
 ############################################################
