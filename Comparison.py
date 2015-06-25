@@ -12,6 +12,7 @@ from ROOT import *
 #gStyle.SetOptStat(0)
 import math
 from config import *
+from fnmatch import fnmatch
 
 ################################################################
 ################################################################
@@ -57,7 +58,7 @@ class Comparison:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
     def do(self, testFiles):
-        print testFiles
+        print self.hName
         testFiles=[TFile(f) for f in testFiles]
 
         #moduleNames=['_'.join(f.GetName().split('/')[-3].split('_')[:-4]) for f in testFiles]
@@ -72,8 +73,13 @@ class Comparison:
         refPad.Draw()
         refPad.cd()
 
-        print self.hName
-        ref=self.refFile.Get(self.hName).Clone('REF__'+self.hName.split('/')[-1])
+        for k in self.refFile.GetListOfKeys():
+            dir=k.ReadObj()
+            if type(dir)!=type(TDirectoryFile()): continue
+            for key in dir.GetListOfKeys():
+                if fnmatch(key.GetName(),self.hName.split('/')[-1]):
+                    ref=key.ReadObj().Clone('REF__'+self.hName.split('/')[-1])
+                    break
         is2D=(type(ref)==type(TH2D()))
         ref.Draw('COLZ'*is2D)
 
@@ -82,12 +88,20 @@ class Comparison:
         testPad.Divide(int(math.ceil(nModules/2.)),2)
         testPad.Draw()
 
+        print self.hName
+
         histograms=[]
         for i in range(nModules):
             testPad.cd(i+1)
 
-            print self.hName, moduleNames[i]
-            h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
+            for k in testFiles[i].GetListOfKeys():
+                dir=k.ReadObj()
+                if type(dir)!=type(TDirectoryFile()): continue
+                for key in dir.GetListOfKeys():
+                    if fnmatch(key.GetName(),self.hName.split('/')[-1]):
+                        h=key.ReadObj().Clone('REF__'+self.hName.split('/')[-1])
+                        break
+            #h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
             h.SetTitle(moduleNames[i]+': '+h.GetTitle())
             h.Draw('COLZ'*is2D)
             histograms.append(h)
