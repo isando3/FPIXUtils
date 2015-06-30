@@ -7,7 +7,7 @@ Usage: python xRayUpload.py <input root file>
 """
 
 ##############################################################
-outputDir='/home/fnalpix2/john'
+outputDir='/Users/jstupak/tmp'
 ##############################################################
 
 from xml.etree.ElementTree import Element, SubElement, Comment
@@ -30,7 +30,7 @@ import zipfile
 DEBUG=False
 
 if len(sys.argv)<2:
-    inputFile='/home/fnalpix2/john/P-A-X-YY.root'
+    inputFile='/Users/jstupak/tmp/P-A-3-42.root'
 else:
     inputFile=sys.argv[1]
 
@@ -58,18 +58,22 @@ def analyze(inputFile, outputDir):
     c=TCanvas()
     slope=inputFile.GetKey('Ele/Vcal').ReadObj()
     offset=inputFile.Get('Offset')
+    badBumps=inputFile.Get('BadBumps')
 
-    slopes=[]; offsets=[]
+    slopes=[]; offsets=[]; bb=[]
     for i in range(16):
         roc=SE(rocs, 'ROC')
         position=SE(roc, 'POSITION')
         position.text=str(i)
         xray_offset=SE(roc, 'XRAY_OFFSET')
         xray_offset.text=str(offset.GetBinContent(i+1))
-        offsets.append('%0.1f'%offset.GetBinContent(i+1))
+        offsets.append(round(offset.GetBinContent(i+1),2))
         xray_slope=SE(roc, 'XRAY_SLOPE')
         xray_slope.text=str(slope.GetBinContent(i+1))
-        slopes.append('%0.1f'%slope.GetBinContent(i+1))
+        slopes.append(round(slope.GetBinContent(i+1),2))
+        DEAD_BUMPS_XRAY=SE(roc, 'DEAD_BUMPS_XRAY')
+        DEAD_BUMPS_XRAY.text=str(badBumps.GetBinContent(i+1))
+        bb.append(int(badBumps.GetBinContent(i+1)))
 
     pic=SE(top, 'PIC')
     attachName(pic)
@@ -116,8 +120,48 @@ def analyze(inputFile, outputDir):
         s=mean.GetYaxis().GetBinLabel(yBin+1)
         l=[]
         for xBin in range(16):
-            l.append('%0.1f'%(mean.GetBinContent(xBin+1,yBin+1)))
+            l.append(round(mean.GetBinContent(xBin+1,yBin+1),2))
         comment.write(s+'='+str(l)+'\n')
+
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='BadBumps.png'
+    c.SetLogy(True)
+    badBumps.Draw()
+    c.SaveAs(outputDir+'/'+file.text)
+    c.SetLogy(False)
+    txt=SE(pic, 'TXT')
+    txt.text='BadBumps.txt'
+    comment=open(outputDir+'/'+txt.text,'w')
+    comment.write('\nnBadBumpsXRay='+str(bb))
+    part=SE(pic,'PART')
+    part.text='sidet_p'
+
+    inefficiency=inputFile.Get('Ineffiency')  #mis-spelled to match example input
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='Inefficiency.png'
+    inefficiency.Draw('COLZ')
+    c.SaveAs(outputDir+'/'+file.text)
+    txt=SE(pic, 'TXT')
+    txt.text='Inefficiency.txt'
+    comment=open(outputDir+'/'+txt.text,'w')
+    comment.write('\n')
+    
+    inefficiencies=[]; fluxes=[]
+    for xBin in range(inefficiency.GetNbinsX()):
+        for yBin in range(inefficiency.GetNbinsY()):
+            if inefficiency.GetBinContent(xBin,yBin)>0:
+                inefficiencies.append(round(inefficiency.GetYaxis().GetBinCenter(yBin),3))
+                fluxes.append(round(inefficiency.GetBinContent(xBin,yBin),2))
+                continue
+    comment.write('inefficiency='+str(inefficiencies)+'\n')
+    comment.write('flux='+str(fluxes))
+    part=SE(pic,'PART')
+    part.text='sidet_p'
+
 
 ################################################################
 
