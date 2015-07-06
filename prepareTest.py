@@ -5,8 +5,15 @@ import os
 import subprocess
 from config import *
 
-test=argv[1]
-doCold=argv[2]
+affirmativeResponses= ['true', 'True', '1', 't', 'T', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh', 'most def']
+
+try:
+    test=argv[1]
+    doCold=argv[2] in affirmativeResponses
+except:
+    test=raw_input('\nEnter test name (Pretest, Fulltest, IV, or FPIXTest)\n')
+    doCold=raw_input('\nPerform test at -20C? (y/n)\n').strip() in affirmativeResponses
+    print '\n'
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -16,8 +23,8 @@ Tconf=os.getenv('HOME')+'/elComandante/config/elComandante.conf.default'
 testString={}
 testString['Pretest']='powercycle,Pretest@T'
 testString['Fulltest']='powercycle,Fulltest@T'
-testString['IV']='powercycle,'+','.join(['IV_'+str(x)+'@T' for x in range(len(moduleNames))])
-testString['FPIXTest']=testString['IV']+',FPIXTest@T'
+testString['IV']=','.join(['IV_'+str(x)+'@T' for x in range(len(moduleNames))])
+testString['FPIXTest']='powercycle,FPIXTest@T,'+testString['IV']
 
 ############################################################
 ############################################################
@@ -29,10 +36,8 @@ if test not in testString.keys():
 if len(moduleNames)==0 or len(moduleNames)>4:
     raise Exception('Too few or too many modules specified')
 
-print doCold
-if doCold=='True':    temp='-20'
-elif doCold=='False':  temp='17'
-else: raise Exception('Invalid doCold option')
+if doCold: temp='-20'
+else:      temp='17'
 
 replacements=[['TESTS',testString[test].replace('@T','@'+temp)]]
 for i in range(len(moduleNames)):
