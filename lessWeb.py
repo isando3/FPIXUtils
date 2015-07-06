@@ -17,13 +17,15 @@ from ROOT import *
 gStyle.SetOptStat(0)
 gROOT.SetBatch(1)
 
+from makeModuleSummaryPlot import doIt
+
 from glob import glob
 import os
 import subprocess
 import sys
 import zipfile
 
-DEBUG=False
+DEBUG=True
 
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
@@ -182,9 +184,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             comment.write('\ndeadPixels=[')
             for i in range(len(deadPixels)):
                 x,y=deadPixels[i][0],deadPixels[i][1]
-                comment.write('\n['+str(x)+','+str(y)+']')
-                if i!=len(deadPixels)-1: comment.write('\n, ')
-            comment.write('\n]\n')
+                comment.write('['+str(x)+','+str(y)+']')
+                if i!=len(deadPixels)-1: comment.write(', ')
+            comment.write(']\n')
 
             # - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -219,9 +221,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             comment.write('\nunmaskablePixels=[')
             for i in range(len(maskDefectPixels)):
                 x,y=maskDefectPixels[i][0],maskDefectPixels[i][1]
-                comment.write('\n['+str(x)+','+str(y)+']')
-                if i!=len(maskDefectPixels)-1: comment.write('\n, ')
-            comment.write('\n]\n')
+                comment.write('['+str(x)+','+str(y)+']')
+                if i!=len(maskDefectPixels)-1: comment.write(', ')
+            comment.write(']\n')
 
             # - - - - - - - - - - - - - - - - - - - - - - - - -   
 
@@ -256,18 +258,29 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             comment.write('\nunaddressablePixels=[')
             for i in range(len(addressDefectPixels)):
                 x,y=addressDefectPixels[i][0],addressDefectPixels[i][1]
-                comment.write('\n['+str(x)+','+str(y)+']')
-                if i!=len(addressDefectPixels)-1: comment.write('\n, ')
-            comment.write('\n]\n')
+                comment.write('['+str(x)+','+str(y)+']')
+                if i!=len(addressDefectPixels)-1: comment.write(', ')
+            comment.write(']\n')
 
 #---------------------------------------------------------------
 
-def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
+#def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
+def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
 
     c=TCanvas()
-    for key in f.Get('BumpBonding').GetListOfKeys():
+    summary=doIt(f, 'BB3', 'rescaledThr', 0)
+    summary.SaveAs(outputDir+'/BBSummary.png')
 
-        if 'dist_thr_calSMap_VthrComp_C' in key.GetName():
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='BBSummary.png'
+    part=SE(pic,'PART')
+    part.text='sidet_p'
+
+    for key in f.Get('BB3').GetListOfKeys():
+
+        if 'dist_rescaledThr_C' in key.GetName():
             c.SetLogy(True)
             key.ReadObj().Draw()
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
@@ -282,22 +295,25 @@ def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        elif 'thr_calSMap_VthrComp_C' in key.GetName():
+        elif 'rescaledThr_C' in key.GetName():
             h=key.ReadObj()
             h.Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
-            n=int(key.GetName().split('_')[3][1:])
-            
+            n=int(key.GetName().split('_')[1][1:])
+
             badBumps=[]
             for xBin in range(1, h.GetNbinsX()+1):
                 for yBin in range(1, h.GetNbinsY()+1):
-                    if h.GetBinContent(xBin,yBin)+1>=bbCuts[n]:
+                    #if h.GetBinContent(xBin,yBin)+1>=bbCuts[n]:
+                    if h.GetBinContent(xBin,yBin)>=5:
                         badBumps.append([xBin-1,yBin-1])
+            print badBumps, badBumpsFromLog[n]
             
             if len(badBumps)!=badBumpsFromLog[n]:
                 print 'ERROR: Wrong number of bad bump bonds found'
                 print '       From pXar log:', badBumpsFromLog[n]
                 print '       From root file:',len(badBumps)
+                print n
                 exit()                        
 
             pic=SE(top, 'PIC')
@@ -310,15 +326,14 @@ def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
             part.text='sidet_p'
 
             comment=open(outputDir+'/'+txt.text,'w')
-            n=int(key.GetName().split('_')[3][1:])
+            #n=int(key.GetName().split('_')[2][1:])
             comment.write('\nnBadBumps='+str(badBumpsFromLog[n])+'\n')
             comment.write('\nbadBumps=[')
             for i in range(len(badBumps)):
                 x,y=badBumps[i][0],badBumps[i][1]
-                comment.write('\n['+str(x)+','+str(y)+']')
-                if i!=len(badBumps)-1: comment.write('\n, ')
-            comment.write('\n]\n')
-
+                comment.write('['+str(x)+','+str(y)+']')
+                if i!=len(badBumps)-1: comment.write(', ')
+            comment.write(']\n')
 
 #---------------------------------------------------------------
 
@@ -675,12 +690,20 @@ def analyzeFullTest(inputDir, outputDir, log, data):
             badBumps=[int(x) for x in line.split()[-16:]]
             if DEBUG: print 'badBumps:',badBumps
             
+        """
         if 'separation cut       (per ROC):' in line:
             bbCuts=[int(x) for x in line.split()[-16:]]
             if DEBUG: print 'bbCuts:',bbCuts
+        """
 
-    try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts
-    except: print 'ERROR: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts'
+    try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps#, bbCuts
+    except: 
+        print 'ERROR: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts'
+        print deadPixels
+        print maskDefectPixels 
+        print addressDefectPixels
+        print badBumps 
+        #print bbCuts
 
     n=0
     for i in deadPixels: n+=i
@@ -703,7 +726,8 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     unaddressable_pix.text=str(n)
 
     getPixelAlivePlots(data, deadPixels, maskDefectPixels, addressDefectPixels, outputDir)
-    getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
+    #getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
+    getBumpBondingPlots(data, badBumps, outputDir)
     getSCurvePlots(data,outputDir)
     getTrimPlots(data,outputDir)
     getPulseHeightOptPlots(data,outputDir)
@@ -718,7 +742,7 @@ def getConfigs(inputDir, outputDir, log, data):
                    'testParameters.dat', 
                    'testPatterns.dat', 
                    'defaultMaskFile.dat', 
-                   'SCurveData_C*.dat', 
+                   #'SCurveData_C*.dat', 
                    'trimParameters35_C*.dat', 
                    'phCalibration_C*.dat', 
                    'phCalibrationFitErr35_C*.dat', 
@@ -747,7 +771,7 @@ def makeXML(inputDir):
     outputDir='/home/fnalpix2/dbUploads/'+moduleName
     if os.path.exists(outputDir):
         print 'WARNING: outputDir exists'
-        #exit()
+        if not DEBUG: exit()
     else:
         os.makedirs(outputDir)
 
