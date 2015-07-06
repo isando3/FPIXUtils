@@ -17,7 +17,7 @@ from ROOT import *
 gStyle.SetOptStat(0)
 gROOT.SetBatch(1)
 
-from makeModuleSummaryPlot import doIt
+#from makeModuleSummaryPlot import doIt
 
 from glob import glob
 import os
@@ -268,8 +268,8 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
 def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
 
     c=TCanvas()
-    summary=doIt(f, 'BB3', 'rescaledThr', 0)
-    summary.SaveAs(outputDir+'/BBSummary.png')
+    #summary=doIt(f, 'BB3', 'rescaledThr', 0)
+    #summary.SaveAs(outputDir+'/BBSummary.png')
 
     pic=SE(top, 'PIC')
     attachName(pic)
@@ -586,7 +586,8 @@ def analyzeIV(inputDir, outputDir, log, data):
 #---------------------------------------------------------------
 
 def getBreakdown(h):
-    tolerance=1./10000
+
+    tolerance=1./20000
     width=max(1,int(round(25./h.GetBinWidth(1),0)))
     
     h0=h.Clone('h0')
@@ -616,7 +617,7 @@ def getBreakdown(h):
         l1=TLine(h2.GetXaxis().GetXmin(),tolerance,h2.GetXaxis().GetXmax(),tolerance); l1.Draw('same')
         l2=TLine(h2.GetXaxis().GetXmin(),-tolerance,h2.GetXaxis().GetXmax(),-tolerance); l2.Draw('same')
         c_debug.SaveAs('debug.pdf')
-
+    """
     depletion=0
     breakdown=0
 
@@ -649,6 +650,23 @@ def getBreakdown(h):
     if DEBUG: print 'breakdown:',h0.GetBinCenter(breakdown)
 
     return h0.GetBinCenter(breakdown)
+    """
+    """
+    I100=h.GetBinContent(h.FindBin(100))
+    print I100
+    result=h.GetBinCenter(h.FindFirstBinAbove(2*I100))
+    print result
+    return result
+    """
+    above=False
+    for binNo in range(lastFilledBin-width-1,width+2,-1):
+        if h2.GetBinContent(binNo)>tolerance:
+            above=True
+        elif above:
+            breakdown=h0.GetBinCenter(binNo+width+2)
+            print 'breakdown=',breakdown
+            return breakdown
+    
 
 #---------------------------------------------------------------
 
