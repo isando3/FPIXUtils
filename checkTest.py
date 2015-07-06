@@ -31,7 +31,7 @@ testFiles=['/Users/jstupak/CMS/pixel/ShareTestResults/M_LL_922_ElComandanteTest_
 ]
 """
 
-referenceFile='/home/fnalpix2/ShareTestResults/P-A-3-22_ElComandanteTest_2015-06-23_09h49m_1435070955/001_FPIXTest_p17/commander_FPIXTest.root'
+referenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
 #'/home/fnalpix2/ShareTestResults/M_TT_915_ElComandanteTest_2015-05-14_10h23m_1431617010/001_FPIXTest_p17/commander_FPIXTest.root'
 
 outputDir='/home/fnalpix2/forExperts'
@@ -43,15 +43,14 @@ if testName=='Pretest':
 
 if testName=='FPIXTest':
     theComparisons=[Comparison('Trim/dist_thr_TrimThrFinal_vcal_C'+str(i)+'_V0','Trim/dist_thr_TrimThrFinal_vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
-    #theComparisons+=[Comparison('Scurves/dist_thr_scurveVthrComp_VthrComp_C'+str(i)+'_V0','Scurves/dist_thr_scurveVthrComp_VthrComp_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 100') for i in range(16)]
+    ###theComparisons+=[Comparison('Scurves/dist_thr_scurveVthrComp_VthrComp_C'+str(i)+'_V0','Scurves/dist_thr_scurveVthrComp_VthrComp_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 100') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_thr_scurveVcal_Vcal_C'+str(i)+'_V0','Scurves/dist_thr_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_sig_scurveVcal_Vcal_C'+str(i)+'_V0','Scurves/dist_sig_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should peak above 2') for i in range(16)]
     theComparisons+=[Comparison('PhOptimization/PH_c*_r*_C'+str(i)+'_V0','PhOptimization/PH_c*_r*_C0_V0',referenceFile,outputDir,'') for i in range(16)]
     theComparisons+=[Comparison('GainPedestal/gainPedestalNonLinearity_C'+str(i)+'_V0','GainPedestal/gainPedestalNonLinearity_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked just below 1') for i in range(16)]
     theComparisons+=[Comparison('PixelAlive/PixelAlive_C'+str(i)+'_V0','PixelAlive/PixelAlive_C0_V0',referenceFile,outputDir,'Plot should be almost entirely red') for i in range(16)]
-    theComparisons+=[Comparison('BumpBonding/dist_thr_calSMap_VthrComp_C'+str(i)+'_V0','BumpBonding/dist_thr_calSMap_VthrComp_C0_V0',referenceFile,outputDir,'Less than ~5% of the entries should be at larger x values than the arrow') for i in range(16)]
+    theComparisons+=[Comparison('BB3/dist_rescaledThr_C'+str(i)+'_V0','BB3/dist_rescaledThr_C0_V0',referenceFile,outputDir,'Less than ~5% of the entries should be at larger x values than the arrow') for i in range(16)]
     
-
 ################################################################
 ################################################################
 ################################################################
