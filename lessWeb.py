@@ -326,7 +326,6 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
             part.text='sidet_p'
 
             comment=open(outputDir+'/'+txt.text,'w')
-            #n=int(key.GetName().split('_')[2][1:])
             comment.write('\nnBadBumps='+str(badBumpsFromLog[n])+'\n')
             comment.write('\nbadBumps=[')
             for i in range(len(badBumps)):
@@ -341,9 +340,10 @@ def getSCurvePlots(f, outputDir):
     
     goodPlots=['adjustVcal_C',
                'thr_scurveVthrComp_VthrComp_C','sig_scurveVthrComp_VthrComp_C','thn_scurveVthrComp_VthrComp_C',
-               'dist_thr_scurveVthrComp_VthrComp_C','dist_sig_scurveVthrComp_VthrComp_C','dist_thn_scurveVthrComp_VthrComp_C',
+               #'dist_thr_scurveVthrComp_VthrComp_C','dist_sig_scurveVthrComp_VthrComp_C','dist_thn_scurveVthrComp_VthrComp_C', #not needed since the preceeding strings also match
                'thr_scurveVcal_Vcal_C','sig_scurveVcal_Vcal_C',
-               'dist_thr_scurveVcal_Vcal_C','dist_sig_scurveVcal_Vcal_C']
+               #'dist_thr_scurveVcal_Vcal_C','dist_sig_scurveVcal_Vcal_C' #not needed since the preceeding strings also match
+               ]
 
     c=TCanvas()
     for key in f.Get('Scurves').GetListOfKeys():
@@ -457,13 +457,14 @@ def analyzePreTest(inputDir, outputDir, log, data):
     getIanaPlot(data, outputDir)
     getVthrCompCalDelPlot(data, calDels, VthrComps, outputDir)
 
+    """
     dr=SE(test,'DEAD_ROCS')
     for n in deadROCs: SE(dr,'ROC').text=str(n)
     
     lr=SE(test,'LIVE_ROCS')
     for n in range(16): 
         if n not in deadROCs: SE(lr,'ROC').text=str(n)
-        
+    """ 
 ################################################################
 
 def analyzeIV(inputDir, outputDir, log, data):
@@ -692,6 +693,9 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     f=iter(open(log,'r'))
     for line in f:
 
+        if 'ROCs are all programmable' in line: deadROCs=[]
+        elif 'cannot be programmed! Error' in line: deadROCs=[int(i) for i in line[line.find('ROCs')+len('ROCs'):line.find('cannot')].split()]
+
         if 'number of dead pixels (per ROC)' in line:
             deadPixels=[int(x) for x in line.split()[-16:]]
             if DEBUG: print 'deadPixels:',deadPixels
@@ -723,6 +727,19 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         print badBumps 
         #print bbCuts
 
+    ROCS=SE(test,'ROCS')
+    for i in range(16):
+        ROC=SE(ROCS,'ROC')
+        POSITION=SE(ROC,'POSITION')
+        POSITION.text=str(i)
+        IS_DEAD=SE(ROC,'IS_DEAD')
+        IS_DEAD.text=str(int((i in deadROCs)))
+        BADBUMPS_ELEC=SE(ROC,'BADBUMPS_ELEC')
+        BADBUMPS_ELEC.text=str(badBumps[i])
+        DEAD_PIX=SE(ROC,'DEAD_PIX')
+        DEAD_PIX.text=str(deadPixels[i])
+
+    """
     n=0
     for i in deadPixels: n+=i
     dead_pix=SE(test,'DEAD_PIX')
@@ -732,7 +749,8 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     for i in badBumps: n+=i
     dead_bumps_elec=SE(test,'DEAD_BUMPS_ELEC')
     dead_bumps_elec.text=str(n)
-
+    """
+    
     n=0
     for i in maskDefectPixels: n+=i
     unmaskable_pix=SE(test,'UNMASKABLE_PIX')
@@ -784,7 +802,10 @@ def getConfigs(inputDir, outputDir, log, data):
 def makeXML(inputDir):
     
     global moduleName
-    moduleName=os.path.basename(inputDir).split('_ElComandanteTest_')[0]
+    print 'inputDir:',inputDir
+    print 
+    moduleName=os.path.basename(inputDir.split('_ElComandanteTest_')[0])
+    print 'moduleName:',moduleName
 
     outputDir='/home/fnalpix2/dbUploads/'+moduleName
     if os.path.exists(outputDir):
