@@ -93,6 +93,7 @@ class Comparison:
         histograms=[]
         for i in range(nModules):
             testPad.cd(i+1)
+            h=None
 
             for k in testFiles[i].GetListOfKeys():
                 dir=k.ReadObj()
@@ -102,17 +103,19 @@ class Comparison:
                         h=key.ReadObj().Clone('REF__'+self.hName.split('/')[-1])
                         break
             #h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
-            h.SetTitle(moduleNames[i]+': '+h.GetTitle())
-            h.Draw('COLZ'*is2D)
-            histograms.append(h)
+            try:
+                h.SetTitle(moduleNames[i]+': '+h.GetTitle())
+                h.Draw('COLZ'*is2D)
+                histograms.append(h)
+                
+                gPad.Modified()
+                gPad.Update()
+                gPad.SetFillColor(kRed)
+                gPad.Modified()
+                gPad.Update()
 
-            gPad.Modified()
-            gPad.Update()
-            gPad.SetFillColor(kRed)
-            gPad.Modified()
-            gPad.Update()
-
-            gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
+                gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
+            except: pass
 
         c.Modified()
         c.Update()
@@ -128,7 +131,8 @@ class Comparison:
             if input=='':
                 badModules=[x for x in range(nModules) if x not in goodModules]
                 for i in badModules:
-                    testPad.GetPad(i+1).SaveAs(self.outputDir+'/'+histograms[i].GetName()+'.pdf')
+                    try: testPad.GetPad(i+1).SaveAs(self.outputDir+'/'+histograms[i].GetName()+'.pdf')
+                    except: pass
                 badModuleNames=[moduleNames[i] for i in badModules]
 
                 refPad.Close()
