@@ -40,6 +40,7 @@ def click(moduleNo):
             gPad.SetFillColor(kGreen)
             gPad.Modified()
             gPad.Update()
+    #else: print gPad.GetEvent()
 
     return None
 
@@ -56,13 +57,13 @@ def makeIV(input):
     """
 
     values=[]
-    for line in input:
+    for line in open(input):
         if line[0]=='#': continue
         values.append([abs(float(line.split()[0])),float(line.split()[1])])
     
     nBins=len(values)
-    xMin=values[0][0]
-    xMax=values[-1][0]
+    xMin=0
+    xMax=nBins*round(values[1][0]-xMin,0)
     binWidth=float(xMax-xMin)/(nBins-1)
     xMin-=binWidth/2
     xMax+=binWidth/2
@@ -95,15 +96,17 @@ class Comparison:
             #make temporary root file and put IV plot in it
             testFiles=[]
             for f in self.testFiles:
-                file=TFile(f.replace('log','root'))
+                file=TFile(f.replace('log','root'),'RECREATE')
                 file.cd()
                 file.mkdir('IV')
                 file.cd('IV')
                 h=makeIV(f)
+                file.Write()
                 testFiles.append(file)
         else:
             testFiles=[TFile(f) for f in self.testFiles]
 
+        print testFiles
         nModules = len(goodModuleNames)
         
         global goodModules
@@ -117,16 +120,19 @@ class Comparison:
 
         if self.hName=='IV/IV':
             #make temporary root file and put IV plot in it
-            file=TFile(self.refFile.replace('log','root'))
+            file=TFile(self.refFile.replace('log','root'),'RECREATE')
             file.cd()
             file.mkdir('IV')
             file.cd('IV')
             h=makeIV(self.refFile)
-            self.refFile=file
+            file.Write()
+            self.refTFile=file
+            
+            refPad.SetLogy()
         else:
-            self.refFile=TFile(self.refFile)
+            self.refTFile=TFile(self.refFile)
 
-        for k in self.refFile.GetListOfKeys():
+        for k in self.refTFile.GetListOfKeys():
             dir=k.ReadObj()
             if type(dir)!=type(TDirectoryFile()): continue
             for key in dir.GetListOfKeys():
@@ -146,14 +152,18 @@ class Comparison:
         histograms=[]
         for i in range(nModules):
             testPad.cd(i+1)
+
+            if self.hName=='IV/IV': gPad.SetLogy()
+
             h=None
 
+            print i
             for k in testFiles[i].GetListOfKeys():
                 dir=k.ReadObj()
                 if type(dir)!=type(TDirectoryFile()): continue
                 for key in dir.GetListOfKeys():
                     if fnmatch(key.GetName(),self.hName.split('/')[-1]):
-                        h=key.ReadObj().Clone('REF__'+self.hName.split('/')[-1])
+                        h=key.ReadObj().Clone(self.hName.split('/')[-1])
                         break
             #h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
 
@@ -167,8 +177,10 @@ class Comparison:
                     I150=h.GetBinContent(h.FindBin(150))
                     
                     l=TLatex()
-                    l.DrawLatexNDC(.1,.01,"I(150V)="+str(round(I150*1E6,1))+"#microA   I(150V)/I(100V)="+str(round(I150/I100,2))
-            
+                    l.DrawLatex(10,1E-5,"I(150V)="+str(round(I150*1E6,1))+"#muA")
+                    l2=TLatex()
+                    l2.DrawLatex(10,3E-6,"I(150V)/I(100V)="+str(round(I150/I100,2)))
+
                 gPad.Modified()
                 gPad.Update()
                 gPad.SetFillColor(kRed)
