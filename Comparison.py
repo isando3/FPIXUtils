@@ -43,25 +43,67 @@ def click(moduleNo):
 
     return None
 
+def makeIV(input):
+    """
+    #
+    #--------LOG from Tue 30 Jun 2015 at 14h:26m:49s ---------
+    #
+    #voltage(V)current(A)timestamp
+    -0.030-1.6675e-081435692186
+    -5.028-5.0295e-081435692191
+    -10.026-7.5020e-081435692196
+    -15.023-9.8705e-081435692201
+    """
+
+    values=[]
+    for line in input:
+        if line[0]=='#': continue
+        values.append([abs(float(line.split()[0])),float(line.split()[1])])
+    
+    nBins=len(values)
+    xMin=values[0][0]
+    xMax=values[-1][0]
+    binWidth=float(xMax-xMin)/(nBins-1)
+    xMin-=binWidth/2
+    xMax+=binWidth/2
+    
+    h=TH1F('IV',';-U [V];-I [#muA]',nBins,xMin,xMax)
+    for i in range(len(values)): h.SetBinContent(i+1, -1*values[i][1])
+    h.SetMaximum(5*h.GetMaximum())
+    
+    return h
+
 ################################################################
 ################################################################
 ################################################################
 
 class Comparison:
     
-    def __init__(self, hName, refName, referenceFile, outputDir, info='All plots should resemble the reference plot'):
+    def __init__(self, hName, testFiles, refName, referenceFile, outputDir, info='All plots should resemble the reference plot'):
         self.hName=hName
-        self.refFile=TFile(referenceFile)
+        self.testFiles=testFiles
+        self.refFile=referenceFile
         self.outputDir=outputDir
         self.info=info
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    def do(self, testFiles):
+    def do(self):
         print self.hName
-        testFiles=[TFile(f) for f in testFiles]
 
-        #moduleNames=['_'.join(f.GetName().split('/')[-3].split('_')[:-4]) for f in testFiles]
+        if self.hName=='IV/IV':
+            #make temporary root file and put IV plot in it
+            testFiles=[]
+            for f in self.testFiles:
+                file=TFile(f.replace('log','root'))
+                file.cd()
+                file.mkdir('IV')
+                file.cd('IV')
+                h=makeIV(f)
+                testFiles.append(file)
+        else:
+            testFiles=[TFile(f) for f in self.testFiles]
+
         nModules=len(moduleNames)
         
         global goodModules
@@ -72,6 +114,17 @@ class Comparison:
         refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
         refPad.Draw()
         refPad.cd()
+
+        if self.hName=='IV/IV':
+            #make temporary root file and put IV plot in it
+            file=TFile(self.refFile.replace('log','root'))
+            file.cd()
+            file.mkdir('IV')
+            file.cd('IV')
+            h=makeIV(self.refFile)
+            self.refFile=file
+        else:
+            self.refFile=TFile(self.refFile)
 
         for k in self.refFile.GetListOfKeys():
             dir=k.ReadObj()
@@ -105,6 +158,13 @@ class Comparison:
             h.SetTitle(moduleNames[i]+': '+h.GetTitle())
             h.Draw('COLZ'*is2D)
             histograms.append(h)
+
+            if self.hName=='IV/IV':
+                I100=h.GetBinContent(h.FindBin(100))
+                I150=h.GetBinContent(h.FindBin(150))
+
+                l=TLatex()
+                l.DrawLatexNDC(.1,.01,"I(150V)="+str(round(I150*1E6,1))+"#microA   I(150V)/I(100V)="+str(round(I150/I100,2))
 
             gPad.Modified()
             gPad.Update()
