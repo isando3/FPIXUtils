@@ -19,9 +19,9 @@ else:
     raise Exception("You must specify which test to check")
 
 testFiles=[]
-for module in moduleNames:
-    print '/home/fnalpix2/ShareTestResults/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
-    testFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'))[-1])
+for module in goodModuleNames:
+    print '/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
+    testFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'))[-1])
 
 """
 testFiles=['/Users/jstupak/CMS/pixel/ShareTestResults/M_LL_922_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',

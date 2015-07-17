@@ -62,7 +62,7 @@ class Comparison:
         testFiles=[TFile(f) for f in testFiles]
 
         #moduleNames=['_'.join(f.GetName().split('/')[-3].split('_')[:-4]) for f in testFiles]
-        nModules=len(moduleNames)
+        nModules = len(goodModuleNames)
         
         global goodModules
         goodModules=[]
@@ -104,7 +104,7 @@ class Comparison:
                         break
             #h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
             try:
-                h.SetTitle(moduleNames[i]+': '+h.GetTitle())
+                h.SetTitle(goodModuleNames[i]+': '+h.GetTitle())
                 h.Draw('COLZ'*is2D)
                 histograms.append(h)
                 
@@ -133,7 +133,7 @@ class Comparison:
                 for i in badModules:
                     try: testPad.GetPad(i+1).SaveAs(self.outputDir+'/'+histograms[i].GetName()+'.pdf')
                     except: pass
-                badModuleNames=[moduleNames[i] for i in badModules]
+                badModuleNames=[goodModuleNames[i] for i in badModules]
 
                 refPad.Close()
                 testPad.Close()
