@@ -25,6 +25,8 @@ if inputDirs:
             makeXML(i)
 else:
     for module in moduleNames:
+        if module=='0': continue
+        print module
         input=sorted(glob('/home/fnalpix?/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*[0-9]'))[-1]
         makeXML(input)
     
