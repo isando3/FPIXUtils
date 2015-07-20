@@ -170,6 +170,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 print '       From root file:',len(deadPixels)
                 exit()
 
+            """
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
@@ -187,7 +188,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(deadPixels)-1: comment.write(', ')
             comment.write(']\n')
-
+            """
             # - - - - - - - - - - - - - - - - - - - - - - - - -
 
             h=f.Get('PixelAlive/'+h.GetName().replace('PixelAlive','MaskTest'))
@@ -207,6 +208,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 print '       From root file:',len(maskDefectPixels)
                 exit()
 
+            """
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
@@ -216,6 +218,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             part=SE(pic,'PART')
             part.text='sidet_p'
 
+
             comment=open(outputDir+'/'+txt.text,'w')
             comment.write('\nnUnmaskable='+str(nMaskDefectPixels[n])+'\n')
             comment.write('\nunmaskablePixels=[')
@@ -224,7 +227,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(maskDefectPixels)-1: comment.write(', ')
             comment.write(']\n')
-
+            """
             # - - - - - - - - - - - - - - - - - - - - - - - - -   
 
             h=f.Get('PixelAlive/'+h.GetName().replace('MaskTest','AddressDecodingTest'))
@@ -244,6 +247,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 print '       From root file:',len(addressDefectPixels)
                 exit()
 
+            """
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
@@ -261,7 +265,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(addressDefectPixels)-1: comment.write(', ')
             comment.write(']\n')
-
+            """
 #---------------------------------------------------------------
 
 #def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
@@ -285,7 +289,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
             key.ReadObj().Draw()
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             c.SetLogy(False)
-
+            
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
@@ -316,6 +320,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
                 print n
                 exit()                        
 
+            """
             pic=SE(top, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
@@ -333,7 +338,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
                 comment.write('['+str(x)+','+str(y)+']')
                 if i!=len(badBumps)-1: comment.write(', ')
             comment.write(']\n')
-
+            """
 #---------------------------------------------------------------
 
 def getSCurvePlots(f, outputDir):
@@ -353,12 +358,14 @@ def getSCurvePlots(f, outputDir):
                 else: key.ReadObj().Draw('COLZ')
                 c.SaveAs(outputDir+'/'+key.GetName()+'.png')
                 
-                pic=SE(top, 'PIC')
-                attachName(pic)
-                file=SE(pic, 'FILE')
-                file.text=key.GetName()+'.png'
-                part=SE(pic,'PART')
-                part.text='sidet_p'
+                is2D=(type(key.ReadObj())==type(TH2D()))
+                if not is2D:
+                    pic=SE(top, 'PIC')
+                    attachName(pic)
+                    file=SE(pic, 'FILE')
+                    file.text=key.GetName()+'.png'
+                    part=SE(pic,'PART')
+                    part.text='sidet_p'
 
 #---------------------------------------------------------------
 
@@ -375,12 +382,14 @@ def getTrimPlots(f, outputDir):
                 else: key.ReadObj().Draw('COLZ')
                 c.SaveAs(outputDir+'/'+key.GetName()+'.png')
 
-                pic=SE(top, 'PIC')
-                attachName(pic)
-                file=SE(pic, 'FILE')
-                file.text=key.GetName()+'.png'
-                part=SE(pic,'PART')
-                part.text='sidet_p'
+                is2D=(type(key.ReadObj())==type(TH2D()))
+                if not is2D:
+                    pic=SE(top, 'PIC')
+                    attachName(pic)
+                    file=SE(pic, 'FILE')
+                    file.text=key.GetName()+'.png'
+                    part=SE(pic,'PART')
+                    part.text='sidet_p'
 
 #---------------------------------------------------------------
 
@@ -397,12 +406,14 @@ def getPulseHeightOptPlots(f, outputDir):
                 else: key.ReadObj().Draw('COLZ')
                 c.SaveAs(outputDir+'/'+key.GetName()+'.png')
 
-                pic=SE(top, 'PIC')
-                attachName(pic)
-                file=SE(pic, 'FILE')
-                file.text=key.GetName()+'.png'
-                part=SE(pic,'PART')
-                part.text='sidet_p'
+                is2D=(type(key.ReadObj())==type(TH2D()))
+                if not is2D:
+                    pic=SE(top, 'PIC')
+                    attachName(pic)
+                    file=SE(pic, 'FILE')
+                    file.text=key.GetName()+'.png'
+                    part=SE(pic,'PART')
+                    part.text='sidet_p'
 
 #---------------------------------------------------------------
 
