@@ -87,6 +87,8 @@ class Comparison:
         self.outputDir=outputDir
         self.info=info
 
+        self.goodModuleNames=[f.split('_ElComandanteTest')[0].split('/')[-1] for f in self.testFiles]
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
     def do(self):
@@ -107,7 +109,7 @@ class Comparison:
             testFiles=[TFile(f) for f in self.testFiles]
 
         print testFiles
-        nModules = len(goodModuleNames)
+        nModules = len(self.testFiles)
         
         global goodModules
         goodModules=[]
@@ -165,17 +167,16 @@ class Comparison:
                     if fnmatch(key.GetName(),self.hName.split('/')[-1]):
                         h=key.ReadObj().Clone(self.hName.split('/')[-1])
                         break
-            #h=testFiles[i].Get(self.hName).Clone(moduleNames[i]+'__'+self.hName.split('/')[-1])
 
             try:
-                h.SetTitle(goodModuleNames[i]+': '+h.GetTitle())
+                h.SetTitle(self.goodModuleNames[i]+': '+h.GetTitle())
                 h.Draw('COLZ'*is2D)
                 histograms.append(h)
-    
+
                 if self.hName=='IV/IV':
                     I100=h.GetBinContent(h.FindBin(100))
                     I150=h.GetBinContent(h.FindBin(150))
-                    
+
                     l=TLatex()
                     l.DrawLatex(10,1E-5,"I(150V)="+str(round(I150*1E6,1))+"#muA")
                     l2=TLatex()
@@ -188,7 +189,9 @@ class Comparison:
                 gPad.Update()
 
                 gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
-            except: pass
+            except: 
+                print 'Missing plot for module',self.goodModuleNames[i]
+                
 
         c.Modified()
         c.Update()
@@ -206,7 +209,7 @@ class Comparison:
                 for i in badModules:
                     try: testPad.GetPad(i+1).SaveAs(self.outputDir+'/'+histograms[i].GetName()+'.pdf')
                     except: pass
-                badModuleNames=[goodModuleNames[i] for i in badModules]
+                badModuleNames=[self.goodModuleNames[i] for i in badModules]
 
                 refPad.Close()
                 testPad.Close()

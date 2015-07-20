@@ -11,6 +11,11 @@ from sys import argv
 from config import *
 from glob import glob
 
+referenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
+IVReferenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/000_IV_p17/ivCurve.log'
+
+outputDir='/home/fnalpix2/forExperts'
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 if len(argv)>1:
@@ -18,25 +23,20 @@ if len(argv)>1:
 else:
     raise Exception("You must specify which test to check")
 
+inputDirs=None
+if len(argv)>2:
+    inputDirs=argv[2:]
+
 testFiles=[]; IVFiles=[]
-for module in goodModuleNames:
-    print '/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
-    testFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'))[-1])
-    IVFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_IV_*/ivCurve.log'))[-1])
 
-"""
-testFiles=['/Users/jstupak/CMS/pixel/ShareTestResults/M_LL_922_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',
-'/Users/jstupak/CMS/pixel/ShareTestResults/M_TT_915_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',
-'/Users/jstupak/CMS/pixel/ShareTestResults/P-A-03-42_ElComandanteTest_2015-04-28_10h33m_1430235234/001_Pretest_p17/commander_Pretest.root',
-'/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874/001_Pretest_p17/commander_Pretest.root'
-]
-"""
-
-referenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
-IVReferenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/000_IV_p17/ivCurve.log'
-#'/home/fnalpix2/ShareTestResults/M_TT_915_ElComandanteTest_2015-05-14_10h23m_1431617010/001_FPIXTest_p17/commander_FPIXTest.root'
-
-outputDir='/home/fnalpix2/forExperts'
+if inputDirs:
+    testFiles=[glob(d+'/*/commander_'+testName+'.root')[0] for d in inputDirs]
+    if testName=='FPIXTest': IVFiles=[glob(d+'/*_IV_*/ivCurve.log')[0] for d in inputDirs]
+else:
+    for module in goodModuleNames:
+        print '/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
+        testFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'))[-1])
+        if testName=='FPIXTest': IVFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_IV_*/ivCurve.log'))[-1])
 
 if testName=='Pretest':
     theComparisons=[Comparison('Pretest/programROC_V0',testFiles,'Pretest/programROC_V0',referenceFile,outputDir,'All y values should be greater than 0'),
@@ -50,7 +50,7 @@ if testName=='FPIXTest':
     theComparisons+=[Comparison('Scurves/dist_thr_scurveVcal_Vcal_C'+str(i)+'_V0',testFiles,'Scurves/dist_thr_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_sig_scurveVcal_Vcal_C'+str(i)+'_V0',testFiles,'Scurves/dist_sig_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should peak above 2') for i in range(16)]
     theComparisons+=[Comparison('PhOptimization/PH_c*_r*_C'+str(i)+'_V0',testFiles,'PhOptimization/PH_c*_r*_C0_V0',referenceFile,outputDir,'') for i in range(16)]
-    theComparisons+=[Comparison('GainPedestal/gainPedestalNonLinearity_C'+str(i)+'_V0','GainPedestal/gainPedestalNonLinearity_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked just below 1') for i in range(16)]
+    theComparisons+=[Comparison('GainPedestal/gainPedestalNonLinearity_C'+str(i)+'_V0',testFiles,'GainPedestal/gainPedestalNonLinearity_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked just below 1') for i in range(16)]
     theComparisons+=[Comparison('PixelAlive/PixelAlive_C'+str(i)+'_V0',testFiles,'PixelAlive/PixelAlive_C0_V0',referenceFile,outputDir,'Plot should be almost entirely red') for i in range(16)]
     theComparisons+=[Comparison('BB3/dist_rescaledThr_C'+str(i)+'_V0',testFiles,'BB3/dist_rescaledThr_C0_V0',referenceFile,outputDir,'Less than ~5% of the entries should be at larger x values than the arrow') for i in range(16)]
     
