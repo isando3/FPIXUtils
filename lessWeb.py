@@ -6,26 +6,27 @@ Date: 4-9-15
 Usage: python dbUpload.py <input dir>
 """
 
+DEBUG=True
+
 from xml.etree.ElementTree import Element, SubElement, Comment
 from xml.etree import ElementTree
 from xml.dom import minidom
 SE=SubElement
 
 import ROOT
-#ROOT.gErrorIgnoreLevel = ROOT.kWarning
+#if not DEBUG: 
+ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
 gStyle.SetOptStat(0)
 gROOT.SetBatch(1)
 
-#from makeModuleSummaryPlot import doIt
+from moduleSummaryPlottingTools import *
 
 from glob import glob
 import os
 import subprocess
 import sys
 import zipfile
-
-DEBUG=True
 
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
@@ -311,7 +312,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
                     #if h.GetBinContent(xBin,yBin)+1>=bbCuts[n]:
                     if h.GetBinContent(xBin,yBin)>=5:
                         badBumps.append([xBin-1,yBin-1])
-            print badBumps, badBumpsFromLog[n]
+            if DEBUG: print badBumps, badBumpsFromLog[n]
             
             if len(badBumps)!=badBumpsFromLog[n]:
                 print 'ERROR: Wrong number of bad bump bonds found'
@@ -438,6 +439,33 @@ def getGainPedestalPlots(f,outputDir):
                 file.text=key.GetName()+'.png'
                 part=SE(pic,'PART')
                 part.text='sidet_p'
+
+################################################################
+
+def makeSummaryPlots(inputDir, outputDir, log, data):
+    data=TFile(data['fulltest'])
+
+    produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=[-5,5], isBB3=True)
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='BB3_rescaledThr.png'
+    part=SE(pic,'PART')
+    part.text='sidet_p'
+    
+    for hist in ['PixelAlive/PixelAlive','PixelAlive/MaskTest','PixelAlive/AddressDecodingTest',
+                 'PhOptimization/PH_mapLowVcal','PhOptimization/PH_mapHiVcal',
+                 'Scurves/sig_scurveVcal_Vcal','Scurves/thn_scurveVcal_Vcal',
+                 'Trim/TrimMap','Trim/thr_TrimThrFinal_vcal']:
+        produceLessWebSummaryPlot(data,hist,outputDir)
+            
+        pic=SE(top, 'PIC')
+        attachName(pic)
+        file=SE(pic, 'FILE')
+        file.text=hist.replace('/','_')+'.png'
+        part=SE(pic,'PART')
+        part.text='sidet_p'
+
 
 ################################################################
 
@@ -676,7 +704,7 @@ def getBreakdown(h):
             above=True
         elif above:
             breakdown=h0.GetBinCenter(binNo+width+2)
-            print 'breakdown=',breakdown
+            if DEBUG: print 'breakdown:',breakdown
             return breakdown
 
     return h0.GetXaxis().GetBinUpEdge(h0.GetNbinsX())
@@ -856,6 +884,7 @@ def makeXML(inputDir):
     attachName(test)
 
     for f in [analyzeIV,
+              makeSummaryPlots,
               analyzePreTest,
               analyzeFullTest,
               getConfigs,
