@@ -199,7 +199,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             for xBin in range(1,h.GetNbinsX()+1):
                 for yBin in range(1,h.GetNbinsY()+1):
                     if [xBin-1,yBin-1] in deadPixels: continue
-                    if h.GetBinContent(xBin, yBin)<1: maskDefectPixels.append([xBin-1,yBin-1])
+                    if h.GetBinContent(xBin, yBin)<0: maskDefectPixels.append([xBin-1,yBin-1])
 
             if len(maskDefectPixels)!=nMaskDefectPixels[n]:
                 print 'ERROR: Wrong number of un-maskable pixels found'
@@ -236,7 +236,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             for xBin in range(1,h.GetNbinsX()+1):
                 for yBin in range(1,h.GetNbinsY()+1):
                     if [xBin-1,yBin-1] in deadPixels: continue
-                    if h.GetBinContent(xBin, yBin)<1: addressDefectPixels.append([xBin-1,yBin-1])
+                    if h.GetBinContent(xBin, yBin)<0: addressDefectPixels.append([xBin-1,yBin-1])
 
             if len(addressDefectPixels)!=nAddressDefectPixels[n]:
                 print 'ERROR: Wrong number of un-addressable pixels found'
@@ -543,8 +543,8 @@ def analyzeIV(inputDir, outputDir, log, data):
     #until DB has field, upload the png
     
     nBins=len(values)
-    xMin=values[0][0]
-    xMax=values[-1][0]
+    xMin=0
+    xMax=nBins*round(values[1][0]-xMin,0) #values[-1][0]
     binWidth=float(xMax-xMin)/(nBins-1)
     xMin-=binWidth/2
     xMax+=binWidth/2
@@ -667,7 +667,8 @@ def getBreakdown(h):
             breakdown=h0.GetBinCenter(binNo+width+2)
             print 'breakdown=',breakdown
             return breakdown
-    
+
+    return h0.GetXaxis().GetBinUpEdge(h0.GetNbinsX())
 
 #---------------------------------------------------------------
 

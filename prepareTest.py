@@ -21,10 +21,15 @@ Tini=os.getenv('HOME')+'/elComandante/config/elComandante.ini.default'
 Tconf=os.getenv('HOME')+'/elComandante/config/elComandante.conf.default'
 
 testString={}
-testString['Pretest']='powercycle,Pretest@T'
-testString['Fulltest']='powercycle,Fulltest@T'
-testString['IV']=','.join(['IV_'+str(x)+'@T' for x in range(len(moduleNames))])
-testString['FPIXTest']='powercycle,FPIXTest@T,'+testString['IV']
+testString['Pretest']='Pretest@T'
+testString['Fulltest']='Fulltest@T'
+IVString = ""
+for i in range(len(moduleNames)):
+    if moduleNames[i] is not '0':
+        IVString += 'IV_'+str(i)+'@T,'
+IVString.rstrip(',')
+testString['IV']=IVString
+testString['FPIXTest']='FPIXTest@T,'+testString['IV']
 
 ############################################################
 ############################################################
@@ -40,11 +45,13 @@ if doCold: temp='-20'
 else:      temp='17'
 
 replacements=[['TESTS',testString[test].replace('@T','@'+temp)]]
-for i in range(len(moduleNames)):
-    replacements.append(['USEM'+str(i),'True'])
-    replacements.append(['MODULE'+str(i),moduleNames[i]])
-for i in range(len(moduleNames),4):
-    replacements.append(['USEM'+str(i),'False'])
+replacements.append(['NOBODY',shifter])
+for i in range(4):
+    if moduleNames[i] is not '0':
+        replacements.append(['USEM'+str(i),'True'])
+        replacements.append(['MODULE'+str(i),moduleNames[i]])
+    else:
+        replacements.append(['USEM'+str(i),'False'])
 
 ini=Tini.replace('.default','')
 conf=Tconf.replace('.default','')
