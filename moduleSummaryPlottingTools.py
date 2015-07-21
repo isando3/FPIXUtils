@@ -85,7 +85,7 @@ def makeMergedPlot(plots):
                        len(moduleBinEdgesY)-1,
                        array('d',moduleBinEdgesY))
     summaryPlot.SetStats(False)
-    SetOwnership(summaryPlot, False)  # avoid going out of scope at return statement                                                                                                                                                                                                            
+    summaryPlot.SetDirectory(0)
 
     # fill new histogram with contents of original plots
     # put ROC 0 at the top right, because reason
@@ -130,8 +130,8 @@ def findZRange(plots):
         plot = plots[roc].Clone()
 
         # create 1D distribution to get mean, RMS
-        rocMax = plot.GetMaximum()
-        rocMin = plot.GetMinimum()
+        rocMin = plot.GetMinimum() - 0.00001
+        rocMax = plot.GetMaximum() + 0.00001
         oneDPlot = TH1F("1d","1d",10000,rocMin,rocMax)
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
@@ -143,23 +143,40 @@ def findZRange(plots):
         plotMax = mean + nSigma*sigma
         oneDPlot.Delete()
 
-        # create zoomed 1D distribution to find min/max bins filled
+        # create zoomed 1D distribution to find normally distributed dataset
         oneDPlotZoomed = TH1F("1d","1d",10000,plotMin,plotMax)
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
                 if content > plotMin and content < plotMax:
                     oneDPlotZoomed.Fill(content)
-
-        # get position of first and last bins with non-zero entries
-        rocMin = oneDPlotZoomed.GetBinLowEdge(oneDPlotZoomed.FindFirstBinAbove())
-        rocMax = oneDPlotZoomed.GetBinLowEdge(oneDPlotZoomed.FindLastBinAbove())
+        mean = oneDPlotZoomed.GetMean()
+        sigma = oneDPlotZoomed.GetRMS()
         oneDPlotZoomed.Delete()
+        plotMin = mean - nSigma*sigma
+        plotMax = mean + nSigma*sigma
+
+        # create groomed 1D distribution to find min/max filled bins
+        oneDPlotGroomed = TH1F("1d","1d",10000,plotMin,plotMax)
+        for x in range(1,plot.GetNbinsX()+1):
+            for y in range(1,plot.GetNbinsY()+1):
+                content = plot.GetBinContent(x,y)
+                if content > plotMin and content < plotMax:
+                    oneDPlotGroomed.Fill(content)
+        # get position of first and last bins with non-zero entries
+        rocMin = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindFirstBinAbove())
+        rocMax = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindLastBinAbove())
+        oneDPlotGroomed.Delete()
 
         if rocMax > zMax:
             zMax = rocMax
         if rocMin < zMin:
             zMin = rocMin
+
+    # fix the ranges for PixelAlive type tests
+    if zMax - zMin < 0.0001: 
+        zMin=0
+        zMax=ceil(zMax)
 
     return (zMin,zMax)
 
@@ -176,7 +193,7 @@ def setZRange(plot, range):
 # input a summary merged plot and draw it on a canvas
 # add axis ticks and labels
 # return canvas
-def setupSummaryCanvas(summaryPlot, isBB3):
+def setupSummaryCanvas(summaryPlot):
 
     canvas = TCanvas(summaryPlot.GetName(),"",-1)
 
@@ -212,14 +229,6 @@ def setupSummaryCanvas(summaryPlot, isBB3):
     palette.SetY2NDC(0.95)
     palette.SetLabelSize(0.06)
 
-    if isBB3:
-        colors = array("i",[51+i for i in range(40)] + [kRed])
-        gStyle.SetPalette(len(colors), colors);
-        zMin=summaryPlot.GetMinimum()
-        zMax=summaryPlot.GetMaximum()
-        step=(zMax-zMin)/(len(colors)-1)
-        levels = array('d',[zMin + i*step for i in range(len(colors)-1)]+[4.9999999])
-        summaryPlot.SetContour(len(levels),levels)
 
     # START ADDING AXES
 
@@ -405,20 +414,8 @@ def produceSummaryPlot(inputFileName, pathToHistogram, version=0):
     setZRange(summaryPlot,zRange)
 
     summaryCanvas = setupSummaryCanvas(summaryPlot)
-    saveCanvasToNewFile(summaryCanvas,"test2.root")
 
-#    gROOT.GetListOfCanvases().ls()
     return summaryCanvas
-
-
-#    plotPath = "Scurves/sig_scurvevcal_vcal_C" + str(roc) + "_V" + str(version)
-#    plotPath = "Scurves/thr_scurveVcal_Vcal_C" + str(roc) + "_V" + str(
-#    plotPath = "BumpBonding/thr_calSMap_VthrComp_C" + str(roc) + "_V" + str(version)
-#    plotPath = "HighRate/hitMap_daqbbtest_C" + str(roc) + "_V" + str(version)
-#    plotPath = "BB3/rescaledThr_C" + str(roc) + "_V" + str(version)
-#    plotPath = "BB3/thr_calSMap_VthrComp_C" + str(roc) + "_V" + str(version)
-
-
 
 ###############################################################################
 
@@ -439,7 +436,16 @@ def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, zRange=[], 
     if not zRange: zRange = findZRange(plots)
     setZRange(summaryPlot,zRange)
 
-    summaryCanvas = setupSummaryCanvas(summaryPlot, isBB3)
+    summaryCanvas = setupSummaryCanvas(summaryPlot)
+
+    if isBB3:
+        colors = array("i",[51+i for i in range(40)] + [kRed])
+        gStyle.SetPalette(len(colors), colors);
+        zMin=summaryPlot.GetMinimum()
+        zMax=summaryPlot.GetMaximum()
+        step=(zMax-zMin)/(len(colors)-1)
+        levels = array('d',[zMin + i*step for i in range(len(colors)-1)]+[4.9999999])
+        summaryPlot.SetContour(len(levels),levels)
 
     outputFileName = pathToHistogram.replace("/","_")
     summaryCanvas.SaveAs(outputDir + "/" + outputFileName + ".png")
