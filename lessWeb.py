@@ -455,10 +455,10 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
     
     for hist in ['PixelAlive/PixelAlive','PixelAlive/MaskTest','PixelAlive/AddressDecodingTest',
                  'PhOptimization/PH_mapLowVcal','PhOptimization/PH_mapHiVcal',
-                 'Scurves/sig_scurveVcal_Vcal','Scurves/thn_scurveVcal_Vcal',
-                 'Trim/TrimMap','Trim/thr_TrimThrFinal_vcal']:
+                 'Scurves/sig_scurveVcal_Vcal','Scurves/thr_scurveVcal_Vcal',
+                 'Trim/thr_TrimThrFinal_vcal']:
+
         produceLessWebSummaryPlot(data,hist,outputDir)
-            
         pic=SE(top, 'PIC')
         attachName(pic)
         file=SE(pic, 'FILE')
@@ -466,6 +466,13 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
         part=SE(pic,'PART')
         part.text='sidet_p'
 
+    produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=[0,15])
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='Trim_TrimMap.png'
+    part=SE(pic,'PART')
+    part.text='sidet_p'
 
 ################################################################
 
