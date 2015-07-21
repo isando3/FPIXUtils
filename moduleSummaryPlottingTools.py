@@ -129,28 +129,32 @@ def findZRange(plots):
     for roc in range(16):
         plot = plots[roc].Clone()
 
+        # create 1D distribution to get mean, RMS
         rocMax = plot.GetMaximum()
         rocMin = plot.GetMinimum()
-        oneDPlot = TH1F("1d","1d",100,rocMin,rocMax)
+        oneDPlot = TH1F("1d","1d",10000,rocMin,rocMax)
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
                 oneDPlot.Fill(content)
-
         mean = oneDPlot.GetMean()
         sigma = oneDPlot.GetRMS()
+        plotMin = mean - nSigma*sigma
+        plotMax = mean + nSigma*sigma
         oneDPlot.Delete()
 
-        plot = plots[roc].Clone()  #reset plot
-        while rocMax > mean + nSigma*sigma:
-            maxBin = plot.GetMaximumBin()
-            plot.SetBinContent(maxBin,-999)
-            rocMax = plot.GetMaximum()
-        plot = plots[roc].Clone()  #reset plot
-        while rocMin < mean - nSigma*sigma:
-            minBin = plot.GetMinimumBin()
-            plot.SetBinContent(minBin,999)
-            rocMin = plot.GetMinimum()
+        # create zoomed 1D distribution to find min/max bins filled
+        oneDPlotZoomed = TH1F("1d","1d",10000,plotMin,plotMax)
+        for x in range(1,plot.GetNbinsX()+1):
+            for y in range(1,plot.GetNbinsY()+1):
+                content = plot.GetBinContent(x,y)
+                if content > plotMin and content < plotMax:
+                    oneDPlotZoomed.Fill(content)
+
+        # get position of first and last bins with non-zero entries
+        rocMin = oneDPlotZoomed.GetBinLowEdge(oneDPlotZoomed.FindFirstBinAbove())
+        rocMax = oneDPlotZoomed.GetBinLowEdge(oneDPlotZoomed.FindLastBinAbove())
+        oneDPlotZoomed.Delete()
 
         if rocMax > zMax:
             zMax = rocMax
@@ -172,7 +176,7 @@ def setZRange(plot, range):
 # input a summary merged plot and draw it on a canvas
 # add axis ticks and labels
 # return canvas
-def setupSummaryCanvas(summaryPlot):
+def setupSummaryCanvas(summaryPlot, isBB3):
 
     canvas = TCanvas(summaryPlot.GetName(),"",-1)
 
@@ -208,6 +212,14 @@ def setupSummaryCanvas(summaryPlot):
     palette.SetY2NDC(0.95)
     palette.SetLabelSize(0.06)
 
+    if isBB3:
+        colors = array("i",[51+i for i in range(40)] + [kRed])
+        gStyle.SetPalette(len(colors), colors);
+        zMin=summaryPlot.GetMinimum()
+        zMax=summaryPlot.GetMaximum()
+        step=(zMax-zMin)/(len(colors)-1)
+        levels = array('d',[zMin + i*step for i in range(len(colors)-1)]+[4.9999999])
+        summaryPlot.SetContour(len(levels),levels)
 
     # START ADDING AXES
 
@@ -347,6 +359,7 @@ def setupSummaryCanvas(summaryPlot):
         label.SetFillColor(0)
         label.SetTextAlign(22)
         label.SetTextFont(42)
+        label.SetBorderSize(0)
         label.Draw()
         SetOwnership(label,False)  # avoid going out of scope at return statement
 
@@ -410,10 +423,10 @@ def produceSummaryPlot(inputFileName, pathToHistogram, version=0):
 ###############################################################################
 
 # temporary altered version of produceSummaryPlot for use in lessWeb.py
-def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, version=0):
+def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, zRange=[], isBB3=False, version=0):
 
     plots = []
-    
+        
     # get plots
     for roc in range(16):
         plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
@@ -423,10 +436,14 @@ def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, version=0):
         plots.append(plot)
 
     summaryPlot = makeMergedPlot(plots)
-    zRange = findZRange(plots)
+    if not zRange: zRange = findZRange(plots)
     setZRange(summaryPlot,zRange)
 
-    summaryCanvas = setupSummaryCanvas(summaryPlot)
+    summaryCanvas = setupSummaryCanvas(summaryPlot, isBB3)
 
     outputFileName = pathToHistogram.replace("/","_")
     summaryCanvas.SaveAs(outputDir + "/" + outputFileName + ".png")
+    
+    if isBB3:
+        colors = array("i",[51+i for i in range(50)])
+        gStyle.SetPalette(len(colors), colors);
