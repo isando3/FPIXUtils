@@ -429,8 +429,7 @@ def getGainPedestalPlots(f,outputDir):
     for key in f.Get('GainPedestal').GetListOfKeys():
         for plot in goodPlots:
             if plot in key.GetName():
-                if 'dist' in key.GetName(): key.ReadObj().Draw()
-                else: key.ReadObj().Draw('COLZ')
+                key.ReadObj().Draw()
                 c.SaveAs(outputDir+'/'+key.GetName()+'.png')
 
                 pic=SE(top, 'PIC')
@@ -452,6 +451,10 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
     file.text='BB3_rescaledThr.png'
     part=SE(pic,'PART')
     part.text='sidet_p'
+    txt=SE(pic,'TXT')
+    txt.text=file.text.replace('png','txt')
+    comment=open(outputDir+'/'+txt.text,'w')
+    comment.write('\n'+file.text.split('.')[0])
     
     for hist in ['PixelAlive/PixelAlive','PixelAlive/MaskTest','PixelAlive/AddressDecodingTest',
                  'PhOptimization/PH_mapLowVcal','PhOptimization/PH_mapHiVcal',
@@ -465,6 +468,10 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
         file.text=hist.replace('/','_')+'.png'
         part=SE(pic,'PART')
         part.text='sidet_p'
+        txt=SE(pic,'TXT')
+        txt.text=file.text.replace('png','txt')
+        comment=open(outputDir+'/'+txt.text,'w')
+        comment.write('\n'+file.text.split('.')[0])
 
     produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=[0,15])
     pic=SE(top, 'PIC')
@@ -473,6 +480,10 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
     file.text='Trim_TrimMap.png'
     part=SE(pic,'PART')
     part.text='sidet_p'
+    txt=SE(pic,'TXT')
+    txt.text=file.text.replace('png','txt')
+    comment=open(outputDir+'/'+txt.text,'w')
+    comment.write('\n'+file.text.split('.')[0])
 
 ################################################################
 
