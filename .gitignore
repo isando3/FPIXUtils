@@ -2,3 +2,5 @@
 *~
 *.log
 *.png
+*.root
+*.pdf
