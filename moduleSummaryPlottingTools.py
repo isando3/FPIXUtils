@@ -5,7 +5,8 @@ import re
 
 # true dimensions of a sensor in 10^-4 m (active area + periphery)
 PERIPHERY = 12.  # 1.2 mm
-ROC_SIZE = 81.  # 8.1 mm
+ZOOM = 5  # integer value to upscale canvas size
+ROC_SIZE = ZOOM * 81.  # 8.1 mm
 SENSOR_WIDTH  = 8 * ROC_SIZE
 SENSOR_HEIGHT = 2 * ROC_SIZE
 PLOT_UNIT = 50. # fill plots in 50 um width bins
