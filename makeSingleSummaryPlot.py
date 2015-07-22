@@ -1,24 +1,48 @@
 #!/usr/bin/env python
+import sys
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-i", "--file", dest="inputFileName",
+                  help="path to input file")
+parser.add_option("-o", "--output", dest="outputFileName",
+                  help="output file name (without extension)")
+parser.add_option("-p", "--path", dest="pathToHistogram",
+                  help="path to histogram, e.g. 'BB3/rescaledThr'")
+parser.add_option("-t", "--type", dest="outputType",default="png",
+                  help="output type (default = png)")
+parser.add_option("-v", "--version", dest="version", default=0,
+                  help="specify which version of plots to get (default = 0)")
+parser.add_option("-z", "--logz", action="store_true", dest="logZ", default=False,
+                  help="sets the z axis to a log scale")
+(arguments, args) = parser.parse_args()
+
+if not arguments.inputFileName:
+    print "please specify input file";
+    sys.exit(0)
+
+if not arguments.pathToHistogram:
+    print "please specify input histogram";
+    sys.exit(0)
 
 from moduleSummaryPlottingTools import *
-from ROOT import *
 
 gROOT.SetBatch()
 
-inputFile = TFile('/Users/lantonel/PlotsAndTables/pXarSharedResults/P-A-2-04/BBtests_trimmed.root')
+canvas = produceSummaryPlot(arguments.inputFileName,
+                            arguments.pathToHistogram,
+                            arguments.version)
+if arguments.outputFileName:
+    name = arguments.outputFileName
+else:
+    name = canvas.GetName()
+if arguments.logZ:
+    canvas.SetLogz()
 
-produceLessWebSummaryPlot(inputFile, 'BumpBonding/thr_calSMap_VthrComp', ".")
-
-
-
-#canvas = produceSummaryPlot('/Users/lantonel/PlotsAndTables/pXarSharedResults/P-A-2-04/BBtests_trimmed.root',
-#                            'BumpBonding/thr_calSMap_VthrComp')
-
-#canvas = produceSummaryPlot('/Users/lantonel/PlotsAndTables/pXarSharedResults/P-A-2-22_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/HighRate2000s_0715.root',
-#                            'HighRate/hitMap_daqbbtest')
-
-#canvas = produceSummaryPlot('/Users/lantonel/PlotsAndTables/pXarSharedResults/P-A-2-22_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/HighRate2000s_0715.root',
-#                            'Scurves/thr_scurveVcal_Vcal')
-
-
-#saveCanvasToNewFile(canvas,"test3.root")
+if arguments.outputType is "root":
+    outputFile = TFile(name+".root", "RECREATE")
+    outputFile.cd()
+    canvas.Write()
+    outputFile.Close()
+else:
+    canvas.SaveAs(name+"."+arguments.outputType)
