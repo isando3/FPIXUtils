@@ -1,0 +1,1 @@
+~/pxar/main/mkConfig -d ~/ShareTestResults/DefaultConfig/defaultParametersModule_TBM08b_V21respin/ -t TBM08b -f -m -p '/hubId 31/hubId 15/' -s -r digv21respin
