@@ -11,8 +11,10 @@ from sys import argv
 from config import *
 from glob import glob
 
-referenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
-IVReferenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/000_IV_p17/ivCurve.log'
+#referenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
+#IVReferenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/000_IV_p17/ivCurve.log'
+referenceFile='/home/fnalpix2/ShareTestResults/elComandante/P-A-2-23_ElComandanteTest_2015-07-13_15h33m_1436819615/000_FPIXTest_p17/commander_FPIXTest.root'
+IVReferenceFile='/home/fnalpix2/ShareTestResults/elComandante/P-A-2-23_ElComandanteTest_2015-07-13_15h33m_1436819615/001_IV_p17/ivCurve.log'
 
 outputDir='/home/fnalpix2/forExperts'
 
@@ -46,7 +48,7 @@ if testName=='Pretest':
 if testName=='FPIXTest':
     theComparisons=[]
     theComparisons+=[Comparison('IV/IV',IVFiles,'IV/IV',IVReferenceFile,outputDir)]
-    theComparisons+=[Comparison('Trim/dist_thr_TrimThrFinal_vcal_C'+str(i)+'_V0',testFiles,'Trim/dist_thr_TrimThrFinal_vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
+    #theComparisons+=[Comparison('Trim/dist_thr_TrimThrFinal_vcal_C'+str(i)+'_V0',testFiles,'Trim/dist_thr_TrimThrFinal_vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_thr_scurveVcal_Vcal_C'+str(i)+'_V0',testFiles,'Scurves/dist_thr_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should be sharply peaked around 35') for i in range(16)]
     theComparisons+=[Comparison('Scurves/dist_sig_scurveVcal_Vcal_C'+str(i)+'_V0',testFiles,'Scurves/dist_sig_scurveVcal_Vcal_C0_V0',referenceFile,outputDir,'Distribution should peak above 2') for i in range(16)]
     theComparisons+=[Comparison('PhOptimization/PH_c*_r*_C'+str(i)+'_V0',testFiles,'PhOptimization/PH_c*_r*_C0_V0',referenceFile,outputDir,'') for i in range(16)]
@@ -64,6 +66,7 @@ if __name__=='__main__':
     i=0
     badModules=[]
     while i<len(theComparisons):
+        #gSystem.Sleep(100)
         result=theComparisons[i].do()
         
         #go back one test
