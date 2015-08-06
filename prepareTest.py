@@ -55,10 +55,10 @@ for i in range(4):
     else:
         replacements.append(['USEM'+str(i),'False'])
 
-station=os.environ['HOME'].split('/')[1]
+station=os.environ['HOME'].split('/')[2]
 replacements.append(['TESTCENTER',station])
 
-replacements.append(['TESTCENTER',socket.gethostname()])
+replacements.append(['HOSTNAME',socket.gethostname()])
 
 ini=Tini.replace('.default','')
 conf=Tconf.replace('.default','')
