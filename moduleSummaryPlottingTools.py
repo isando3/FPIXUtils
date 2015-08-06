@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 from ROOT import *
 from array import array
+import re
 
 # true dimensions of a sensor in 10^-4 m (active area + periphery)
 PERIPHERY = 12.  # 1.2 mm
-ROC_SIZE = 81.  # 8.1 mm 
+ZOOM = 5  # integer value to upscale canvas size
+ROC_SIZE = ZOOM * 81.  # 8.1 mm
 SENSOR_WIDTH  = 8 * ROC_SIZE
 SENSOR_HEIGHT = 2 * ROC_SIZE
 PLOT_UNIT = 50. # fill plots in 50 um width bins
@@ -19,11 +21,12 @@ MODULE_X_PLOT_SIZE = 8 * ROC_PLOT_SIZE
 MODULE_Y_PLOT_SIZE = 2 * ROC_PLOT_SIZE
 
 
-###############################################################################                                                                                                                                                                                                              
+###############################################################################
+
 # function to process the 16 histograms and flip bin contents of the top half
 # input a set of histograms and return a flipped version of the top ones
 def flipTopRow(plots):
-    
+
     for roc in range(8):
 
         histo = plots[roc].Clone()
@@ -75,7 +78,6 @@ def makeMergedPlot(plots):
     for edge in reversed(rocBinEdgesY):
         moduleBinEdgesY.append(2 * ROC_PLOT_SIZE - edge)
 
-    
     # create clone of plot with new bin sizes
     plotName = plots[0].GetName().rstrip("0")
     summaryPlot = TH2D(plotName,
@@ -174,7 +176,7 @@ def findZRange(plots):
             zMin = rocMin
 
     # fix the ranges for PixelAlive type tests
-    if zMax - zMin < 0.0001: 
+    if zMax - zMin < 0.0001:
         zMin=0
         #zMax=ceil(zMax)
 
@@ -195,9 +197,9 @@ def setZRange(plot, range):
 # return canvas
 def setupSummaryCanvas(summaryPlot):
 
-    canvas = TCanvas(summaryPlot.GetName(),"",-1)
+    canvas = TCanvas(summaryPlot.GetName(),"")
 
-    # use numbers that are factors of ROC_SIZE to avoid rounding errors
+    # use numbers that are factors of 2 * ROC_SIZE to avoid rounding errors
     topMargin = 2 * ROC_SIZE/3.
     bottomMargin = 2 * ROC_SIZE/3.
     leftMargin = 2 * ROC_SIZE/3.
@@ -274,7 +276,7 @@ def setupSummaryCanvas(summaryPlot):
                                tickLength/5.,
                                x1,
                                -2*tickLength)
-                line2.DrawLine(x2, 
+                line2.DrawLine(x2,
                                MODULE_Y_PLOT_SIZE - tickLength/5.,
                                x2,
                                MODULE_Y_PLOT_SIZE + 2*tickLength)
@@ -338,7 +340,7 @@ def setupSummaryCanvas(summaryPlot):
                            1 * tickLength + MODULE_X_PLOT_SIZE,
                            y_offset)
         if tick is 7 or tick is 8:
-            y_offset += 10 * Y_UNIT + Y_UNIT  # account for larger edge pixels 
+            y_offset += 10 * Y_UNIT + Y_UNIT  # account for larger edge pixels
         else:
             y_offset += 10 * Y_UNIT
 
@@ -364,7 +366,7 @@ def setupSummaryCanvas(summaryPlot):
         axisLabels.append(rocLabel)
 
     for label in axisLabels:
-    
+
         label.SetFillColor(0)
         label.SetTextAlign(22)
         label.SetTextFont(42)
@@ -383,14 +385,62 @@ def saveCanvasToNewFile(canvas,outputFileName):
     canvas.Write()
     outputFile.Close()
 
+
 ###############################################################################
 
-def addCanvasToFile(canvas,inputFileName,directory=""):
 
-    outputFile = TFile(outputFileName, "UPDATE")
-    outputFile.cd(directory)
-    canvas.Write()
-    outputFile.Close()
+# look through an input file (presumably a pxar output file)
+# find all roc summary plots and return a list of them
+def produceHistogramDictionary(inputFileName):
+
+    histogramList = []
+    inputFile = TFile(inputFileName)
+
+    for dirKey in inputFile.GetListOfKeys():
+        if (dirKey.GetClassName() != "TDirectoryFile"):
+            continue
+        dir = dirKey.GetName()
+        inputFile.cd(dir)
+        for plotKey in gDirectory.GetListOfKeys():
+            if re.match ('TH2', plotKey.GetClassName()): # found a 2-D histogram
+                plotName = plotKey.GetName()
+                pathToHistogram = dir+"/"+plotName
+                plot = inputFile.Get(pathToHistogram)
+                # only consider ROC summary plots
+                if plot.GetNbinsX() != 52 or plot.GetNbinsY() != 80:
+                    continue
+                histogramList.append(pathToHistogram)
+    inputFile.Close()
+
+    # dictionary of histogram names, each entry containing the versions present
+    histogramDictionary = {}
+    for histogram in histogramList:
+        version = histogram[-1:]
+        histoName = histogram.split("_C")[0]
+        # if it's not already in the list, add it
+        if not histoName in histogramDictionary:
+            histogramDictionary[histoName] = []
+            histogramDictionary[histoName].append(version)
+        # if it's there but this is a new version, add this version
+        else:
+            if not version in histogramDictionary[histoName]:
+                histogramDictionary[histoName].append(version)
+
+    return histogramDictionary
+
+###############################################################################
+
+def addSummaryPlots(inputFileName,histogramDictionary):
+
+    for histoName, versions in histogramDictionary.items():
+        for version in versions:
+            summaryPlot = produceSummaryPlot(inputFileName,histoName,version)
+            directory = histoName.split("/")[0]
+            inputFile = TFile(inputFileName, "UPDATE")
+            inputFile.cd(directory)
+            print "adding",summaryPlot.GetName()
+            summaryPlot.Write()
+            inputFile.Close()
 
 ###############################################################################
 
@@ -398,17 +448,16 @@ def addCanvasToFile(canvas,inputFileName,directory=""):
 # return the canvas with the finished summary plot
 def produceSummaryPlot(inputFileName, pathToHistogram, version=0):
 
-    inputFile = TFile(inputFileName)                                                                                                                                                                                                
+    inputFile = TFile(inputFileName)
     plots = []
-    
+
     # get plots
     for roc in range(16):
         plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
-        plot = inputFile.Get(plotPath)
+        plot = inputFile.Get(plotPath).Clone()
         plotName = pathToHistogram.split("/")[1]  # remove directory from name
         plot.SetName(plotName + "_V" + str(version) + "_Summary" + str(roc))
         plots.append(plot)
-
     summaryPlot = makeMergedPlot(plots)
     zRange = findZRange(plots)
     setZRange(summaryPlot,zRange)
@@ -423,7 +472,7 @@ def produceSummaryPlot(inputFileName, pathToHistogram, version=0):
 def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, zRange=[], isBB3=False, version=0):
 
     plots = []
-        
+
     # get plots
     for roc in range(16):
         plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
@@ -449,7 +498,7 @@ def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, zRange=[], 
 
     outputFileName = pathToHistogram.replace("/","_")
     summaryCanvas.SaveAs(outputDir + "/" + outputFileName + ".png")
-    
+
     if isBB3:
         colors = array("i",[51+i for i in range(50)])
         gStyle.SetPalette(len(colors), colors);
