@@ -176,9 +176,9 @@ def findZRange(plots):
     # fix the ranges for PixelAlive type tests
     if zMax - zMin < 0.0001: 
         zMin=0
-        zMax=ceil(zMax)
+        #zMax=ceil(zMax)
 
-    return (zMin,zMax)
+    return (floor(zMin),ceil(zMax))
 
 ###############################################################################
 
