@@ -865,7 +865,7 @@ def makeXML(inputDir):
     moduleName=os.path.basename(inputDir.split('_ElComandanteTest_')[0])
     print 'moduleName:',moduleName
 
-    outputDir='/home/fnalpix2/dbUploads/'+moduleName
+    outputDir=os.environ['HOME']+'/dbUploads/'+moduleName
     if os.path.exists(outputDir):
         print 'WARNING: outputDir exists'
         if not DEBUG: exit()

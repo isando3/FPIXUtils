@@ -10,13 +10,14 @@ from Comparison import *
 from sys import argv
 from config import *
 from glob import glob
+import os
 
-#referenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
-#IVReferenceFile='/home/fnalpix2/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/000_IV_p17/ivCurve.log'
-referenceFile='/home/fnalpix2/ShareTestResults/elComandante/P-A-2-23_ElComandanteTest_2015-07-13_15h33m_1436819615/000_FPIXTest_p17/commander_FPIXTest.root'
-IVReferenceFile='/home/fnalpix2/ShareTestResults/elComandante/P-A-2-23_ElComandanteTest_2015-07-13_15h33m_1436819615/001_IV_p17/ivCurve.log'
+#referenceFile=os.environ['HOME']+'/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/001_FPIXTest_p17/commander_FPIXTest.root'
+#IVReferenceFile=os.environ['HOME']+'/ShareTestResults/P-A-2-23_ElComandanteTest_2015-06-30_14h09m_1435691373/000_IV_p17/ivCurve.log'
+referenceFile=os.environ['HOME']+'/ShareTestResults/elComandante/P-A-2-23_ElComandanteTest_2015-07-13_15h33m_1436819615/000_FPIXTest_p17/commander_FPIXTest.root'
+IVReferenceFile=os.environ['HOME']+'/ShareTestResults/elComandante/P-A-2-23_ElComandanteTest_2015-07-13_15h33m_1436819615/001_IV_p17/ivCurve.log'
 
-outputDir='/home/fnalpix2/forExperts'
+outputDir=os.environ['HOME']+'/forExperts'
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -36,9 +37,18 @@ if inputDirs:
     if testName=='FPIXTest': IVFiles=[glob(d+'/*_IV_*/ivCurve.log')[0] for d in inputDirs]
 else:
     for module in goodModuleNames:
-        print '/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
-        testFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'))[-1])
-        if testName=='FPIXTest': IVFiles.append(sorted(glob('/home/fnalpix2/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_IV_*/ivCurve.log'))[-1])
+        s=os.environ['HOME']+'/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
+        try: testFiles.append(sorted(glob(s))[-1])
+        except: 
+            print 'Found no files matching:',s
+            exit()
+
+        if testName=='FPIXTest': 
+            s=os.environ['HOME']+'/ShareTestResults/elComandante/'+module+'_ElComandanteTest_*/*_IV_*/ivCurve.log'
+            try: IVFiles.append(sorted(glob(s))[-1])
+            except:
+                print 'Found no files matching:',s
+                exit()
 
 if testName=='Pretest':
     theComparisons=[Comparison('Pretest/programROC_V0',testFiles,'Pretest/programROC_V0',referenceFile,outputDir,'All y values should be greater than 0'),

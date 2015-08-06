@@ -3,6 +3,7 @@
 from sys import argv
 import os
 import subprocess
+import socket
 from config import *
 
 affirmativeResponses= ['true', 'True', '1', 't', 'T', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh', 'most def']
@@ -45,13 +46,19 @@ if doCold: temp='-20'
 else:      temp='17'
 
 replacements=[['TESTS',testString[test].replace('@T','@'+temp)]]
-replacements.append(['NOBODY',shifter])
+
+replacements.append(['OPERATOR',shifter])
 for i in range(4):
     if moduleNames[i] is not '0':
         replacements.append(['USEM'+str(i),'True'])
         replacements.append(['MODULE'+str(i),moduleNames[i]])
     else:
         replacements.append(['USEM'+str(i),'False'])
+
+station=os.environ['HOME'].split('/')[2]
+replacements.append(['TESTCENTER',station])
+
+replacements.append(['HOSTNAME',socket.gethostname()])
 
 ini=Tini.replace('.default','')
 conf=Tconf.replace('.default','')
