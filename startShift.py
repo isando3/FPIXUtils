@@ -10,7 +10,7 @@ for i in range(4):
     if moduleName: moduleNames.append(moduleName)
     else: moduleNames.append('0')
 
-f=open('/home/fnalpix2/FPIXUtils/config.py','w')
+f=open(os.environ['HOME']+'/FPIXUtils/config.py','w')
 f.write('shifter="'+shifter+'"\n\n')
 
 f.write('moduleNames=[\n')
