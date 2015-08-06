@@ -7,12 +7,20 @@ Usage: ./checkPretest.py <input dir>
 """
 
 import ROOT
-ROOT.gErrorIgnoreLevel = ROOT.kWarning
+#ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
 #gStyle.SetOptStat(0)
 import math
 from config import *
 from fnmatch import fnmatch
+
+c=TCanvas('c','',1000,850)
+refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
+refPad.Draw()
+
+testPad=TPad('testPad','',0,0,.666,1)
+testPad.Divide(2,2)
+testPad.Draw()
 
 ################################################################
 ################################################################
@@ -32,6 +40,7 @@ def click(moduleNo):
             gPad.SetFillColor(kRed)
             gPad.Modified()
             gPad.Update()
+            
         else:
             goodModules+=[moduleNo]
             goodModules.sort()
@@ -40,6 +49,7 @@ def click(moduleNo):
             gPad.SetFillColor(kGreen)
             gPad.Modified()
             gPad.Update()
+
     #else: print gPad.GetEvent()
 
     return None
@@ -68,7 +78,7 @@ def makeIV(input):
     xMin-=binWidth/2
     xMax+=binWidth/2
     
-    h=TH1F('IV',';-U [V];-I [#muA]',nBins,xMin,xMax)
+    h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
     for i in range(len(values)): h.SetBinContent(i+1, -1*values[i][1])
     h.SetMaximum(5*h.GetMaximum())
     
@@ -108,16 +118,11 @@ class Comparison:
         else:
             testFiles=[TFile(f) for f in self.testFiles]
 
-        print testFiles
         nModules = len(self.testFiles)
         
         global goodModules
         goodModules=[]
         
-        c=TCanvas('c','',1000,850)
-
-        refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
-        refPad.Draw()
         refPad.cd()
 
         if self.hName=='IV/IV':
@@ -129,10 +134,10 @@ class Comparison:
             h=makeIV(self.refFile)
             file.Write()
             self.refTFile=file
-            
-            refPad.SetLogy()
         else:
             self.refTFile=TFile(self.refFile)
+
+        if self.hName=='IV/IV' or 'BB3' in self.hName: refPad.SetLogy()
 
         for k in self.refTFile.GetListOfKeys():
             dir=k.ReadObj()
@@ -145,21 +150,18 @@ class Comparison:
         ref.Draw('COLZ'*is2D)
 
         c.cd()
-        testPad=TPad('testPad','',0,0,.666,1)
-        testPad.Divide(int(math.ceil(nModules/2.)),2)
-        testPad.Draw()
-
-        print self.hName
 
         histograms=[]
         for i in range(nModules):
             testPad.cd(i+1)
+            gPad.SetFillColor(kWhite)
+            gPad.Modified()
+            gPad.Update()
 
-            if self.hName=='IV/IV': gPad.SetLogy()
+            if self.hName=='IV/IV' or 'BB3' in self.hName: gPad.SetLogy()
 
             h=None
 
-            print i
             for k in testFiles[i].GetListOfKeys():
                 dir=k.ReadObj()
                 if type(dir)!=type(TDirectoryFile()): continue
@@ -170,6 +172,9 @@ class Comparison:
 
             try:
                 h.SetTitle(self.goodModuleNames[i]+': '+h.GetTitle())
+                gPad.SetFillColor(kWhite)
+                gPad.Modified()
+                gPad.Update()
                 h.Draw('COLZ'*is2D)
                 histograms.append(h)
 
@@ -182,37 +187,54 @@ class Comparison:
                     l2=TLatex()
                     l2.DrawLatex(10,3E-6,"I(150V)/I(100V)="+str(round(I150/I100,2)))
 
+                gPad.SetFillColor(kWhite)
                 gPad.Modified()
                 gPad.Update()
                 gPad.SetFillColor(kRed)
                 gPad.Modified()
                 gPad.Update()
 
-                gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
+                if gPad.GetListOfExecs().GetSize()==0: gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
             except: 
                 print 'Missing plot for module',self.goodModuleNames[i]
                 
-
-        c.Modified()
-        c.Update()
+        #gPad.Modified()
+        #gPad.Update()
 
         while True:
             input=raw_input('\n'+self.info+'\n\n'+'Press enter to submit results\n'+'Enter "-1" to go back a test\n\n')
             if input=='-1': 
-                refPad.Close()
-                testPad.Close()
-                c.Close()
+                #refPad.Close()
+                #testPad.Close()
+                #c.Close()
                 return -1
 
             if input=='':
                 badModules=[x for x in range(nModules) if x not in goodModules]
                 for i in badModules:
-                    try: testPad.GetPad(i+1).SaveAs(self.outputDir+'/'+histograms[i].GetName()+'.pdf')
-                    except: pass
+                    #try: 
+                    gROOT.SetBatch(True)
+                    c2=TCanvas()
+                    if self.hName=='IV/IV' or 'BB3' in self.hName: c2.SetLogy()
+                    is2D=(type(histograms[i])==type(TH2D()))
+                    histograms[i].Draw('COLZ'*is2D)
+
+                    c2.SaveAs(self.outputDir+'/'+self.goodModuleNames[i]+'__'+histograms[i].GetName()+'.pdf')
+                    gROOT.SetBatch(False)
+                    #except: pass
                 badModuleNames=[self.goodModuleNames[i] for i in badModules]
 
-                refPad.Close()
-                testPad.Close()
-                c.Close()
+                #for i in range(nModules):
+                #    testPad.cd(i+1)
+                #refPad.Close()
+                #testPad.Close()
+                #c.Close()
+
+                if self.hName=='IV/IV' or 'BB3' in self.hName:
+                    for i in range(nModules):
+                        testPad.cd(i+1)
+                        gPad.SetLogy(False)
+                    refPad.SetLogy(False)
+                        
 
                 return badModuleNames
