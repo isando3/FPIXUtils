@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+import os
 
 print '\n'
 shifter=raw_input('Enter your name:\n')
@@ -7,6 +8,7 @@ moduleNames=[]
 for i in range(4):
     print '\n'
     moduleName=raw_input('Enter module '+str(i)+' (starting from rear of coldbox) name, or press enter for no module:\n')
+    moduleName=moduleName.upper()
     if moduleName: moduleNames.append(moduleName)
     else: moduleNames.append('0')
 
