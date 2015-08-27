@@ -178,9 +178,9 @@ def findZRange(plots):
     # fix the ranges for PixelAlive type tests
     if zMax - zMin < 0.0001:
         zMin=0
-        #zMax=ceil(zMax)
 
-    return (floor(zMin),ceil(zMax))
+    # round to nearest integer before returning
+    return (floor(zMin), ceil(zMax))
 
 ###############################################################################
 
@@ -388,10 +388,9 @@ def saveCanvasToNewFile(canvas,outputFileName):
 
 ###############################################################################
 
-
 # look through an input file (presumably a pxar output file)
 # find all roc summary plots and return a list of them
-def produceHistogramDictionary(inputFileName):
+def produce2DHistogramDictionary(inputFileName):
 
     histogramList = []
     inputFile = TFile(inputFileName)
@@ -430,15 +429,74 @@ def produceHistogramDictionary(inputFileName):
 
 ###############################################################################
 
-def addSummaryPlots(inputFileName,histogramDictionary):
+# look through an input file (presumably a pxar output file)
+# find all roc summary 1D distributions and return a list of them
+def produce1DHistogramDictionary(inputFileName):
+
+    histogramList = []
+    inputFile = TFile(inputFileName)
+
+    for dirKey in inputFile.GetListOfKeys():
+        if (dirKey.GetClassName() != "TDirectoryFile"):
+            continue
+        dir = dirKey.GetName()
+        inputFile.cd(dir)
+        for plotKey in gDirectory.GetListOfKeys():
+            if re.match ('TH1', plotKey.GetClassName()): # found a 1-D histogram
+                plotName = plotKey.GetName()
+                # only consider distributions made from 2D plots
+                if not plotName.startswith("dist_"):
+                    continue
+                # ignore summary plots from previous processings
+                if "Summary" in plotName:
+                    continue
+                pathToHistogram = dir+"/"+plotName
+                plot = inputFile.Get(pathToHistogram)
+                histogramList.append(pathToHistogram)
+    inputFile.Close()
+
+    # dictionary of histogram names, each entry containing the versions present
+    histogramDictionary = {}
+    for histogram in histogramList:
+        version = histogram[-1:]
+        histoName = histogram.split("_C")[0]
+        # if it's not already in the list, add it
+        if not histoName in histogramDictionary:
+            histogramDictionary[histoName] = []
+            histogramDictionary[histoName].append(version)
+        # if it's there but this is a new version, add this version
+        else:
+            if not version in histogramDictionary[histoName]:
+                histogramDictionary[histoName].append(version)
+
+    return histogramDictionary
+
+
+###############################################################################
+
+def add2DSummaryPlots(inputFileName,histogramDictionary):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
-            summaryPlot = produceSummaryPlot(inputFileName,histoName,version)
+            summaryPlot = produce2DSummaryPlot(inputFileName,histoName,version)
             directory = histoName.split("/")[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
-            print "adding",summaryPlot.GetName()
+            print "adding 2D plot:",summaryPlot.GetName()
+            summaryPlot.Write()
+            inputFile.Close()
+
+###############################################################################
+
+def add1DSummaryPlots(inputFileName,histogramDictionary):
+
+    for histoName, versions in histogramDictionary.items():
+        for version in versions:
+            summaryPlot = produce1DSummaryPlot(inputFileName,histoName,version)
+            directory = histoName.split("/")[0]
+            inputFile = TFile(inputFileName, "UPDATE")
+            inputFile.cd(directory)
+            print "adding 1D plot:",summaryPlot.GetName()
             summaryPlot.Write()
             inputFile.Close()
 
@@ -446,7 +504,7 @@ def addSummaryPlots(inputFileName,histogramDictionary):
 
 # pass in the input file and location of relevant histogram
 # return the canvas with the finished summary plot
-def produceSummaryPlot(inputFileName, pathToHistogram, version=0):
+def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0):
 
     inputFile = TFile(inputFileName)
     plots = []
@@ -465,6 +523,46 @@ def produceSummaryPlot(inputFileName, pathToHistogram, version=0):
     summaryCanvas = setupSummaryCanvas(summaryPlot)
 
     return summaryCanvas
+
+# pass in the input file and location of relevant histogram
+# return merged 1D summary plot
+def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0):
+
+    inputFile = TFile(inputFileName)
+    plots = []
+
+    # get plots
+    for roc in range(16):
+        plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
+        plot = inputFile.Get(plotPath).Clone()
+        plotName = pathToHistogram.split("/")[1]  # remove directory from name
+        plots.append(plot)
+
+    summaryPlot = plots[0].Clone()
+    summaryPlot.SetDirectory(0)
+    newName = summaryPlot.GetName().split("_C")[0]
+    summaryPlot.SetName(newName + "_V" + str(version) + "_Summary")
+    oldTitle = summaryPlot.GetTitle()
+    if "(C" in oldTitle:
+        newTitle1 = oldTitle.split("(C")[0][:-1]
+        newTitle2 = oldTitle.split("(C")[1][2:]
+    else:
+        newTitle1 = oldTitle.split("_C")[0]
+        newTitle2 = oldTitle.split("_C")[1][1:]
+    summaryPlot.SetTitle(newTitle1 + newTitle2)
+    for roc in range(1,16):
+        summaryPlot.Add(plots[roc])
+
+#    functions = []
+#    for function in summaryPlot.GetListOfFunctions():
+#        functions.append(function)
+#    for function in functions:
+#        if function.InheritsFrom('TArrow'):
+#            print function
+#            function.Delete()
+#            print "deleted"
+
+    return summaryPlot
 
 ###############################################################################
 

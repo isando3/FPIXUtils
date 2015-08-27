@@ -15,5 +15,10 @@ from moduleSummaryPlottingTools import *
 
 gROOT.SetBatch()
 
-dictionary = produceHistogramDictionary(arguments.inputFileName)
-addSummaryPlots(arguments.inputFileName, dictionary)
+# add together appropriate 1D plots per ROC into a single 1D summary
+dictionary1D = produce1DHistogramDictionary(arguments.inputFileName)
+add1DSummaryPlots(arguments.inputFileName, dictionary1D)
+
+# arrange 2D ROC plots into a single 2D summary plot
+dictionary2D = produce2DHistogramDictionary(arguments.inputFileName)
+add2DSummaryPlots(arguments.inputFileName, dictionary2D)
