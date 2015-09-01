@@ -79,7 +79,7 @@ def makeIV(input):
     xMax+=binWidth/2
     
     h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
-    for i in range(len(values)): h.SetBinContent(i+1, -1*values[i][1])
+    for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
     h.SetMaximum(5*h.GetMaximum())
     
     return h

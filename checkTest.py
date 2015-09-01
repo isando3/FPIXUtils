@@ -91,10 +91,12 @@ if __name__=='__main__':
     for result in results:
         badModules=badModules|set(result)
     badModules=list(badModules)
-    if len(badModules)>0:
-        print 'Replace the following module(s) and repeat pre-test:'
-        for m in badModules:
-            print '    - '+str(m)
-    else:
-        print 'Rock on'
-        
+
+    if testName=='Pretest':
+        if len(badModules)>0:
+            print 'Replace the following module(s) and repeat pre-test:'
+            for m in badModules:
+                print '    - '+str(m)
+        else:
+            print 'Rock on'
+
