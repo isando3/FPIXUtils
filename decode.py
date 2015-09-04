@@ -88,3 +88,4 @@ else:
         if bits[48]=='1': l.append('auto reset sent')
         if bits[49]=='1': l.append('PKAM reset sent')
         s='         (Event Info: '+', '.join(l)+')'
+        print s
