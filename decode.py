@@ -75,29 +75,17 @@ else:
     print eventinfo,
     if eventinfo==eventinforef:
         print'         (Event Info)'
-    elif bits[40]== '1':
-        if bits[42]=='1':
-            if bits[46]=='1':
-                print'         (Event Info: No Token Pass Sync Error)'
-            else:
-                print'         (Event Info: No Token Pass and Sync Error, please reset the timing)'
-        elif bits[46]=='1':
-            print'         (Event Info: No Token Pass and Stack full.)'
-        else:
-            print'         (Event Info: No Token Pass)'
-    elif bits[42]=='1':
-        if bits[46]=='1':
-            print'         (Event Info: Sync Error and Stack Full, please reset the timing)'
-        else:
-            print'         (Event Info: Sync Error, please reset the timing)'
-    elif bits[46]=='1':
-        print'         (Event Info: Stack Full!)'
     else:
-        print '        (Event Info :',
-        checkCode(eventinforef,eventinfo)
-    print stackcount,
-    if stackcount == stackcountref: print '             (Stack Count)'
-    else:
-        print '             (Stack Count :',
-        checkCode(stackcountref,stackcount)
-
+        l=[]
+        if bits[40]=='1': l.append('no token pass')
+        if bits[41]=='0': l.append('no TBM reset issued')
+        if bits[42]=='0': l.append('no ROC reset issued')
+        if bits[43]=='1': l.append('sync error')
+        if bits[44]=='1': l.append('sync trigger')
+        if bits[45]=='1': l.append('clear trig cntr')
+        if bits[46]=='0': l.append('no cal trigger')
+        if bits[47]=='1': l.append('stack full')
+        if bits[48]=='1': l.append('auto reset sent')
+        if bits[49]=='1': l.append('PKAM reset sent')
+        s='         (Event Info: '+', '.join(l)+')'
+        print s
