@@ -1,0 +1,22 @@
+% ----------------------------------------------------------------------
+
+\subsection{\bb Test}
+\label{ss:bb}
+
+\subsubsection{Purpose}
+
+The \bb test is meant to flag any problems with the bump bonds that connect the sensor to the ROCs
+and form the path for the charge generated in the silicon sensor to be recorded by the ROCs.
+This test takes advantage of a parallel route designed for the calibration signal in the ROC.
+This route can be seen at the top left of Figure~\ref{fig:puc}, 
+connecting the source of the \vcal calibration pulse to the ``top metal pad'' by closing the switch labelled ``sensor calib'' instead of the standard ``calib'' switch.
+The ``top metal pad'' is on near the top edge of the \roc on the side facing the sensor.
+The calibration pulse can pass via capacitive coupling from this pad, 
+across the \roc-sensor air gap, into the silicon sensor.
+The calibration pulse then makes its way back into the \roc via the bump bond and can be read out as normal.
+Using this signal path that contains the bump bond, 
+the presence of the bump and the quality of its electrical connection from the sensor to the \roc can be tested.
+
+\subsubsection{\textcolor{red}{Methodology}}
+\subsubsection{\textcolor{red}{Output}}
+

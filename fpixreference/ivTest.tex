@@ -1,0 +1,24 @@
+% ----------------------------------------------------------------------
+
+\subsection{\iv Test}
+\label{ss:iv}
+
+\subsubsection{Purpose}
+
+The \iv test is unique in that it doesn't directly utilize the read-out functionality of the \roc.
+In fact, this test can be performed on a sensor before it's even bump-bonded onto a set of \rocs.
+In principle, the silicon sensor acts like a diode, 
+allowing current to flow in the ``forward'' direction but not in the ``reverse'' direction.
+A potential difference is created across the sensor, in the plane transverse to the sensor face,
+by applying a ``reverse bias'' voltage.
+This potential difference is what draws the electrons created by a charged particle passing through the sensor 
+towards the bump-bond to be collected.
+For a given sensor, the reverse bias has an operating range.
+If the bias is too small, the sensor will not be depleted of free electrons and will not operate properly.
+If the bias is too large, the sensor will break down and start acting like a resistor instead of a diode.
+The \iv test is meant to determine the operating range of the sensor, 
+bounded by the depletion voltage (lower limit) and the breakdown voltage (upper limit).
+
+\subsubsection{\textcolor{red}{Methodology}}
+\subsubsection{\textcolor{red}{Output}}
+

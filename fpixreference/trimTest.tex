@@ -1,0 +1,17 @@
+% ----------------------------------------------------------------------
+\subsection{\trimming Test}
+\label{ss:trimming}
+
+\subsubsection{Purpose}
+
+The \trimming test accounts for variations in the sensitivities of the 4,160 PUCs within a \roc.
+By using the combined effect of the \vthrcomp, \vtrim, and \trimbit~\dacs,
+it attempts to calibrate every PUC to the same threshold with respect to the calibration pulse strength.
+These \dacs can be seen in Figure~\ref{fig:puc} as inputs into the ``trimming'' and ``comparator'' elements of the PUC.
+Once a module is ``trimmed'', all pixels should turn on at a user-defined threshold (default is \vcal = 35 (low range)).
+Thus, input signals with less strength than this threshold will not fire the comparator and will not be registered as a hit.
+This ensures that all pixels within a module have a uniform level of zero-suppression.
+
+\subsubsection{\textcolor{red}{Methodology}}
+\subsubsection{\textcolor{red}{Output}}
+

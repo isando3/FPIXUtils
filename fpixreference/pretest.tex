@@ -1,0 +1,53 @@
+% ----------------------------------------------------------------------
+\subsection{\pretest}
+\label{ss:pretest}
+
+\subsubsection{Purpose}
+
+The \pretest is meant to put the module into an operational state in preparation for more specific tests.
+The basic operation of the \roc is checked and some of the default \dac settings are tested.
+
+\subsubsection{\textcolor{red}{Methodology}}
+
+In the {\tt ProgramRoc} subtest, the ``programmability'' of the \roc is tested.
+The value of the current drawn by the analog amplifiers in all the PUCs (\iana) is measured.
+This is done first with the nominal value of \vana, and then again with \vana set to zero.
+The difference in \iana from these two measurements should be non-zero,
+signifying that \vana is actually being applied to the \roc.
+This implies the \roc is capable of receiving commands to alter \dac values, i.e. it is programmable.
+\\\\
+The {\tt SetVana} subtest sets the \vana~\dac so that the total current draw (\iana) meets a target value (default is 24 mA).
+\vana is iteratively adjusted from its default value until it comes within 0.25 mA of the target 
+or until 10 iterations have been performed.
+\\\\
+The {\tt SetTimings} test \textcolor{red}{FIXME – talk to Doug}
+\\\\
+The {\tt SetVthrCompCalDel} subtest optimizes the values of the \vthrcomp and \caldel~\dacs.
+A sample pixel is chosen from within each \roc for this test and is assumed to be representative of normal pixel performance.
+A scan is performed over \vthrcomp and \caldel to determine which combinations of them put the pixel into an operational state.
+At each point in the 256 $\times$ 256 value parameter space,
+a number of calibration pulses (default is 5) are sent to the PUC of the sample pixel.
+The number of hits successfully recorded by the pixel is then calculated,
+and the results are displayed in the 2D plane of \vthrcomp vs. \caldel values
+in what is referred to as a ``tornado plot'' (they looked more like tornados with the older, analog \roc).
+By default \vthrcomp is set 50 units higher than the lower edge of the operating plateau,
+and \caldel is set halfway between the left and right edges of the plateau at the chosen \vthrcomp value.
+
+\subsubsection{\textcolor{red}{Output}}
+
+In the tornado plot in Figure~\ref{fig:tornado}, the red region corresponds to 100\% efficiency \textendash\xspace
+the operational region for the PUC with respect to \vthrcomp and \caldel.
+Recall that \vthrcomp is inversely related to the minimum pulse height required to fire the comparator.
+The region of \vthrcomp $>$ 150 has zero efficiency because
+the threshold of the comparator is so low that the pixel is constantly firing on electronic noise,
+and when the calibration pulse is injected,
+the pixel is already in an unresponsive state waiting to be read out.
+The black dot centered within the white square denotes the chosen working point for these two parameters.
+
+\begin{figure*}[hbtp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/tornado_plot.pdf}
+\caption{2D efficiency map as a function of \vthrcomp and \caldel~\dacs, with 5 triggers per point.}
+\label{fig:tornado}
+\end{center}
+\end{figure*}

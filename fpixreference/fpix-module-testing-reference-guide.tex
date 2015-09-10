@@ -1,0 +1,101 @@
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{scrartcl}
+
+\usepackage{siunitx} % Provides the \SI{}{} command for typesetting SI units
+\usepackage{booktabs}
+
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage{graphicx} % Required for the inclusion of images
+\usepackage{listings}
+\usepackage[toc, nonumberlist]{glossaries} % must go after hyperref, so entries are clickable
+%\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+%\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\input{symbols.tex}
+
+% Load glossary
+%\loadglsentries{usermanual/glossary.tex}
+
+\renewcommand*\glsgroupskip{}
+\renewcommand*{\glspostdescription}{.\vspace{-0.5\baselineskip}}
+%\makeglossaries
+
+\title{FPix Module Testing Reference Guide} % Title
+
+\author{
+J. Antonelli, 
+P. Merkel
+} % Author names
+
+\date{\today} % Date for the report
+
+\begin{document}
+
+\maketitle % Insert the title, author and date
+
+
+\begin{abstract}
+The document provides an overview of the module testing methodology and procedures used for the CMS Forward Pixel Phase I Upgrade project. 
+It briefly introduces the individual components of a pixel module and describes the module assembly procedures.
+It then describes in greater detail all the individual tests performed during module testing and calibration, discussed in the other that the tests are normally performed. 
+Finally, it describes the standard procedure for testing modules at Fermilab and saving the test results for visualization and grading purposes.
+\\\\\\\\
+TO DO LIST 9-10-2015:
+\\
+Note: \textcolor{red}{RED text implies the section is incomplete.}
+\begin{enumerate}
+\item finish methodology section for each test
+\item write testing procedure section
+\item update to latest pxar release and run full test to get example output
+\item write output section for each test
+\item write database uploading section - need input from Doug/John
+\item write grading scheme section - need input from Petra/Doug/John
+\item integrate testing sections into pxar git repo
+\end{enumerate}
+
+\end{abstract}
+
+\newpage
+% Table Of Contents
+\tableofcontents
+
+\newpage
+\input{moduleComponents.tex}
+%\newpage
+\input{moduleConstruction.tex}
+%\newpage
+\input{pixelUnitCell.tex}
+%\newpage
+\input{tests.tex}
+%\newpage
+\input{moduleTesting.tex}
+\input{resultsUploading.tex}
+\input{moduleGrading.tex}
+
+%\newpage
+%\printglossaries
+
+%\newpage
+%\clearpage
+%\phantomsection
+%\addcontentsline{toc}{chapter}{References}
+%\addcontentsline{toc}{section}{References}
+%\begin{thebibliography}{99}
+%  \input{usermanual/references.tex}
+%\end{thebibliography}  
+
+
+\end{document}
