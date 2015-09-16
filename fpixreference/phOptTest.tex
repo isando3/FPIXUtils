@@ -1,4 +1,7 @@
 % ----------------------------------------------------------------------
+
+\newpage
+
 \subsection{\phopt Test}
 \label{ss:phoptimization}
 
@@ -19,5 +22,129 @@ Secondly, the pixel with the smallest pulse height response should have a reason
 i.e. the lowest \vcal value for which the pixel fires.
 
 \subsubsection{\textcolor{red}{Methodology}}
-\subsubsection{\textcolor{red}{Output}}
+\subsubsection{Output}
+
+% finding highest/lowest gain pixels
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_minphmap.pdf}
+  \caption{}
+  \label{fig:phopt_minphmap}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_dist_minphmap.pdf}
+  \caption{}
+  \label{fig:phopt_dist_minphmap}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_maxphmap.pdf}
+  \caption{}
+  \label{fig:phopt_maxphmap}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_dist_maxphmap.pdf}
+  \caption{}
+  \label{fig:phopt_dist_maxphmap}
+\end{minipage}
+\end{figure}
+
+% getting maps for optimization
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_minphvsdacdac_th2.pdf}
+  \caption{}
+  \label{fig:phopt_minphvsdacdac_th2}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_maxphvsdacdac_th2.pdf}
+  \caption{}
+  \label{fig:phopt_maxphvsdacdac_th2}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_solphvsdacdac_th2.pdf}
+  \caption{}
+  \label{fig:phopt_solphvsdacdac_th2}
+\end{minipage}
+\end{figure}
+
+
+% gain plots for highest/lowest gain pixels with optimized DACs
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_PH_c5_r68.pdf}
+  \caption{}
+  \label{fig:phopt_PH_c5_r68}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_PH_c3_r15.pdf}
+  \caption{}
+  \label{fig:phopt_PH_c3_r15}
+\end{minipage}
+\end{figure}
+
+
+% doing scans at three points in vcal
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_PH_mapLowVcal.pdf}
+  \caption{}
+  \label{fig:phopt_PH_mapLowVcal}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_dist_PH_mapLowVcal.pdf}
+  \caption{}
+  \label{fig:phopt_dist_PH_mapLowVcal}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_PH_mapVcal50.pdf}
+  \caption{}
+  \label{fig:phopt_PH_mapVcal50}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_dist_PH_mapVcal50.pdf}
+  \caption{}
+  \label{fig:phopt_dist_PH_mapVcal50}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_PH_mapHiVcal.pdf}
+  \caption{}
+  \label{fig:phopt_PH_mapHiVcal}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/phopt_dist_PH_mapHiVcal.pdf}
+  \caption{}
+  \label{fig:phopt_dist_PH_mapHiVcal}
+\end{minipage}
+\end{figure}
 

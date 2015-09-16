@@ -32,9 +32,18 @@ a number of calibration pulses (default is 5) are sent to the PUC of the sample 
 The number of hits successfully recorded by the pixel is then calculated,
 and the results are displayed in the 2D plane of \vthrcomp vs. \caldel values
 in what is referred to as a ``tornado plot'' (they looked more like tornados with the older, analog \roc).
+Figure~\ref{fig:pretest_pretestVthrCompCalDel_c12_r22} shows a tornado plot.
+The red region corresponds to 100\% efficiency \textendash\xspace 
+the operational region for the PUC with respect to \vthrcomp and \caldel.
+Recall that \vthrcomp is inversely related to the minimum pulse height required to fire the comparator.
+The region of \vthrcomp $>$ 150 has zero efficiency because
+the threshold of the comparator is so low that the pixel is constantly firing on electronic noise,
+and when the calibration pulse is injected,
+the pixel is already in an unresponsive state waiting to be read out.
 By default \vthrcomp is set 50 units higher than the lower edge of the operating plateau,
 and \caldel is set halfway between the left and right edges of the plateau at the chosen \vthrcomp value.
-The output for this subtest is shown in Figures~\ref{fig:pretest_pretestVthrCompCalDel_c12_r22} and~\ref{fig:pretest_pretestCalDel}.
+The black dot centered within the white square denotes the chosen working point for these two parameters.
+Figure~\ref{fig:pretest_pretestCalDel} shows the values of \caldel chosen by the test.
 
 \subsubsection{Output}
 
@@ -43,7 +52,7 @@ The output for this subtest is shown in Figures~\ref{fig:pretest_pretestVthrComp
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/pretest_programROC.pdf}
   \caption{Created by the {\tt ProgramRoc} subtest. 
-    Plotted is the difference in \iana is for cases of \vana on/off, as a function of \roc number.
+    Plotted is the difference in \iana for cases of \vana on/off, as a function of \roc number.
     Values for programmable \rocs are non-zero.}
   \label{fig:pretest_programROC}
 \end{minipage}
@@ -79,14 +88,7 @@ The output for this subtest is shown in Figures~\ref{fig:pretest_pretestVthrComp
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/pretest_pretestVthrCompCalDel_c12_r22.pdf}
-  \caption{The red region corresponds to 100\% efficiency \textendash\xspace
-    the operational region for the PUC with respect to \vthrcomp and \caldel.
-    Recall that \vthrcomp is inversely related to the minimum pulse height required to fire the comparator.
-    The region of \vthrcomp $>$ 150 has zero efficiency because
-    the threshold of the comparator is so low that the pixel is constantly firing on electronic noise,
-    and when the calibration pulse is injected,
-    the pixel is already in an unresponsive state waiting to be read out.
-    The black dot centered within the white square denotes the chosen working point for these two parameters.}
+  \caption{Tornado plot (efficiency in the \vthrcomp vs. \caldel plane).}
   \label{fig:pretest_pretestVthrCompCalDel_c12_r22}
 \end{minipage}
 \hspace{0.3cm}

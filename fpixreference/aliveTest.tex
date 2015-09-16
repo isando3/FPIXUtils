@@ -26,5 +26,39 @@ In the {\tt AddressDecoding} test, the same efficiency measurement is performed,
 but the order of the resulting data is checked.
 If the address of a given pixel is out of order, the recorded hit is given a negative pulse height value.
 Pixels with negative hits are flagged as faulty.
+\\\\
+To distinguish between dead pixels and otherwise faulty pixels in output of the {\tt Mask} and {\tt AddressDecoding} tests, 
+a special 3-state color scheme is used:  
+Entries with a weight of 1 denote good pixels,
+entries with a weight of 0 denote dead but not faulty pixels,
+and entries with a weight of -1 denote faulty pixels, i.e. masking (decoding) errors for the {\tt Mask} ({\tt AddressDecoding}) test.
+Figures~\ref{fig:alive_PixelAlive}-\ref{fig:alive_AddressDecodingTest} show the output from the \alivetest test.
 
-\subsubsection{\textcolor{red}{Output}}
+\subsubsection{Output}
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/alive_PixelAlive.pdf}
+  \caption{Created by the {\tt Alive} test. 
+  Efficiency corresponds to bin content divided by number of triggers (here 10).}
+  \label{fig:alive_PixelAlive}
+\end{minipage}
+\hspace{0.3cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/alive_MaskTest.pdf}
+  \caption{Created by the {\tt Mask} test.
+  1 (good), 0 (dead), -1 (mask problem).}
+  \label{fig:alive_MaskTest}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[!Hp]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=1.0\textwidth]{figures/alive_AddressDecodingTest.pdf}
+  \caption{Created by the {\tt AddressDecoding} test.
+  1 (good), 0 (dead), -1 (mask problem).}
+  \label{fig:alive_AddressDecodingTest}
+\end{minipage}
+\end{figure}
