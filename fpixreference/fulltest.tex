@@ -1,0 +1,22 @@
+% ----------------------------------------------------------------------                                                                          
+
+\newpage
+
+\subsection{\fulltest}
+\label{ss:fulltest}
+
+The suite of tests that is run to qualify pixel modules is called
+\fulltest. It is a sequential test suite that is run multiple times at
+different temperatures. It is composed of the following tests, which
+are described in more detail in the previous sections.
+\begin{itemize}
+  \item \pretest: configures the basic \dacs to ensure that the \roc is in a basically funtioning state.
+  \item \alivetest: checks that all pixels respond to an input signal and have the correct address.
+  \item \trimming: set all pixels to turn on with the same input signal strength
+  \item \phopt: optimizes the dynamic range of the output ADC
+  \item \gainped: measures the linearity of the ADC response
+  \item \scurves: validates the trimming and measures noise
+  \item \bb: flags potential issues in bump bond quality
+\end{itemize}
+In addition to the \fulltest, each module undergoes an \iv test that measures leakage current as a function of bias voltage.
+For technical reasons described in Section~\ref{s:testing}, this test is performed separately from the \fulltest.

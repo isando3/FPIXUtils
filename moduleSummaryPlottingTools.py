@@ -271,6 +271,8 @@ def setupSummaryCanvas(summaryPlot):
 
             line1 = TLine()
             line2 = TLine()
+            rocBoundaryLine = TLine()
+            rocBoundaryLine.SetLineStyle(3)
             if i is 0:
                 line1.DrawLine(x1,
                                tickLength/5.,
@@ -280,6 +282,11 @@ def setupSummaryCanvas(summaryPlot):
                                MODULE_Y_PLOT_SIZE - tickLength/5.,
                                x2,
                                MODULE_Y_PLOT_SIZE + 2*tickLength)
+                if roc is not 0:  # no vertical line at left module edge
+                    rocBoundaryLine.DrawLine(x1,
+                                             0,
+                                             x1,
+                                             MODULE_Y_PLOT_SIZE)
             else:
                 line1.DrawLine(x1,
                                tickLength/5.,
@@ -292,6 +299,13 @@ def setupSummaryCanvas(summaryPlot):
 
         # move to next ROC
         x_start += ROC_PLOT_SIZE
+
+    rocBoundaryLine = TLine()
+    rocBoundaryLine.SetLineStyle(3)
+    rocBoundaryLine.DrawLine(0,
+                             MODULE_Y_PLOT_SIZE/2.,
+                             MODULE_X_PLOT_SIZE,
+                             MODULE_Y_PLOT_SIZE/2.)
 
     # y-axis ticks
     # this should be easier since 80 is divisible by 10

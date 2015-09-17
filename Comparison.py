@@ -11,6 +11,7 @@ import ROOT
 from ROOT import *
 #gStyle.SetOptStat(0)
 import math
+import os
 from config import *
 from fnmatch import fnmatch
 
@@ -79,7 +80,7 @@ def makeIV(input):
     xMax+=binWidth/2
     
     h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
-    for i in range(len(values)): h.SetBinContent(i+1, -1*values[i][1])
+    for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
     h.SetMaximum(5*h.GetMaximum())
     
     return h
@@ -90,11 +91,11 @@ def makeIV(input):
 
 class Comparison:
     
-    def __init__(self, hName, testFiles, refName, referenceFile, outputDir, info='All plots should resemble the reference plot'):
+    def __init__(self, hName, testFiles, refName, referenceFile, info='All plots should resemble the reference plot'):
         self.hName=hName
         self.testFiles=testFiles
         self.refFile=referenceFile
-        self.outputDir=outputDir
+        #self.outputDir=outputDir
         self.info=info
 
         self.goodModuleNames=[f.split('_ElComandanteTest')[0].split('/')[-1] for f in self.testFiles]
@@ -141,6 +142,9 @@ class Comparison:
 
         for k in self.refTFile.GetListOfKeys():
             dir=k.ReadObj()
+            if fnmatch(dir.GetName(),self.hName.split('/')[-1]) and not 'IV' in self.hName:
+                ref=dir.Clone('REF__'+self.hName.split('/')[-1])
+                break
             if type(dir)!=type(TDirectoryFile()): continue
             for key in dir.GetListOfKeys():
                 if fnmatch(key.GetName(),self.hName.split('/')[-1]):
@@ -164,10 +168,13 @@ class Comparison:
 
             for k in testFiles[i].GetListOfKeys():
                 dir=k.ReadObj()
+                if fnmatch(dir.GetName(),self.hName.split('/')[-1]) and not 'IV' in self.hName:
+                    h=dir.Clone(self.hName.split('/')[-1])
+                    break
                 if type(dir)!=type(TDirectoryFile()): continue
                 for key in dir.GetListOfKeys():
                     if fnmatch(key.GetName(),self.hName.split('/')[-1]):
-                        h=key.ReadObj().Clone(self.hName.split('/')[-1])
+                        h=key.ReadObj().Clone()
                         break
 
             try:
@@ -219,7 +226,9 @@ class Comparison:
                     is2D=(type(histograms[i])==type(TH2D()))
                     histograms[i].Draw('COLZ'*is2D)
 
-                    c2.SaveAs(self.outputDir+'/'+self.goodModuleNames[i]+'__'+histograms[i].GetName()+'.pdf')
+                    debugDir=os.path.dirname(self.testFiles[i])+'/debug'
+                    if not os.path.isdir(debugDir): os.makedirs(debugDir)
+                    c2.SaveAs(debugDir+'/'+histograms[i].GetName()+'.pdf')
                     gROOT.SetBatch(False)
                     #except: pass
                 badModuleNames=[self.goodModuleNames[i] for i in badModules]
