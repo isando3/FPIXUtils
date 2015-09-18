@@ -272,7 +272,7 @@ def setupSummaryCanvas(summaryPlot):
             line1 = TLine()
             line2 = TLine()
             rocBoundaryLine = TLine()
-            rocBoundaryLine.SetLineStyle(3)
+            rocBoundaryLine.SetLineStyle(2)
             if i is 0:
                 line1.DrawLine(x1,
                                tickLength/5.,
@@ -301,7 +301,7 @@ def setupSummaryCanvas(summaryPlot):
         x_start += ROC_PLOT_SIZE
 
     rocBoundaryLine = TLine()
-    rocBoundaryLine.SetLineStyle(3)
+    rocBoundaryLine.SetLineStyle(2)
     rocBoundaryLine.DrawLine(0,
                              MODULE_Y_PLOT_SIZE/2.,
                              MODULE_X_PLOT_SIZE,
@@ -488,7 +488,7 @@ def produce1DHistogramDictionary(inputFileName):
 
 ###############################################################################
 
-def add2DSummaryPlots(inputFileName,histogramDictionary):
+def add2DSummaryPlots(inputFileName, histogramDictionary):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
@@ -496,13 +496,14 @@ def add2DSummaryPlots(inputFileName,histogramDictionary):
             directory = histoName.split("/")[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
-            print "adding 2D plot:",summaryPlot.GetName()
+            gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
+            print "adding 2D plot: "+directory+"/"+summaryPlot.GetName()
             summaryPlot.Write()
             inputFile.Close()
 
 ###############################################################################
 
-def add1DSummaryPlots(inputFileName,histogramDictionary):
+def add1DSummaryPlots(inputFileName, histogramDictionary):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
@@ -510,7 +511,8 @@ def add1DSummaryPlots(inputFileName,histogramDictionary):
             directory = histoName.split("/")[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
-            print "adding 1D plot:",summaryPlot.GetName()
+            gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
+            print "adding 1D plot: "+directory+"/"+summaryPlot.GetName()
             summaryPlot.Write()
             inputFile.Close()
 
