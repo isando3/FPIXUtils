@@ -6,9 +6,9 @@
 The bulk of module testing concerns the pixel unit cell (PUC) of the \roc.  
 For this reason, it's useful to discuss the design and operation of the PUC.  
 Figure~\ref{fig:puc} shows the elements of the PUC, the double column periphery, and the controller and interface block.  
-It is labelled with some of the \dac registers that are most relevant for module testing.  
+It is labeled with some of the \dac registers that are most relevant for module testing.  
 Terms in black boxes represent programmable \dac registers on the \roc.
-While all \dac memory registers are \roc-wide and exist at the periphery (except the 4 trim bits), 
+While all \dac memory registers are \roc-wide and exist at the periphery (except the 4 \trimbits), 
 the diagram shows \dacs next to the circuit element they directly affect.
 For the remainder of this document, these \dac registers will be denoted with \textcolor{blue}{blue text}.  
 The process of calibrating a module is largely comprised of tests that find and set the optimal values for these parameters.  
@@ -23,8 +23,8 @@ The process of calibrating a module is largely comprised of tests that find and 
 
 The signal processing within the PUC begins with an amplifier and shaper that convert the incident current into a reformatted voltage signal.  
 The signal is then fed into a voltage comparator, 
-the threshold of which is controlled by \vthrcomp with additional inputs possible from \vtrim and the \trimbit.  
-If the input signal exceeds the comparator’s threshold, 
+the threshold of which is controlled by \vthrcomp with additional inputs possible from \vtrim and the \trimbits.  
+If the input signal exceeds the comparator's threshold, 
 the signal is stored for readout and the pixel notifies the logic at the periphery of the double column 
 that a hit has been registered and is ready to be transferred to the data buffer at the periphery.   
 This initiates the double column drain mechanism, 
@@ -47,13 +47,13 @@ The choice of low/high range is set via the \textcolor{blue}{CtrlReg} \dac. & No
 \hline
 \vana & Voltage supplied to the analog part of the PUC & \pretest ({\tt SetVana}) \\
 \hline
-\caldel & Delay between sending and reading out calibration signal & \pretest ({\tt SetVthrCompCalDel}) \\
+\caldel & Delay in sending out calibration pulse with respect to the clock signal & \pretest ({\tt SetVthrCompCalDel}) \\
 \hline
 \vthrcomp & Voltage supplied to the comparator unit, inversely related to the signal voltage required to fire the comparator (i.e. the comparator threshold) & \pretest, \trimming \\
 \hline
-\vtrim & Additional voltage supplied to the comparator unit to decrease the threshold (in conjuction with the \trimbit) & \trimming \\
+\vtrim & Additional voltage supplied to the comparator unit to decrease the threshold (in conjunction with the \trimbits) & \trimming \\
 \hline
-\trimbit & 4 bits per PUC that decrease the threshold of the comparator unit & \trimming \\
+\trimbits & 4 bits per PUC that decrease the threshold of the comparator unit & \trimming \\
 \hline
 \phoffset & Adds a constant offset to the pulse height & \phopt \\
 \hline

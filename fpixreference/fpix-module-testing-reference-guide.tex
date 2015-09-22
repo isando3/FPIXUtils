@@ -14,12 +14,22 @@
 \usepackage{array}
 \usepackage[indention=0cm,format=plain]{caption}
 
+\usepackage[section]{placeins}
+
 \usepackage{graphicx} % Required for the inclusion of images
 \usepackage{listings}
 \usepackage[toc, nonumberlist]{glossaries} % must go after hyperref, so entries are clickable
 %\setlength\parindent{0pt} % Removes all indentation from paragraphs
 
 %\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+
+\makeatletter
+\AtBeginDocument{%
+  \expandafter\renewcommand\expandafter\subsection\expandafter{%
+    \expandafter\@fb@secFB\subsection
+  }%
+}
+\makeatother
 
 %----------------------------------------------------------------------------------------
 %	DOCUMENT INFORMATION
@@ -56,27 +66,6 @@ Finally, it describes the standard procedure for testing modules at Fermilab and
 Note: This document can be edited by checking out the package here: 
 \\
 https://github.com/jstupak/FPIXUtils
-\\\\\\\\
-TO DO LIST 9-15-2015:
-\\
-Note: \textcolor{red}{RED text implies the section is incomplete.}
-\begin{enumerate}
-\item methodology for \trimming test
-\item plot captions \trimming for test
-
-\item methodology for \phopt test
-\item plot captions for \phopt test
-
-\item methodology for \gainped test
-\item plot captions for \gainped test
-
-\item methodology for \scurves test
-
-\item methodology for \bb test
-
-\item integrate testing sections into pxar git repo
-\end{enumerate}
-
 \end{abstract}
 
 \newpage

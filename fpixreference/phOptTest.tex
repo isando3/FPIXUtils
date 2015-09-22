@@ -13,89 +13,136 @@ It can be seen in the bottom right box of Figure~\ref{fig:puc}.
 The two \dacs used to configure the ADC are \phoffset and \phscale.
 \phoffset adds a constant offset to the pulse height measurement,
 while \phscale effectively sets the gain of the ADC.
-The \phopt test is designed to optimize these \dacs based on the most and least sensitive pixels in a given \roc.
-There are two constraints used to simultaneously find a solution for \phoffset and \phscale.
-First, the pixel with biggest pulse height reponse should saturate (PH = 255) at a user-defined signal strength
-(default is \vcal = 100 (high range)).
-Secondly, the pixel with the smallest pulse height response should have a reasonably large pulse height
-(default is 20) at its \vcal turn-on threshold,
-i.e. the lowest \vcal value for which the pixel fires.
+The \phopt test is designed to optimize these \dacs based on a highly sensitive and highly insensitive pixel in the given \roc, 
+or, in other words, the pixels with a very high and very low inherent gain.
+To use the ADC most effectively, the range of the ADC PH response as a function of \vcal needs to be optimized.
+On the low end, the ADC should provide a PH well above noise for the low-gain pixel near the lowest \vcal that registers a hit on it.
+On the high end, the ADC should saturate for the high-gain pixel at some user-defined \vcal well below the maximum \vcal the \roc can provide.
+This allows the signal strength required for saturation to be measured and recorded for all pixels.
+These two conditions are translated into two constraints used to simultaneously find a solution for the values of \phoffset and \phscale.
+The constraints applied are, one, that the low-gain pixel should have a reasonably large PH (default is 20) at its \vcal turn-on threshold,
+i.e. the lowest \vcal value for which the pixel fires, 
+and two, that the high-gain pixel should saturate (PH reaches 255) at a user-defined signal strength (default is \vcal = 100 (high range)).
 
-\subsubsection{\textcolor{red}{Methodology}}
+\subsubsection{Methodology}
+
+The \phopt test proceeds in two steps:  
+First, it identifies a low-gain and high-gain pixel for use in optimizing \phscale and \phoffset.
+In this process, care is taken not to choose anomalous pixels.
+Secondly, it maps the pulse height responses of these two pixels as a function of \phscale and \phoffset.
+The maps for these two pixels are then combined to find the optimal values for \phscale and \phoffset.
+After the optimal values for \phscale and \phoffset are set, several validation plots are made and recorded in the output file.
+\\\\
+First, the test identifies the low-gain and high-gain pixels using the same methodology for each.
+Pixels within 3 (5) columns (rows) of the edge of the \roc are not considered, 
+unless a suitable pixel cannot be found using those fiducial cuts in which case these requirements are relaxed.
+In each case, the PH for each pixel is obtained at a chosen \vcal (Figures~\ref{fig:phopt_minphmap},\ref{fig:phopt_maxphmap}), 
+and a 1D distribution is created for each \roc (Figures~\ref{fig:phopt_dist_minphmap},\ref{fig:phopt_dist_maxphmap}). 
+From this, a pixel is chosen that is away the edge of the distribution by a chosen percentile of safety margin.
+This helps avoid choosing an anomalous pixel.
+For finding the high-gain pixel, this process is performed with the maximum calibration pulse strength, \vcal=255 (high range).
+The safety margin is configurable, and by default is 98\%, i.e. a pixel will be chosen such that 98\% of pixel in the \roc have lower PHs.
+For finding the low-gain pixel, the process is performed with a \vcal slightly higher than the \vcal trimming target, 
+and is hard-coded to \vcal=60 (low range).
+For the chosen low-gain pixel, the \vcal value is found at which the pixel starts firing, 
+defined as the point in the PH vs. \vcal curve at which PH=10.
+This minimum \vcal value is recorded for use in the following step of the test.
+\\\\
+Once the two pixels of interest have been identified, the test proceeds to the optimization of \phscale and \phoffset.
+A 2D scan is performed over \phscale and \phoffset, returning the PH at each point in the 2D parameter space
+(Figures~\ref{fig:phopt_minphvsdacdac_th2},\ref{fig:phopt_maxphvsdacdac_th2}).
+For the low-gain pixel, the scan is performed at the minimum \vcal found in the previous step.
+For the high-gain pixel, the scan is performed at the user-defined ADC saturation target (default is \vcal = 100 (high range)).
+The optimal regime for the low-gain pixel will return a pulse height value that is near some small safety margin (default 20) above zero.
+The optimal regime for the high-gain pixel is when the ADC saturates at this \vcal, meaning that PH is near 255.
+Each of these regimes defines a band in the \phoffset vs. \phscale plane.
+The final values of \phscale and \phoffset are chosen from the intersection of these two bands (Figure~\ref{fig:phopt_solphvsdacdac_th2}).
+\\\\
+With the optimal values of \phscale and \phoffset set, several validation scans are performed.
+First, PH vs. \vcal curves are produced for the chosen low-gain and high-gain pixels.
+Additionally, PH maps are produced at three \vcal values, 
+one low (defined as 10 DAC units above the minimum effective \vcal for the low-gain pixel),
+one medium (\vcal=50 (low range)),
+and one high (chosen ADC saturation target).
+
 \subsubsection{Output}
 
 % finding highest/lowest gain pixels
 
-\begin{figure}[!Hp]
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_minphmap.pdf}
-  \caption{}
+  \caption{\roc map of pulse heights with \vcal=60 (low range).}
   \label{fig:phopt_minphmap}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_dist_minphmap.pdf}
-  \caption{}
+  \caption{1D distribution of Figure~\ref{fig:phopt_minphmap}
+           used to identify low-gain pixel.}
   \label{fig:phopt_dist_minphmap}
 \end{minipage}
 \end{figure}
 
-\begin{figure}[!Hp]
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_maxphmap.pdf}
-  \caption{}
+  \caption{\roc map of pulse heights with \vcal=255 (high range).}
   \label{fig:phopt_maxphmap}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_dist_maxphmap.pdf}
-  \caption{}
+  \caption{1D distribution of Figure~\ref{fig:phopt_maxphmap}
+           used to identify high-gain pixel.}
   \label{fig:phopt_dist_maxphmap}
 \end{minipage}
 \end{figure}
 
 % getting maps for optimization
 
-\begin{figure}[!Hp]
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_minphvsdacdac_th2.pdf}
-  \caption{}
+  \caption{Measured PH in the \phoffset vs. \phscale plane for previously identified low-gain pixel
+           with minimum \vcal required to fire the pixel.}
   \label{fig:phopt_minphvsdacdac_th2}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_maxphvsdacdac_th2.pdf}
-  \caption{}
+  \caption{Measured PH in the \phoffset vs. \phscale plane for previously identified high-gain pixel
+           with \vcal set to the chosen ADC saturation point.}
   \label{fig:phopt_maxphvsdacdac_th2}
 \end{minipage}
 \end{figure}
 
-\begin{figure}[!Hp]
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_solphvsdacdac_th2.pdf}
-  \caption{}
+  \caption{Overlap of optimal regimes in Figures~\ref{fig:phopt_minphvsdacdac_th2} and~\ref{fig:phopt_maxphvsdacdac_th2}.
+           A red entry signifies an optimal pair of \phoffset and \phscale values.}
   \label{fig:phopt_solphvsdacdac_th2}
 \end{minipage}
 \end{figure}
 
-
 % gain plots for highest/lowest gain pixels with optimized DACs
 
-\begin{figure}[!Hp]
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_PH_c5_r68.pdf}
-  \caption{}
+  \caption{PH vs. \vcal curve for previously identified low-gain pixel.}
   \label{fig:phopt_PH_c5_r68}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_PH_c3_r15.pdf}
-  \caption{}
+  \caption{PH vs. \vcal curve for previously identified high-gain pixel.}
   \label{fig:phopt_PH_c3_r15}
 \end{minipage}
 \end{figure}
@@ -103,47 +150,51 @@ i.e. the lowest \vcal value for which the pixel fires.
 
 % doing scans at three points in vcal
 
-\begin{figure}[!Hp]
+% done with Vcal set 10 units above turn-on for least sensitive pixel
+
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_PH_mapLowVcal.pdf}
-  \caption{}
+  \caption{\roc map of pulse heights with \vcal 10 units above minimum \vcal for low-gain pixel.}
   \label{fig:phopt_PH_mapLowVcal}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_dist_PH_mapLowVcal.pdf}
-  \caption{}
+  \caption{1D distribution of Figure~\ref{fig:phopt_PH_mapLowVcal}.}
   \label{fig:phopt_dist_PH_mapLowVcal}
 \end{minipage}
 \end{figure}
 
-\begin{figure}[!Hp]
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_PH_mapVcal50.pdf}
-  \caption{}
+  \caption{\roc map of pulse heights with \vcal=50 (low range).}
   \label{fig:phopt_PH_mapVcal50}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_dist_PH_mapVcal50.pdf}
-  \caption{}
+  \caption{1D distribution of Figure~\ref{fig:phopt_PH_mapVcal50}.}
   \label{fig:phopt_dist_PH_mapVcal50}
 \end{minipage}
 \end{figure}
 
-\begin{figure}[!Hp]
+% done at user-defined target saturation Vcal - default 100 (high range)
+
+\begin{figure}[!htp]
 \centering
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_PH_mapHiVcal.pdf}
-  \caption{}
+  \caption{\roc map of pulse heights with \vcal set to target ADC saturation point.}
   \label{fig:phopt_PH_mapHiVcal}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/phopt_dist_PH_mapHiVcal.pdf}
-  \caption{}
+  \caption{1D distribution of Figure~\ref{fig:phopt_PH_mapHiVcal}.}
   \label{fig:phopt_dist_PH_mapHiVcal}
 \end{minipage}
 \end{figure}
