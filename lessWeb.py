@@ -6,7 +6,7 @@ Date: 4-9-15
 Usage: python dbUpload.py <input dir>
 """
 
-DEBUG=True
+DEBUG=False
 
 from xml.etree.ElementTree import Element, SubElement, Comment
 from xml.etree import ElementTree
@@ -492,9 +492,11 @@ def analyzePreTest(inputDir, outputDir, log, data):
     data=TFile(data['pretest'])
 
     f=iter(open(log,'r'))
+
+    canTime=True
     for line in f:
 
-        if 'No good timings found' in line: canTime=False
+        if 'No good timings found' in line or 'error setting delay  base' in line: canTime=False
         elif 'Default timings are good' in line or 'Good Timings Found' in line: canTime=True
 
         if 'ROCs are all programmable' in line: deadROCs=[]
@@ -756,19 +758,19 @@ def analyzeFullTest(inputDir, outputDir, log, data):
 
         if 'number of dead pixels (per ROC)' in line:
             deadPixels=[int(x) for x in line.split()[-16:]]
-            if DEBUG: print 'deadPixels:',deadPixels
+            print 'deadPixels:',deadPixels
 
         if 'number of mask-defect pixels (per ROC)' in line:
             maskDefectPixels=[int(x) for x in line.split()[-16:]]
-            if DEBUG: print 'maskDefectPixels:',maskDefectPixels
+            print 'maskDefectPixels:',maskDefectPixels
 
         if 'number of address-decoding pixels (per ROC)' in line:
             addressDefectPixels=[int(x) for x in line.split()[-16:]]
-            if DEBUG: print 'addressDefectPixels:',addressDefectPixels
+            print 'addressDefectPixels:',addressDefectPixels
 
         if 'number of dead bumps (per ROC)' in line:
             badBumps=[int(x) for x in line.split()[-16:]]
-            if DEBUG: print 'badBumps:',badBumps
+            print 'badBumps:',badBumps
             
         """
         if 'separation cut       (per ROC):' in line:
@@ -896,10 +898,18 @@ def makeXML(inputDir):
     global top
     top=Element('ROOT')
     top.set('xmlns:xsi','http://www.w3.org/2001/XMLSchema-instance')
+    
+    time=SE(top,'TIME')
+    d=os.path.basename(inputDir).split('_')[-3]
+    t=os.path.basename(inputDir).split('_')[-2]; t=t.replace('h',':').replace('m',':00')
+    i=os.path.basename(inputDir).split('_')[-1]
+    time.text=d+' '+t
 
     global test
     test=SE(top,'TEST')
     attachName(test)
+    notes=SE(test,'NOTES')
+    notes.text='Test results and config files can be found in: '+os.path.basename(inputDir)
 
     for f in [analyzeIV,
               makeSummaryPlots,
