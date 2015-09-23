@@ -1,0 +1,37 @@
+% ======================================================================
+\section{Module Grading Scheme}
+\label{s:grading}
+% ======================================================================
+
+
+% ----------------------------------------------------------------------
+
+Each FPix phase 1 upgrade module is given a grade based on various aspects of the testing results.
+The current grading scheme is preliminary and expected to evolve through the production process
+to account for specific component failure modes seen during production.
+\\\\
+The current scheme is based on two categories (\iv performance and single pixel defects)
+although it can be expanded to include X-ray results and many of the other \fulltest measurements.
+\\\\
+The \iv performance criteria are two-fold.  
+First, the module is graded on the amount of leakage current at the expected operating bias (-150V).
+Modules must have $\textrm{I}_{-150\textrm{V}} < 2 \mu \textrm{A}$ to receive an A
+or $\textrm{I}_{-150\textrm{V}} < 10 \mu \textrm{A}$ to receive a B.
+Modules with $\textrm{I}_{-150\textrm{V}} > 10 \mu \textrm{A}$ receive a C.
+Secondly, the breakdown voltage for the module should be higher (more negative) than -150V.
+This is determined by looking at the ratio $\textrm{I}_{-150\textrm{V}}/\textrm{I}_{100\textrm{V}}$.
+If the module has not reached the breakdown voltage by -150V, this ratio should be small, 
+otherwise it should be large.
+Modules with $\textrm{I}_{-150\textrm{V}}/\textrm{I}_{100\textrm{V}} < 2$ receive an A for this criteria,
+all other modules receive a C.
+The overall \iv grade for the module is the worse of these two assigned grades (leakage current and breakdown voltage).
+\\\\
+Single pixel defects are identified using the results of the \alivetest and \bb tests.
+A sum per \roc is calculated of all pixels flagged as faulty by either of these tests.
+If this sum is less than 1\% of pixels in the \roc, the \roc receives an A grade.
+Otherwise, if the sum is less than 4\% of pixels in the \roc, the \roc receives an B grade.
+If not, the \roc receives a C grade.
+The module grade for single pixel defects is assigned as the grade of the worst \roc.
+\\\\
+The final module grade is assigned as the worse of the \iv grade and the pixel defect grade.
+In this way, each module is given either an A, B, or C grade that is recorded in the documentation server.
