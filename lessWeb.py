@@ -372,7 +372,8 @@ def getSCurvePlots(f, outputDir):
 
 def getTrimPlots(f, outputDir):
     
-    goodPlots=['TrimMap_C','dist_TrimMap_C',
+    goodPlots=[#'TrimMap_C',   not needed, summary plot instead
+               'dist_TrimMap_C',
                #'thr_TrimThrFinal_vcal_C','dist_thr_TrimThrFinal_vcal_C'
                ]
 
@@ -397,8 +398,10 @@ def getTrimPlots(f, outputDir):
 
 def getPulseHeightOptPlots(f, outputDir):
 
-    goodPlots=['PH_mapHiVcal_C','dist_PH_mapHiVcal_C',
-               'PH_mapLowVcal_C','dist_PH_mapLowVcal_C']
+    goodPlots=[#'PH_mapHiVcal_C',   not needed, summary plot instead
+               'dist_PH_mapHiVcal_C',
+               #'PH_mapLowVcal_C',   not needed, summary plot instead
+               'dist_PH_mapLowVcal_C']
 
     c=TCanvas()
     for key in f.Get('PhOptimization').GetListOfKeys():
