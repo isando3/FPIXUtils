@@ -805,6 +805,10 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         BADBUMPS_ELEC.text=str(badBumps[i])
         DEAD_PIX=SE(ROC,'DEAD_PIX')
         DEAD_PIX.text=str(deadPixels[i])
+        UNMASKABLE_PIX=SE(ROC,'UNMASKABLE_PIX')
+        UNMASKABLE_PIX.text=str(maskDefectPixels[i])
+        UNADDRESSABLE_PIX=SE(ROC,'UNADDRESSABLE_PIX')
+        UNADDRESSABLE_PIX.text=str(addressDefectPixels[i])
 
     """
     n=0
@@ -818,6 +822,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     dead_bumps_elec.text=str(n)
     """
     
+    """
     n=0
     for i in maskDefectPixels: n+=i
     unmaskable_pix=SE(test,'UNMASKABLE_PIX')
@@ -827,6 +832,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     for i in addressDefectPixels: n+=i
     unaddressable_pix=SE(test,'UNADDRESSABLE_PIX')
     unaddressable_pix.text=str(n)
+    """
 
     getPixelAlivePlots(data, deadPixels, maskDefectPixels, addressDefectPixels, outputDir)
     #getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
