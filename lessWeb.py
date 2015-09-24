@@ -276,12 +276,12 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
     #summary=doIt(f, 'BB3', 'rescaledThr', 0)
     #summary.SaveAs(outputDir+'/BBSummary.png')
 
-    pic=SE(top, 'PIC')
-    attachName(pic)
-    file=SE(pic, 'FILE')
-    file.text='BBSummary.png'
-    part=SE(pic,'PART')
-    part.text='sidet_p'
+    # pic=SE(top, 'PIC')
+    # attachName(pic)
+    # file=SE(pic, 'FILE')
+    # file.text='BBSummary.png'
+    # part=SE(pic,'PART')
+    # part.text='sidet_p'
 
     for key in f.Get('BB3').GetListOfKeys():
 
@@ -373,7 +373,8 @@ def getSCurvePlots(f, outputDir):
 def getTrimPlots(f, outputDir):
     
     goodPlots=['TrimMap_C','dist_TrimMap_C',
-               'thr_TrimThrFinal_vcal_C','dist_thr_TrimThrFinal_vcal_C']
+               #'thr_TrimThrFinal_vcal_C','dist_thr_TrimThrFinal_vcal_C'
+               ]
 
     c=TCanvas()
     for key in f.Get('Trim').GetListOfKeys():
@@ -420,10 +421,12 @@ def getPulseHeightOptPlots(f, outputDir):
 
 def getGainPedestalPlots(f,outputDir):
 
-    goodPlots=['gainPedestalP0_C',
-               'gainPedestalP1_C',
-               'gainPedestalP2_C',
-               'gainPedestalP3_C']
+    goodPlots=['gainPedestalNonLinearity',
+               #'gainPedestalP0_C',
+               #'gainPedestalP1_C',
+               #'gainPedestalP2_C',
+               #'gainPedestalP3_C'
+               ]
 
     c=TCanvas()
     for key in f.Get('GainPedestal').GetListOfKeys():
@@ -459,7 +462,8 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
     for hist in ['PixelAlive/PixelAlive','PixelAlive/MaskTest','PixelAlive/AddressDecodingTest',
                  'PhOptimization/PH_mapLowVcal','PhOptimization/PH_mapHiVcal',
                  'Scurves/sig_scurveVcal_Vcal','Scurves/thr_scurveVcal_Vcal',
-                 'Trim/thr_TrimThrFinal_vcal']:
+                 #'Trim/thr_TrimThrFinal_vcal'
+                 ]:
 
         produceLessWebSummaryPlot(data,hist,outputDir)
         pic=SE(top, 'PIC')
