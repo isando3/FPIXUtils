@@ -276,12 +276,12 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
     #summary=doIt(f, 'BB3', 'rescaledThr', 0)
     #summary.SaveAs(outputDir+'/BBSummary.png')
 
-    pic=SE(top, 'PIC')
-    attachName(pic)
-    file=SE(pic, 'FILE')
-    file.text='BBSummary.png'
-    part=SE(pic,'PART')
-    part.text='sidet_p'
+    # pic=SE(top, 'PIC')
+    # attachName(pic)
+    # file=SE(pic, 'FILE')
+    # file.text='BBSummary.png'
+    # part=SE(pic,'PART')
+    # part.text='sidet_p'
 
     for key in f.Get('BB3').GetListOfKeys():
 
@@ -372,8 +372,10 @@ def getSCurvePlots(f, outputDir):
 
 def getTrimPlots(f, outputDir):
     
-    goodPlots=['TrimMap_C','dist_TrimMap_C',
-               'thr_TrimThrFinal_vcal_C','dist_thr_TrimThrFinal_vcal_C']
+    goodPlots=[#'TrimMap_C',   not needed, summary plot instead
+               'dist_TrimMap_C',
+               #'thr_TrimThrFinal_vcal_C','dist_thr_TrimThrFinal_vcal_C'
+               ]
 
     c=TCanvas()
     for key in f.Get('Trim').GetListOfKeys():
@@ -396,8 +398,10 @@ def getTrimPlots(f, outputDir):
 
 def getPulseHeightOptPlots(f, outputDir):
 
-    goodPlots=['PH_mapHiVcal_C','dist_PH_mapHiVcal_C',
-               'PH_mapLowVcal_C','dist_PH_mapLowVcal_C']
+    goodPlots=[#'PH_mapHiVcal_C',   not needed, summary plot instead
+               'dist_PH_mapHiVcal_C',
+               #'PH_mapLowVcal_C',   not needed, summary plot instead
+               'dist_PH_mapLowVcal_C']
 
     c=TCanvas()
     for key in f.Get('PhOptimization').GetListOfKeys():
@@ -420,10 +424,12 @@ def getPulseHeightOptPlots(f, outputDir):
 
 def getGainPedestalPlots(f,outputDir):
 
-    goodPlots=['gainPedestalP0_C',
-               'gainPedestalP1_C',
-               'gainPedestalP2_C',
-               'gainPedestalP3_C']
+    goodPlots=['gainPedestalNonLinearity',
+               #'gainPedestalP0_C',
+               #'gainPedestalP1_C',
+               #'gainPedestalP2_C',
+               #'gainPedestalP3_C'
+               ]
 
     c=TCanvas()
     for key in f.Get('GainPedestal').GetListOfKeys():
@@ -459,7 +465,8 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
     for hist in ['PixelAlive/PixelAlive','PixelAlive/MaskTest','PixelAlive/AddressDecodingTest',
                  'PhOptimization/PH_mapLowVcal','PhOptimization/PH_mapHiVcal',
                  'Scurves/sig_scurveVcal_Vcal','Scurves/thr_scurveVcal_Vcal',
-                 'Trim/thr_TrimThrFinal_vcal']:
+                 #'Trim/thr_TrimThrFinal_vcal'
+                 ]:
 
         produceLessWebSummaryPlot(data,hist,outputDir)
         pic=SE(top, 'PIC')
@@ -493,11 +500,16 @@ def analyzePreTest(inputDir, outputDir, log, data):
 
     f=iter(open(log,'r'))
 
-    canTime=True
+    #canTime=True
     for line in f:
 
+        """
         if 'No good timings found' in line or 'error setting delay  base' in line: canTime=False
         elif 'Default timings are good' in line or 'Good Timings Found' in line: canTime=True
+        """
+        if 'INFO: TBM phases:  160MHz:' in line:
+            if '-1' in line: canTime=False
+            else: canTime=True
 
         if 'ROCs are all programmable' in line: deadROCs=[]
         elif 'cannot be programmed! Error' in line: deadROCs=[int(i) for i in line[line.find('ROCs')+len('ROCs'):line.find('cannot')].split()]
@@ -780,7 +792,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
 
     try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps#, bbCuts
     except: 
-        print 'ERROR: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts'
+        print 'WARNING: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps'
         print deadPixels
         print maskDefectPixels 
         print addressDefectPixels
@@ -798,6 +810,10 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         BADBUMPS_ELEC.text=str(badBumps[i])
         DEAD_PIX=SE(ROC,'DEAD_PIX')
         DEAD_PIX.text=str(deadPixels[i])
+        UNMASKABLE_PIX=SE(ROC,'UNMASKABLE_PIX')
+        UNMASKABLE_PIX.text=str(maskDefectPixels[i])
+        UNADDRESSABLE_PIX=SE(ROC,'UNADDRESSABLE_PIX')
+        UNADDRESSABLE_PIX.text=str(addressDefectPixels[i])
 
     """
     n=0
@@ -811,6 +827,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     dead_bumps_elec.text=str(n)
     """
     
+    """
     n=0
     for i in maskDefectPixels: n+=i
     unmaskable_pix=SE(test,'UNMASKABLE_PIX')
@@ -820,6 +837,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     for i in addressDefectPixels: n+=i
     unaddressable_pix=SE(test,'UNADDRESSABLE_PIX')
     unaddressable_pix.text=str(n)
+    """
 
     getPixelAlivePlots(data, deadPixels, maskDefectPixels, addressDefectPixels, outputDir)
     #getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
@@ -845,8 +863,8 @@ def getConfigs(inputDir, outputDir, log, data):
                    'dacParameters_C*.dat']:
 
         if len(glob(inputDir+'/*_FPIXTest_*/'+config))==0: 
-            print 'ERROR: no config files found:', config
-            exit()
+            print 'WARNING: no config files found:', config
+            #exit()
 
         for file in glob(inputDir+'/*_FPIXTest_*/'+config):
             subprocess.call(['cp', file, outputDir])
@@ -917,8 +935,11 @@ def makeXML(inputDir):
               analyzeFullTest,
               getConfigs,
               ]:
-        f(inputDir, outputDir, log, data)
-    
+        try:
+            f(inputDir, outputDir, log, data)
+        except: 
+            print 'WARNING: unable to run',f.__name__
+
     output=open(outputDir+'/master.xml','w')
     output.write(prettify(top))
     output.close()
