@@ -500,11 +500,16 @@ def analyzePreTest(inputDir, outputDir, log, data):
 
     f=iter(open(log,'r'))
 
-    canTime=True
+    #canTime=True
     for line in f:
 
+        """
         if 'No good timings found' in line or 'error setting delay  base' in line: canTime=False
         elif 'Default timings are good' in line or 'Good Timings Found' in line: canTime=True
+        """
+        if 'INFO: TBM phases:  160MHz:' in line:
+            if '-1' in line: canTime=False
+            else: canTime=True
 
         if 'ROCs are all programmable' in line: deadROCs=[]
         elif 'cannot be programmed! Error' in line: deadROCs=[int(i) for i in line[line.find('ROCs')+len('ROCs'):line.find('cannot')].split()]
@@ -787,7 +792,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
 
     try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps#, bbCuts
     except: 
-        print 'ERROR: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps, bbCuts'
+        print 'WARNING: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps'
         print deadPixels
         print maskDefectPixels 
         print addressDefectPixels
@@ -858,8 +863,8 @@ def getConfigs(inputDir, outputDir, log, data):
                    'dacParameters_C*.dat']:
 
         if len(glob(inputDir+'/*_FPIXTest_*/'+config))==0: 
-            print 'ERROR: no config files found:', config
-            exit()
+            print 'WARNING: no config files found:', config
+            #exit()
 
         for file in glob(inputDir+'/*_FPIXTest_*/'+config):
             subprocess.call(['cp', file, outputDir])
@@ -930,8 +935,11 @@ def makeXML(inputDir):
               analyzeFullTest,
               getConfigs,
               ]:
-        f(inputDir, outputDir, log, data)
-    
+        try:
+            f(inputDir, outputDir, log, data)
+        except: 
+            print 'WARNING: unable to run',f.__name__
+
     output=open(outputDir+'/master.xml','w')
     output.write(prettify(top))
     output.close()
