@@ -7,7 +7,7 @@
 
 \subsubsection{Purpose}
 
-The \scurves test has two primary purposes.
+The \scurves test as configured for FPix module testing has two primary purposes.
 First, it evaluates the efficacy of the \trimming test.
 Secondly, it measures the noise present in each pixel and can potentially flag abnormally noisy pixels.
 Both of these goals are achieved by fitting the curve of efficiency vs. \vcal for each pixel.
@@ -16,9 +16,9 @@ The test gets its name from the shape of the error function used to fit the meas
 \subsubsection{Methodology}
 
 An \scurves test is a generic type of test that measures a pixel's efficiency as a function of a chosen \dac.
-Assuming the pixel will not respond at low values of this \dac and will be fully efficient at some higher value of the \dac,
+Assuming the pixel will not respond at low values of the \dac in question and will be fully efficient at some higher value of the \dac,
 the efficiency curve should have a region of zero efficiency, 
-a transition region with increasing efficiency, and a plateau of 100\% efficiency.
+a transition region with increasing efficiency, and a plateau region with 100\% efficiency.
 The shape of this curve mildly resembles the letter ``S''.
 If no noise is present in the system the turn-on curve will be a simple step function, 
 with the horizontal floor and plateau connected by a vertical line.
@@ -34,7 +34,7 @@ defined as the point above the turn-on threshold at which efficiency drops back 
 
 For the \scurves test as configured for FPix module testing, 
 an \scurves test is performed over \vcal, in a \vcal range window around the target threshold for the \trimming test.
-This is because, post-trimming, we know where to expect the turn-on of the s-curve.
+This is because, post-trimming, the expected region of the turn-on of the s-curve is known.
 The number of triggers is configurable, but in order to extract accurate width values, 
 a large number of triggers (default is 200) should be used.
 
@@ -43,9 +43,9 @@ a large number of triggers (default is 200) should be used.
 Figures~\ref{fig:scurves_thr_scurveVcal_Vcal}-\ref{fig:scurves_dist_thn_scurveVcal_Vcal} 
 show the output of the \scurves test as used in the \fulltest for FPix module qualification.
 \roc maps and 1D distributions of the three parameters measured by the test are saved in the output file: 
-the turn-on ``thr'' (Figures~\ref{fig:scurves_thr_scurveVcal_Vcal},\ref{fig:scurves_dist_thr_scurveVcal_Vcal}),
-the width ``sig'' (Figures~\ref{fig:scurves_sig_scurveVcal_Vcal},\ref{fig:scurves_dist_sig_scurveVcal_Vcal}),
-and the turn-off ``thn'' (Figures~\ref{fig:scurves_thn_scurveVcal_Vcal},\ref{fig:scurves_dist_thn_scurveVcal_Vcal}).
+the turn-on ``thr'' (Figures~\ref{fig:scurves_thr_scurveVcal_Vcal},~\ref{fig:scurves_dist_thr_scurveVcal_Vcal}),
+the width ``sig'' (Figures~\ref{fig:scurves_sig_scurveVcal_Vcal},~\ref{fig:scurves_dist_sig_scurveVcal_Vcal}),
+and the turn-off ``thn'' (Figures~\ref{fig:scurves_thn_scurveVcal_Vcal},~\ref{fig:scurves_dist_thn_scurveVcal_Vcal}).
 For s-curves with respect to \vcal, no turn-on is expected (it's mainly useful for \vthrcomp s-curves).
 When no turn-off is observed, the test returns the maximum value of the \dac in question that is tested.
 

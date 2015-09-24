@@ -9,7 +9,7 @@
 
 Once the pretest is completed, we can be relatively sure that all non-faulty pixels should respond to the calibration pulse.
 The \alivetest test uses this fact to identify faulty pixels.
-Because a pixel can be faulty in multiple ways, this test flags three types of defective pixels:
+Because a pixel can be faulty in multiple ways, three subtests are run that each flag a different kind of faulty pixel:
 dead pixels, unmaskable pixels, and pixels with addressing errors.
 
 \subsubsection{Methodology}
@@ -18,21 +18,23 @@ In the {\tt Alive} test, a number of calibration pulses (default 10) are sent, i
 to each pixel in the device and the number of signals recorded is measured.
 During this period, all pixels other than the one being tested are masked, so as not to produce spurious noise signals.
 Pixels with no recorded hits are flagged as dead and pixels with less than 100\% efficiency are flagged as problematic.
+Output is shown in Figure~\ref{fig:alive_PixelAlive}.
 \\\\
 In the {\tt Mask} test, all pixels are disabled and the same procedure is performed.
 Pixels with efficiency above zero have a problem with the pixel masking procedure, and are flagged as bad.
+Output is shown in Figure~\ref{fig:alive_MaskTest}.
 \\\\
 In the {\tt AddressDecoding} test, the same efficiency measurement is performed, pixel by pixel,
 but the order of the resulting data is checked.
 If the address of a given pixel is out of order, the recorded hit is given a negative pulse height value.
 Pixels with negative hits are flagged as faulty.
+Output is shown in Figure~\ref{fig:alive_AddressDecodingTest}.
 \\\\
 To distinguish between dead pixels and otherwise faulty pixels in output of the {\tt Mask} and {\tt AddressDecoding} tests, 
-a special 3-state color scheme is used:  
+a special 3-state scheme is used:  
 Entries with a weight of 1 denote good pixels,
 entries with a weight of 0 denote dead but not faulty pixels,
 and entries with a weight of -1 denote faulty pixels, i.e. masking (decoding) errors for the {\tt Mask} ({\tt AddressDecoding}) test.
-Figures~\ref{fig:alive_PixelAlive}-\ref{fig:alive_AddressDecodingTest} show the output from the \alivetest test.
 
 \subsubsection{Output}
 

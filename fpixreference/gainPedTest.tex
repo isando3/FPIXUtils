@@ -8,29 +8,30 @@
 \subsubsection{Purpose}
 
 The \gainped test does not alter any \dac parameters,
-but merely evaluates the shape of the pulse height vs. \vcal distribution for each pixel.
-For each pixel, the distribution is fitted and the fit parameters are stored for later use.
+but merely evaluates and records the shape of the pulse height vs.~\vcal distribution for each pixel.
+For each pixel, this curve is fitted and the fit parameters are stored for later use.
 Since variations in gain are expected between pixels in a \roc,
 the gain must be measured independently for each pixel so that the pulse height to be calibrated back to the input signal size, 
-in units of the \vcal~\dac (high range).
+in units of the \vcal~\dac (low range).
 
 \subsubsection{Methodology}
 
-For each pixel, the pulse height is sampled for a variety of \vcal values.
+For each pixel, a PH vs. \vcal curve is produced.
+To save time, the pulse height is sampled for a predetermined set of \vcal values instead of doing a complete \vcal scan.
 In the low \vcal range, the PH is measured in steps of 10 DAC units (configurable), from 10 to 255.
-Then, in the high \vcal range, the PH is measured for values of 30,50,70,90, and 200.
+Then, in the high \vcal range, the PH is measured for values of 30, 50, 70, 90, and 200.
 The results of these two scans are then combined into a PH vs. \vcal curve over the full \vcal range.
-This curve converts the high range \vcal values to their larger low range equivalents by multiplying by a factor of seven.
-This curve is then fit using an error function, and the four fitted parameters, along with their errors, are recorded.
+This curve converts the high range \vcal values to their larger low range equivalents by multiplying by a factor of 7.
+This curve is then fit to an error function and the four fitted parameters and their errors are recorded.
 Parameter 0 corresponds to the \vcal value at the center of the error function, when the PH is halfway between zero and saturation (255).
-Parameter 1 is proportional to the width of the turn-on, and, as such, is inversely related to the gain of the pixel.
+Parameter 1 is proportional to the width of the turn-on and is therefore inversely related to the gain of the pixel.
 Parameter 2 shifts the error function upwards, with a value of unity moving the floor of the function to zero.
 Parameter 3 corresponds to half the height of the function, and should be near 127.5 (255/2).
 The \roc-wide distributions for these four parameters 
 and their relative errors are shown in Figures~\ref{fig:gainped_gainPedestalP0}-\ref{fig:gainped_P3_relErr}.
 Additionally, these parameters are stored for later use in text files with names of the form ``phCalibrationFitErr35\_C\#.dat''
 (assuming the module was trimmed to \vcal=35).
-Finally, the linearity of the pixel's response is estimated.
+Finally, the linearity of each pixel's response is estimated.
 Using the fitted error function, the true integral of the function in the \vcal range from 0-200 (low range) is compared to a linear approximation.
 The quotient of these two values should be near unity for a linearly-responding pixel.
 The \roc-wide distribution of this quantity, dubbed the ``non-linearity'', is shown in Figure~\ref{fig:gainped_gainPedestalNonLinearity}.

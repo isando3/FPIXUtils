@@ -13,12 +13,12 @@ This test takes advantage of a parallel route designed for the calibration signa
 This route can be seen at the top left of Figure~\ref{fig:puc}, 
 connecting the source of the \vcal calibration pulse to the ``top metal pad'' 
 by closing the switch labeled ``sensor calib'' instead of the standard ``calib'' switch.
-The ``top metal pad'' is on near the top edge of the \roc on the side facing the sensor.
+The ``top metal pad'' is located near the edge of the \roc on the side facing the sensor.
 The calibration pulse can pass via capacitive coupling from this pad, 
-across the \roc-sensor air gap, into the silicon sensor.
+across the \roc-sensor air gap, and into the silicon sensor.
 The calibration pulse then makes its way back into the \roc via the bump bond and can be read out as normal.
 Using this signal path that contains the bump bond, 
-the presence of the bump and the quality of its electrical connection from the sensor to the \roc can be tested.
+the presence of the bump and the quality of the electrical connection it establishes between the sensor and the \roc can be tested.
 
 Currently in pXar there are four variants of bump bonding tests, optimized to different module types.  
 For FPix modules, the standard test is the {\tt BB3} test.
@@ -29,13 +29,13 @@ This document focuses on this specific \bb test version.
 The \bb test is essentially an \scurves test with respect to \vthrcomp, 
 with the calibration signal routed through the sensor instead of directly to the readout electronics.
 \vcal is configurable and by default is set to 250 (high range).
-The number of triggers used is also configurable (default is 5).
 In any case, \vcal should be set quite high since a large signal loss is expected going through the air gap from \roc to sensor.
+The number of triggers used is also configurable (default is 5).
 From the \vthrcomp s-curve for each pixel, the turn on value is extracted, 
 defined as the value of \vthrcomp for which the efficiency surpasses 50\%.
-For pixels with good bump bonds, these thresholds should be distributed normally, i.e. as a Gaussian curve.
-The distribution of the \vthrcomp turn-on is fitted with a Gaussian, and the mean and width are recorded.
-In this fit, peaks near 0 or 255 are excluded, since these come from dead pixels.
+For pixels with good bump bonds, these thresholds should be distributed normally, i.e.~as a Gaussian curve.
+The distribution of the \vthrcomp turn-on is fitted to a Gaussian, the mean and width of which are recorded.
+In this fit, peaks near 0 or 255 are excluded, since these most likely come from dead pixels.
 Since variations in the mean of this turn-on are observed in odd and even columns, 
 this fitting is done separately for the odd/even columns in the \roc.
 Pixels that turn on at much higher than average \vthrcomp values have higher than average signal loss.
@@ -46,14 +46,15 @@ Leveraging this fact, pixels with turn-on values more than $5\times\sigma$ above
 Output from the \bb test is shown in Figures~\ref{fig:bb3_thr_calSMap_VthrComp}-\ref{fig:bb3_dist_rescaledThr}.
 Figure~\ref{fig:bb3_thr_calSMap_VthrComp} shows a \roc map of the raw turn-on values extracted from the \vthrcomp s-curve for each pixel.
 Figures~\ref{fig:bb3_dist_thr_calSMap_VthrComp_EvenCol} and \ref{fig:bb3_dist_thr_calSMap_VthrComp_OddCol} 
-show the 1D distributions of the even and odd columns in Figure~\ref{fig:bb3_thr_calSMap_VthrComp}.
-The means of these distributions is noticeably different, which is why these two distributions are fit separately.
+show the 1D distributions of the even and odd columns in Figure~\ref{fig:bb3_thr_calSMap_VthrComp}, 
+along with their best-fit curves and arrows located $5\times\sigma$ above the mean of the curve.
+The means of these distributions are noticeably different, which is why these two distributions are fit separately.
 These distributions are then recombined, but since they have different means and widths,
 it doesn't make sense to combine them directly.
 Instead, each entry is scaled to represent the number of standard deviations it is away from the mean.
-We will refer to this scaled value as the fit ``residual''.
-Figures~\ref{fig:bb3_rescaledThr} and \ref{fig:bb3_dist_rescaledThr} show a 2D \roc map and a 1D distribution of these fit residuals.
-Any pixels above the black arrow in Figure~\ref{fig:bb3_dist_rescaledThr} are flagged as bad bumps.
+We refer to this scaled value as the fit ``residual''.
+Figures~\ref{fig:bb3_rescaledThr} and \ref{fig:bb3_dist_rescaledThr} show a 2D \roc map and a 1D distribution of these fit residuals, respectively.
+Any pixels above the black arrow in Figure~\ref{fig:bb3_dist_rescaledThr} are flagged as anomalous bumps.
 
 \begin{figure}[!htp]
 \centering

@@ -28,7 +28,7 @@ If the input signal exceeds the comparator's threshold,
 the signal is stored for readout and the pixel notifies the logic at the periphery of the double column 
 that a hit has been registered and is ready to be transferred to the data buffer at the periphery.   
 This initiates the double column drain mechanism, 
-transferring pulse height values from any pixel with a hit registered since the previous drain onto the 80-wide buffer on the periphery.
+transferring pulse height (PH) values from any pixel with a hit registered since the previous drain onto the 80-wide PH buffer on the periphery.
 In addition to the ability to process charge produced by particles passing through the silicon sensor, 
 the \roc can produce an internal calibration signal whose amplitude is controlled via the \vcal~\dac.  
 This calibration signal serves as the input to the PUC in almost all of the tests described in this document.
@@ -45,7 +45,7 @@ Table~\ref{tab:daclist} shows a subset of \dac registers in the PUC and explains
 \vcal & Calibration signal voltage. There are two \vcal ranges (low and high) with the high range being roughly 7 times larger.  
 The choice of low/high range is set via the \textcolor{blue}{CtrlReg} \dac. & None - set to an appropriate level depending on the test\\
 \hline
-\vana & Voltage supplied to the analog part of the PUC & \pretest ({\tt SetVana}) \\
+\vana & Voltage supplied to the analog part of the PUC (amplifier and shaper) & \pretest ({\tt SetVana}) \\
 \hline
 \caldel & Delay in sending out calibration pulse with respect to the clock signal & \pretest ({\tt SetVthrCompCalDel}) \\
 \hline
@@ -55,9 +55,9 @@ The choice of low/high range is set via the \textcolor{blue}{CtrlReg} \dac. & No
 \hline
 \trimbits & 4 bits per PUC that decrease the threshold of the comparator unit & \trimming \\
 \hline
-\phoffset & Adds a constant offset to the pulse height & \phopt \\
+\phoffset & Constant offset added to the pulse height & \phopt \\
 \hline
-\phscale & Sets the slope of the PH vs. signal strength curve & \phopt \\
+\phscale & Sets the slope of the PH vs. input signal strength curve & \phopt \\
 \hline
 \end{tabular}
 \label{tab:daclist}
