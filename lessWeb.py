@@ -27,6 +27,8 @@ import os
 import subprocess
 import sys
 import zipfile
+from copy import deepcopy
+from shutil import copytree
 
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
@@ -57,7 +59,7 @@ def getProgramROCPlot(f, deadROCs, outputDir):
     h.Draw()
     c.SaveAs(outputDir+'/programROC.png')
 
-    pic=SE(top, 'PIC')
+    pic=SE(plotTop1, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
     file.text='programROCs.png'
@@ -83,7 +85,7 @@ def getVthrCompCalDelPlot(f, VthrComps, CalDels, outputDir):
             key.ReadObj().Draw('colz')
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
 
-            pic=SE(top, 'PIC')
+            pic=SE(plotTop1, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
             file.text=key.GetName()+'.png'
@@ -105,7 +107,7 @@ def getVanaPlot(f, outputDir):
     h.Draw()
     c.SaveAs(outputDir+'/Vana.png')
     
-    pic=SE(top,'PIC')
+    pic=SE(plotTop1,'PIC')
     attachName(pic)
     file=SE(pic,'FILE')
     file.text='Vana.png'
@@ -131,7 +133,7 @@ def getIanaPlot(f, outputDir):
     h.Draw()
     c.SaveAs(outputDir+'/Iana.png')
 
-    pic=SE(top,'PIC')
+    pic=SE(plotTop1,'PIC')
     attachName(pic)
     file=SE(pic,'FILE')
     file.text='Iana.png'
@@ -291,7 +293,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             c.SetLogy(False)
             
-            pic=SE(top, 'PIC')
+            pic=SE(plotTop1, 'PIC')
             attachName(pic)
             file=SE(pic, 'FILE')
             file.text=key.GetName()+'.png'
@@ -361,7 +363,7 @@ def getSCurvePlots(f, outputDir):
                 
                 is2D=(type(key.ReadObj())==type(TH2D()))
                 if not is2D:
-                    pic=SE(top, 'PIC')
+                    pic=SE(plotTop1, 'PIC')
                     attachName(pic)
                     file=SE(pic, 'FILE')
                     file.text=key.GetName()+'.png'
@@ -387,7 +389,7 @@ def getTrimPlots(f, outputDir):
 
                 is2D=(type(key.ReadObj())==type(TH2D()))
                 if not is2D:
-                    pic=SE(top, 'PIC')
+                    pic=SE(plotTop2, 'PIC')
                     attachName(pic)
                     file=SE(pic, 'FILE')
                     file.text=key.GetName()+'.png'
@@ -413,7 +415,7 @@ def getPulseHeightOptPlots(f, outputDir):
 
                 is2D=(type(key.ReadObj())==type(TH2D()))
                 if not is2D:
-                    pic=SE(top, 'PIC')
+                    pic=SE(plotTop2, 'PIC')
                     attachName(pic)
                     file=SE(pic, 'FILE')
                     file.text=key.GetName()+'.png'
@@ -438,7 +440,7 @@ def getGainPedestalPlots(f,outputDir):
                 key.ReadObj().Draw()
                 c.SaveAs(outputDir+'/'+key.GetName()+'.png')
 
-                pic=SE(top, 'PIC')
+                pic=SE(plotTop2, 'PIC')
                 attachName(pic)
                 file=SE(pic, 'FILE')
                 file.text=key.GetName()+'.png'
@@ -451,7 +453,7 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
     data=TFile(data['fulltest'])
 
     produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=[-5,5], isBB3=True)
-    pic=SE(top, 'PIC')
+    pic=SE(plotTop1, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
     file.text='BB3_rescaledThr.png'
@@ -469,7 +471,7 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
                  ]:
 
         produceLessWebSummaryPlot(data,hist,outputDir)
-        pic=SE(top, 'PIC')
+        pic=SE(plotTop1, 'PIC')
         attachName(pic)
         file=SE(pic, 'FILE')
         file.text=hist.replace('/','_')+'.png'
@@ -481,7 +483,7 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
         comment.write('\n'+file.text.split('.')[0])
 
     produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=[0,15])
-    pic=SE(top, 'PIC')
+    pic=SE(plotTop1, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
     file.text='Trim_TrimMap.png'
@@ -596,7 +598,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     #main xml content
 
-    scan=SE(top,'SCAN')
+    scan=SE(plotTop1,'SCAN')
     attachName(scan)
     level=SE(scan,'LEVEL')
     level.text='FNAL'
@@ -636,7 +638,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     l.Draw('same')
     c.SaveAs(outputName.replace('xml','png'))
 
-    pic=SE(top,'PIC')
+    pic=SE(plotTop1,'PIC')
     attachName(pic)
     file=SE(pic,'FILE')
     file.text=os.path.basename(outputName.replace('xml','png'))
@@ -858,7 +860,7 @@ def getConfigs(inputDir, outputDir, log, data):
         for file in glob(inputDir+'/*_FPIXTest_*/'+config):
             subprocess.call(['cp', file, outputDir])
             
-            c=SE(top,'CONFIG')
+            c=SE(configTop,'CONFIG')
 
             attachName(c)
             f=SE(c,'FILE')
@@ -902,18 +904,21 @@ def makeXML(inputDir):
             print
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    global top
-    top=Element('ROOT')
-    top.set('xmlns:xsi','http://www.w3.org/2001/XMLSchema-instance')
+    global plotTop1, plotTop2, configTop
+    plotTop1=Element('ROOT')
+    plotTop1.set('xmlns:xsi','http://www.w3.org/2001/XMLSchema-instance')
     
-    time=SE(top,'TIME')
+    time=SE(plotTop1,'TIME')
     d=os.path.basename(inputDir).split('_')[-3]
     t=os.path.basename(inputDir).split('_')[-2]; t=t.replace('h',':').replace('m',':00')
     i=os.path.basename(inputDir).split('_')[-1]
     time.text=d+' '+t
 
+    plotTop2=deepcopy(plotTop1)
+    configTop=deepcopy(plotTop1)
+
     global test
-    test=SE(top,'TEST')
+    test=SE(plotTop1,'TEST')
     attachName(test)
     notes=SE(test,'NOTES')
     notes.text='Test results and config files can be found in: '+os.path.basename(inputDir)
@@ -926,16 +931,42 @@ def makeXML(inputDir):
               ]:
         f(inputDir, outputDir, log, data)
     
-    output=open(outputDir+'/master.xml','w')
-    output.write(prettify(top))
-    output.close()
+    plotOutputDir1=outputDir+'_plots1'
+    copytree(outputDir,plotOutputDir1)
+    plotOutput1=open(plotOutputDir1+'/master.xml','w')
+    plotOutput1.write(prettify(plotTop1))
+    plotOutput1.close()
+
+    plotOutputDir2=outputDir+'_plots2'
+    copytree(outputDir,plotOutputDir2)
+    plotOutput2=open(plotOutputDir2+'/master.xml','w')
+    plotOutput2.write(prettify(plotTop2))
+    plotOutput2.close()
+
+    configOutputDir=outputDir+'_configs'
+    copytree(outputDir,configOutputDir)
+    configOutput=open(configOutputDir+'/master.xml','w')
+    configOutput.write(prettify(configTop))
+    configOutput.close()
 
     #print
     #print prettify(top)
     #print
 
-    os.chdir(outputDir)
-    zip=zipfile.ZipFile('../'+moduleName+'.zip', mode='w')
+    os.chdir(plotOutputDir1)
+    zip=zipfile.ZipFile('../'+moduleName+'_plots1.zip', mode='w')
+    for file in glob('*'):
+        zip.write(file)
+    zip.close()
+
+    os.chdir(plotOutputDir2)
+    zip=zipfile.ZipFile('../'+moduleName+'_plots2.zip', mode='w')
+    for file in glob('*'):
+        zip.write(file)
+    zip.close()
+
+    os.chdir(configOutputDir)
+    zip=zipfile.ZipFile('../'+moduleName+'_configs.zip', mode='w')
     for file in glob('*'):
         zip.write(file)
     zip.close()
