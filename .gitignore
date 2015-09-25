@@ -4,3 +4,7 @@
 *.png
 *.root
 *.pdf
+config.py
+*.aux
+*.out
+*.toc

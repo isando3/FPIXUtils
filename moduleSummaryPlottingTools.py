@@ -131,6 +131,13 @@ def findZRange(plots):
     for roc in range(16):
         plot = plots[roc].Clone()
 
+        # treat special cases first - don't alter range
+        if "PixelAlive" in plot.GetName() or \
+           "MaskTest" in plot.GetName() or \
+           "AddressDecodingTest" in plot.GetName():
+            return(plot.GetMinimum(),plot.GetMaximum())
+
+
         # create 1D distribution to get mean, RMS
         rocMin = plot.GetMinimum() - 0.00001
         rocMax = plot.GetMaximum() + 0.00001
@@ -271,6 +278,8 @@ def setupSummaryCanvas(summaryPlot):
 
             line1 = TLine()
             line2 = TLine()
+            rocBoundaryLine = TLine()
+            rocBoundaryLine.SetLineStyle(2)
             if i is 0:
                 line1.DrawLine(x1,
                                tickLength/5.,
@@ -280,6 +289,11 @@ def setupSummaryCanvas(summaryPlot):
                                MODULE_Y_PLOT_SIZE - tickLength/5.,
                                x2,
                                MODULE_Y_PLOT_SIZE + 2*tickLength)
+                if roc is not 0:  # no vertical line at left module edge
+                    rocBoundaryLine.DrawLine(x1,
+                                             0,
+                                             x1,
+                                             MODULE_Y_PLOT_SIZE)
             else:
                 line1.DrawLine(x1,
                                tickLength/5.,
@@ -292,6 +306,13 @@ def setupSummaryCanvas(summaryPlot):
 
         # move to next ROC
         x_start += ROC_PLOT_SIZE
+
+    rocBoundaryLine = TLine()
+    rocBoundaryLine.SetLineStyle(2)
+    rocBoundaryLine.DrawLine(0,
+                             MODULE_Y_PLOT_SIZE/2.,
+                             MODULE_X_PLOT_SIZE,
+                             MODULE_Y_PLOT_SIZE/2.)
 
     # y-axis ticks
     # this should be easier since 80 is divisible by 10
@@ -388,6 +409,35 @@ def saveCanvasToNewFile(canvas,outputFileName):
 
 ###############################################################################
 
+def produce1DDistributions(inputFileName, pathToHistogram, version=0):
+
+    inputFile = TFile(inputFileName)
+    plots = []
+
+    # get plots
+    for roc in range(16):
+        plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
+        twoDplot = inputFile.Get(plotPath).Clone()
+        plotName = pathToHistogram.split("/")[1]  # remove directory from name
+
+        oneDplotName = "dist_"+twoDplot.GetName()
+        # we'll assume we're plotting an 8-bit DAC value
+        if "_sig_" in oneDplotName:
+            oneDplot = TH1F(oneDplotName,oneDplotName,100,0,10)
+        elif "_TrimMap_" in oneDplotName:
+            oneDplot = TH1F(oneDplotName,oneDplotName,16,0,16)
+        else:
+            oneDplot = TH1F(oneDplotName,oneDplotName,256,0,256)
+        oneDplot.SetDirectory(0)
+        for x in range(1,twoDplot.GetNbinsX()+1):
+            for y in range(1,twoDplot.GetNbinsY()+1):
+                content = twoDplot.GetBinContent(x,y)
+                oneDplot.Fill(content)
+        plots.append(oneDplot)
+    return plots
+
+###############################################################################
+
 # look through an input file (presumably a pxar output file)
 # find all roc summary plots and return a list of them
 def produce2DHistogramDictionary(inputFileName):
@@ -474,7 +524,7 @@ def produce1DHistogramDictionary(inputFileName):
 
 ###############################################################################
 
-def add2DSummaryPlots(inputFileName,histogramDictionary):
+def add2DSummaryPlots(inputFileName, histogramDictionary):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
@@ -482,13 +532,14 @@ def add2DSummaryPlots(inputFileName,histogramDictionary):
             directory = histoName.split("/")[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
-            print "adding 2D plot:",summaryPlot.GetName()
+            gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
+            print "adding 2D summary plot: "+directory+"/"+summaryPlot.GetName()
             summaryPlot.Write()
             inputFile.Close()
 
 ###############################################################################
 
-def add1DSummaryPlots(inputFileName,histogramDictionary):
+def add1DSummaryPlots(inputFileName, histogramDictionary):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
@@ -496,8 +547,25 @@ def add1DSummaryPlots(inputFileName,histogramDictionary):
             directory = histoName.split("/")[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
-            print "adding 1D plot:",summaryPlot.GetName()
+            gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
+            print "adding 1D summary plot: "+directory+"/"+summaryPlot.GetName()
             summaryPlot.Write()
+            inputFile.Close()
+
+###############################################################################
+
+def add1DDistributions(inputFileName, histogramDictionary):
+
+    for histoName, versions in histogramDictionary.items():
+        for version in versions:
+            distributions = produce1DDistributions(inputFileName,histoName,version)
+            directory = histoName.split("/")[0]
+            inputFile = TFile(inputFileName, "UPDATE")
+            inputFile.cd(directory)
+            for distribution in distributions:
+                gDirectory.Delete(distribution.GetName()+";*")  # remove duplicates
+                print "adding 1D distribution: "+directory+"/"+distribution.GetName()
+                distribution.Write()
             inputFile.Close()
 
 ###############################################################################
@@ -523,6 +591,8 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0):
     summaryCanvas = setupSummaryCanvas(summaryPlot)
 
     return summaryCanvas
+
+###############################################################################
 
 # pass in the input file and location of relevant histogram
 # return merged 1D summary plot

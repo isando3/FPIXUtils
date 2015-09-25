@@ -1,0 +1,64 @@
+% ======================================================================
+\section{The Pixel Unit Cell}
+\label{s:puc}
+% ======================================================================
+
+The bulk of module testing concerns the pixel unit cell (PUC) of the \roc.  
+For this reason, it's useful to discuss the design and operation of the PUC.  
+Figure~\ref{fig:puc} shows the elements of the PUC, the double column periphery, and the controller and interface block.  
+It is labeled with some of the \dac registers that are most relevant for module testing.  
+Terms in black boxes represent programmable \dac registers on the \roc.
+While all \dac memory registers are \roc-wide and exist at the periphery (except the 4 \trimbits), 
+the diagram shows \dacs next to the circuit element they directly affect.
+For the remainder of this document, these \dac registers will be denoted with \textcolor{blue}{blue text}.  
+The process of calibrating a module is largely comprised of tests that find and set the optimal values for these parameters.  
+
+\begin{figure*}[hbtp]
+\begin{center}
+\includegraphics[width=\textwidth]{figures/ROC_dac_schematic.pdf}
+\caption{A schematic of the circuit components and the relevant programmable registers within the \roc.}
+\label{fig:puc}
+\end{center}
+\end{figure*}
+
+The signal processing within the PUC begins with an amplifier and shaper that convert the incident current into a reformatted voltage signal.  
+The signal is then fed into a voltage comparator, 
+the threshold of which is controlled by \vthrcomp with additional inputs possible from \vtrim and the \trimbits.  
+If the input signal exceeds the comparator's threshold, 
+the signal is stored for readout and the pixel notifies the logic at the periphery of the double column 
+that a hit has been registered and is ready to be transferred to the data buffer at the periphery.   
+This initiates the double column drain mechanism, 
+transferring pulse height (PH) values from any pixel with a hit registered since the previous drain onto the 80-wide PH buffer on the periphery.
+In addition to the ability to process charge produced by particles passing through the silicon sensor, 
+the \roc can produce an internal calibration signal whose amplitude is controlled via the \vcal~\dac.  
+This calibration signal serves as the input to the PUC in almost all of the tests described in this document.
+Table~\ref{tab:daclist} shows a subset of \dac registers in the PUC and explains their usage.
+\\\\
+
+\begin{table}[htbp]
+\caption{List of \dac registers relevant to module testing.  \dac names are denoted with \textcolor{blue}{blue} text.}
+\renewcommand{\arraystretch}{1.2}\begin{tabular}{|c|L|L|}
+\hline
+\dac Name & Usage & Tests that optimize this \dac \\
+\hline
+\hline
+\vcal & Calibration signal voltage. There are two \vcal ranges (low and high) with the high range being roughly 7 times larger.  
+The choice of low/high range is set via the \textcolor{blue}{CtrlReg} \dac. & None - set to an appropriate level depending on the test\\
+\hline
+\vana & Voltage supplied to the analog part of the PUC (amplifier and shaper) & \pretest ({\tt SetVana}) \\
+\hline
+\caldel & Delay in sending out calibration pulse with respect to the clock signal & \pretest ({\tt SetVthrCompCalDel}) \\
+\hline
+\vthrcomp & Voltage supplied to the comparator unit, inversely related to the signal voltage required to fire the comparator (i.e. the comparator threshold) & \pretest, \trimming \\
+\hline
+\vtrim & Additional voltage supplied to the comparator unit to decrease the threshold (in conjunction with the \trimbits) & \trimming \\
+\hline
+\trimbits & 4 bits per PUC that decrease the threshold of the comparator unit & \trimming \\
+\hline
+\phoffset & Constant offset added to the pulse height & \phopt \\
+\hline
+\phscale & Sets the slope of the PH vs. input signal strength curve & \phopt \\
+\hline
+\end{tabular}
+\label{tab:daclist}
+\end{table}

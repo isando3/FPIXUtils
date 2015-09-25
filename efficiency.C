@@ -37,24 +37,17 @@ int eff() {
 
 	char chpath[256];
     	getcwd(chpath, 255);
-	std::string path = chpath;
-    	std::string mod("pa243");
+	std::string path = chpath; 
+
+    	std::string mod("pa243"); //<<<<<  set this string to folder/module name config files are in.
 	//std::string mod("yhc691015sn3p35");
 
-
-
-
-
-	std::string dataPath =  path + "/" + mod + "data";
-    	//std::string measurementFolder =  mod + "data";
+	std::string dataPath =  path + "/" + mod + "data";  //<< adds "data" to end of config file name to create data directory name 
 	std::string configPath = path + "/" + mod; 
 
-	std::string HighRateFileName( "hr" );
-    	//std::stringstream ss1(measurementFolder);
+	std::string HighRateFileName( "hr" ); //<<< search sring to find high rate files in directory 
     	std::string moduleName = mod;
-    	//std::getline(ss1, moduleName, '_');
 
-	//std::string rootFileName("hr10ma.root");
 	std::string maskFileName("defaultMaskFile.dat");
 
 	const bool FIDUCIAL_ONLY = true; // don't change

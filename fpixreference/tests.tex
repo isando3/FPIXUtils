@@ -1,0 +1,41 @@
+% ======================================================================
+\section{Modules Tests}
+\label{s:tests}
+% ======================================================================
+
+Modules are tested using the pXar software framework.  
+More information on pXar can be found at https://twiki.cern.ch/twiki/bin/viewauth/CMS/Pxar.
+\\\\
+With a few exceptions, plots created by pXar represent data from a single \roc.
+For this reason, most plot names contain a ``C'' (short for ``chip'') followed by the \roc number (0-15).
+Most \roc plots have one entry per pixel, and are seen as 1D distributions
+or as 2D distributions ($52\times80$) organized by the row and column indices of the pixels in the \roc.
+Since, in principle, tests can be performed multiple times, all plot names are appended with a version number.
+Together, the template for pXar plot naming is ``PLOT\textunderscore NAME\textunderscore C\#\textunderscore V\#''.
+When pXar creates a 1D distribution from a 2D \roc map,  
+the 1D plot's name is equal to the original 2D plot name prepended with ``dist\textunderscore''.
+\\\\
+In the sample plots included in this document, \roc 0 is shown as an example.
+Analogous plots, produced for each of the 16 \rocs, are included in any pXar output file.
+
+% ----------------------------------------------------------------------
+
+\input{pretest.tex}
+
+\input{aliveTest.tex}
+
+\input{trimTest.tex}
+
+\input{phOptTest.tex}
+
+\input{gainPedTest.tex}
+
+\input{sCurvesTest.tex}
+
+\input{bb3Test.tex}
+
+\input{ivTest.tex}
+
+\input{fulltest.tex}
+
+% ----------------------------------------------------------------------
