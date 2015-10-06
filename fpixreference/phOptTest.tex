@@ -32,7 +32,7 @@ Secondly, it maps the pulse height responses of these two pixels as a function o
 The maps for these two pixels are then combined to find the optimal values for \phscale and \phoffset.
 After the optimal values for \phscale and \phoffset are set, several validation plots are made and recorded in the output file.
 \\\\
-First, the test identifies a low-gain and high-gain pixels using the same methodology for each.
+First, the test identifies a low-gain and high-gain pixel using the same methodology for each.
 Pixels within 3 columns or 5 rows of the edge of the \roc are not considered, 
 unless a suitable pixel cannot be found using those fiducial cuts, in which case those requirements are relaxed.
 In each case, the PH for each pixel is obtained at a chosen \vcal (Figures~\ref{fig:phopt_minphmap},~\ref{fig:phopt_maxphmap}), 
@@ -43,8 +43,8 @@ For finding the high-gain pixel, this process is performed with the maximum cali
 The safety margin is configurable, and by default is 98\%, i.e. a pixel will be chosen such that 98\% of pixels in the \roc have lower PHs.
 For finding the low-gain pixel, the process is performed with a \vcal slightly higher than the \vcal trimming target, 
 hard-coded to \vcal=60 (low range).
-For the chosen low-gain pixel, the \vcal value is found at which the pixel starts firing, 
-defined as the point in the PH vs. \vcal curve at which PH=10.
+For the chosen low-gain pixel, the \vcal value is found at which the pixel starts firing. 
+This point is defined as the \vcal strength that returns PH=10.
 This minimum \vcal value is recorded for use in the following step of the test.
 \\\\
 Once the two pixels of interest have been identified, the test proceeds to the optimization of \phscale and \phoffset.
@@ -53,7 +53,9 @@ A 2D scan is performed over \phscale and \phoffset, returning the PH at each poi
 For the low-gain pixel, the scan is performed at the minimum \vcal found in the previous step.
 For the high-gain pixel, the scan is performed at the user-defined ADC saturation target (default is \vcal = 100 (high range)).
 The optimal regime for the low-gain pixel is when the pulse height value is near to some small safety margin (default 20) above zero.
+Values within 1 DAC unit of PH=20 are considered to pass this requirement.
 The optimal regime for the high-gain pixel is when the ADC saturates at this \vcal, meaning that PH is near 255.
+Values 3 DAC units or less below the saturation value are considered to pass this requirement.
 Each of these regimes defines a band in the \phoffset vs. \phscale plane.
 The final values of \phscale and \phoffset are chosen from the intersection of these two bands (Figure~\ref{fig:phopt_solphvsdacdac_th2}).
 \\\\
