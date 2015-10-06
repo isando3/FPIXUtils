@@ -238,7 +238,6 @@ def setupSummaryCanvas(summaryPlot):
     palette.SetY2NDC(0.95)
     palette.SetLabelSize(0.06)
 
-
     # START ADDING AXES
 
     tickLength = 7
@@ -417,8 +416,11 @@ def produce1DDistributions(inputFileName, pathToHistogram, version=0):
     # get plots
     for roc in range(16):
         plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
-        twoDplot = inputFile.Get(plotPath).Clone()
-        plotName = pathToHistogram.split("/")[1]  # remove directory from name
+        if not inputFile.Get(plotPath):
+            print "missing plot:", plotPath
+            continue
+        else:
+            twoDplot = inputFile.Get(plotPath).Clone()
 
         oneDplotName = "dist_"+twoDplot.GetName()
         # we'll assume we're plotting an 8-bit DAC value
@@ -580,7 +582,11 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0):
     # get plots
     for roc in range(16):
         plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
-        plot = inputFile.Get(plotPath).Clone()
+        if not inputFile.Get(plotPath):
+            print "missing plot:", plotPath
+            plot = TH2D("","",52,0,52,80,0,80)  # insert empty plot
+        else:
+            plot = inputFile.Get(plotPath).Clone()
         plotName = pathToHistogram.split("/")[1]  # remove directory from name
         plot.SetName(plotName + "_V" + str(version) + "_Summary" + str(roc))
         plots.append(plot)
@@ -604,10 +610,12 @@ def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0):
     # get plots
     for roc in range(16):
         plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
-        plot = inputFile.Get(plotPath).Clone()
-        plotName = pathToHistogram.split("/")[1]  # remove directory from name
+        if not inputFile.Get(plotPath):
+            print "missing plot:", plotPath
+            plot = TH1D("","",256,0,256)  # insert empty plot
+        else:
+            plot = inputFile.Get(plotPath).Clone()
         plots.append(plot)
-
     summaryPlot = plots[0].Clone()
     summaryPlot.SetDirectory(0)
     newName = summaryPlot.GetName().split("_C")[0]
