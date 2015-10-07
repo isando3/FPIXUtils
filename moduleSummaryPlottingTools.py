@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from ROOT import *
 from array import array
+import collections
 import re
 
 # true dimensions of a sensor in 10^-4 m (active area + periphery)
@@ -466,7 +467,7 @@ def produce2DHistogramDictionary(inputFileName):
     inputFile.Close()
 
     # dictionary of histogram names, each entry containing the versions present
-    histogramDictionary = {}
+    histogramDictionary = collections.OrderedDict()
     for histogram in histogramList:
         version = histogram[-1:]
         chipIndex = histogram.rfind("_C")
@@ -511,7 +512,7 @@ def produce1DHistogramDictionary(inputFileName):
     inputFile.Close()
 
     # dictionary of histogram names, each entry containing the versions present
-    histogramDictionary = {}
+    histogramDictionary = collections.OrderedDict()
     for histogram in histogramList:
         version = histogram[-1:]
         chipIndex = histogram.rfind("_C")
