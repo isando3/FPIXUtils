@@ -28,7 +28,6 @@ MODULE_Y_PLOT_SIZE = 2 * ROC_PLOT_SIZE
 def flipTopRow(plots):
 
     for roc in range(8):
-
         histo = plots[roc].Clone()
         histo.SetDirectory(0)
         histo.Reset()
@@ -38,8 +37,11 @@ def flipTopRow(plots):
             for y in range(1, nBinsY+1):
                 content = plots[roc].GetBinContent(x,y)
                 error   = plots[roc].GetBinError(x,y)
-                histo.SetBinContent(nBinsX-x+1, nBinsY-y+1, content)
-                histo.SetBinError(nBinsX-x+1, nBinsY-y+1, error)
+                if plots[roc].ClassName() == "TProfile2D":
+                    histo.Fill(nBinsX-x, nBinsY-y, content)
+                else:
+                    histo.SetBinContent(nBinsX-x+1, nBinsY-y+1, content)
+                    histo.SetBinError(nBinsX-x+1, nBinsY-y+1, error)
 
         plots[roc] = histo
 
@@ -152,8 +154,9 @@ def findZRange(plots):
         plotMax = mean + nSigma*sigma
         oneDPlot.Delete()
 
+        NBINS = 10000
         # create zoomed 1D distribution to find normally distributed dataset
-        oneDPlotZoomed = TH1F("1d","1d",10000,plotMin,plotMax)
+        oneDPlotZoomed = TH1F("1d","1d",NBINS,plotMin,plotMax)
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
@@ -165,26 +168,24 @@ def findZRange(plots):
         plotMin = mean - nSigma*sigma
         plotMax = mean + nSigma*sigma
 
+        binWidth = (plotMax - plotMin)/float(NBINS)
         # create groomed 1D distribution to find min/max filled bins
-        oneDPlotGroomed = TH1F("1d","1d",10000,plotMin,plotMax)
+        oneDPlotGroomed = TH1F("1d","1d",NBINS,plotMin,plotMax)
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
                 if content > plotMin and content < plotMax:
                     oneDPlotGroomed.Fill(content)
         # get position of first and last bins with non-zero entries
-        rocMin = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindFirstBinAbove())
+        rocMin = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindFirstBinAbove()) + binWidth
         rocMax = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindLastBinAbove())
+
         oneDPlotGroomed.Delete()
 
         if rocMax > zMax:
             zMax = rocMax
         if rocMin < zMin:
             zMin = rocMin
-
-    # fix the ranges for PixelAlive type tests
-    if zMax - zMin < 0.0001:
-        zMin=0
 
     # round to nearest integer before returning
     return (floor(zMin), ceil(zMax))
@@ -453,7 +454,8 @@ def produce2DHistogramDictionary(inputFileName):
         dir = dirKey.GetName()
         inputFile.cd(dir)
         for plotKey in gDirectory.GetListOfKeys():
-            if re.match ('TH2', plotKey.GetClassName()): # found a 2-D histogram
+            if re.match ('TH2', plotKey.GetClassName()) or \
+               re.match ('TProfile2', plotKey.GetClassName()): # found a 2-D plot
                 plotName = plotKey.GetName()
                 pathToHistogram = dir+"/"+plotName
                 plot = inputFile.Get(pathToHistogram)
@@ -467,7 +469,8 @@ def produce2DHistogramDictionary(inputFileName):
     histogramDictionary = {}
     for histogram in histogramList:
         version = histogram[-1:]
-        histoName = histogram.split("_C")[0]
+        chipIndex = histogram.rfind("_C")
+        histoName = histogram[:chipIndex]
         # if it's not already in the list, add it
         if not histoName in histogramDictionary:
             histogramDictionary[histoName] = []
@@ -511,7 +514,8 @@ def produce1DHistogramDictionary(inputFileName):
     histogramDictionary = {}
     for histogram in histogramList:
         version = histogram[-1:]
-        histoName = histogram.split("_C")[0]
+        chipIndex = histogram.rfind("_C")
+        histoName = histogram[:chipIndex]
         # if it's not already in the list, add it
         if not histoName in histogramDictionary:
             histogramDictionary[histoName] = []
@@ -618,15 +622,17 @@ def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0):
         plots.append(plot)
     summaryPlot = plots[0].Clone()
     summaryPlot.SetDirectory(0)
-    newName = summaryPlot.GetName().split("_C")[0]
+    chipIndex = summaryPlot.GetName().rfind("_C")
+    newName = summaryPlot.GetName()[:chipIndex]
     summaryPlot.SetName(newName + "_V" + str(version) + "_Summary")
     oldTitle = summaryPlot.GetTitle()
     if "(C" in oldTitle:
         newTitle1 = oldTitle.split("(C")[0][:-1]
         newTitle2 = oldTitle.split("(C")[1][2:]
     else:
-        newTitle1 = oldTitle.split("_C")[0]
-        newTitle2 = oldTitle.split("_C")[1][1:]
+        chipIndex = oldTitle.rfind("_C")
+        newTitle1 = oldTitle.split("_C")[:chipIndex]
+        newTitle2 = oldTitle.split("_C")[chipIndex+1:]
     summaryPlot.SetTitle(newTitle1 + newTitle2)
     for roc in range(1,16):
         summaryPlot.Add(plots[roc])
