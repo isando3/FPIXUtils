@@ -58,8 +58,10 @@ def analyze(inputFile, outputDir):
     line = qfile.readlines()
     for l in range(2,len(line)):
        values = string.split(line[l])
-       slope[l-2] = values[1]+values[2]+values[3]
-       offset[l-2] = values[4]+values[5]+values[6].strip('\n')
+#       slope[l-2] = values[1]+values[2]+values[3]
+#       offset[l-2] = values[4]+values[5]+values[6].strip('\n')
+       slope[l-2] = float(values[1])
+       offset[l-2] = float(values[4])
 
     testtime = SE(top, 'TIME')
     testtime.text = str(datetime.now()) 
@@ -82,7 +84,7 @@ def analyze(inputFile, outputDir):
     	pic=SE(top, 'PIC')
     	attachName(pic)
     	file=SE(pic, 'FILE')
-    	file.text='Qplot_XRFResult_C' + str(i) +'.png'
+    	file.text='Qplot_XRFResult_'+inputFile+'_C' + str(i) +'.png'
         part=SE(pic,'PART')
         part.text='sidet_p'
 
