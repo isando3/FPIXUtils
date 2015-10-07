@@ -27,13 +27,8 @@ from ROOT import *
 #|_| 
 #
 
-<<<<<<< HEAD
-myfilename = "_pa236_090915.root"
-myfileoutname = "XRF_pa236_"
-=======
-myfilename = "_pa225_090415.root" #"_pa225_090915.root"
-myfileoutname = "XRFResult_p220"
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
+myfilename = ".root" #"_pa225_090915.root"
+myfileoutname = "XRFResult_"
 
 parser.add_option('--setup', type='string', action='store',
                   default='KU',
@@ -66,46 +61,27 @@ parser.add_option('--XRSource', type='string', action='store',
                   help='Name of the XRay source, valid options: Cu or Mo ')
 
 parser.add_option('--CuFile', type='string', action='store',
-<<<<<<< HEAD
                   default= "fluoro" + myfilename, #'CuXray.root',
-=======
-                  default= "fluor" + myfilename, #'CuXray.root',
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
                   dest='CuFile',
                   help='Name of the Cu root file (when Mo is the XRaySource) ')
 
 parser.add_option('--MoFile', type='string', action='store',
-<<<<<<< HEAD
                   default= "fluoro" + myfilename, #'MoXray.root',
-=======
-                  default= "fluor" + myfilename, #'MoXray.root',
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
                   dest='MoFile',
                   help='Name of the Mo root file (when Cu is the XRaySource ')
 
 parser.add_option('--AgFile', type='string', action='store',
-<<<<<<< HEAD
                   default= "fluoro" + myfilename, #'AgXray.root',
-=======
-                  default= "fluor" + myfilename, #'AgXray.root',
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
                   dest='AgFile',
                   help='Name of the Ag root file ')
 
 parser.add_option('--SnFile', type='string', action='store',
-<<<<<<< HEAD
                   default="fluoro" + myfilename, #'SnXray.root',
                   dest='SnFile',
                   help='Name of the Sn root file ')
+
 parser.add_option('--InFile', type='string', action='store',
                   default= "fluoro" + myfilename, #'InXray.root',
-=======
-                  default="fluor" + myfilename, #'SnXray.root',
-                  dest='SnFile',
-                  help='Name of the Sn root file ')
-parser.add_option('--InFile', type='string', action='store',
-                  default= "fluor" + myfilename, #'InXray.root',
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
                   dest='InFile',
                   help='Name of the In root file ')
 
@@ -204,7 +180,7 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
             print 'Skipping roc', i
             continue  
         stats= open(output+material+'C_'+str(i)+'_stats.txt','w')
-        hist = histo +str(i)+"_V0"
+	hist = histo +str(i)+"_V0"
         directory = rootfile.Get('Xray')
         keys = directory.GetListOfKeys()
         allkeys = []
@@ -546,12 +522,9 @@ def ConversionPlot(rocs,output, XRSource):
     convfactag = 22163/3.6
     convfactsn= 25271/3.6
     convfactin = 24207/3.6
-<<<<<<< HEAD
-=======
     sumoutfile = "SummaryQPlots_" + output + ".txt"
     sumout = open( sumoutfile, "w" )
     sumout.write( myfileoutname + " Summury of QPlots Slopes.\n" +  "      e^{-}/Vcal:    Intercept: \n" )
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
     qplotfit = open("SummaryQplots.txt",'w')
     n_oh = TH1F('n_oh','N_o', 100,0,1000)
     slopeh = TH1F('Slope','Slope',100, 0,100)
@@ -807,11 +780,7 @@ def ConversionPlot(rocs,output, XRSource):
 	n_o_er = gr.GetFunction("fit").GetParError(0)
         slope = gr.GetFunction("fit").GetParameter(1)
 	pn_o = -(n_o/slope)
-<<<<<<< HEAD
-	pn_o_er =(-1)* n_o_er/slope
-=======
 	pn_o_er =abs(n_o_er/slope)
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
 	pslope = 1/slope
         slope_err = gr.GetFunction("fit").GetParError(1)
 	pslope_err = slope_err /( slope*slope)
@@ -819,11 +788,8 @@ def ConversionPlot(rocs,output, XRSource):
 	print "no error:", pn_o_er 
         print "slope:",pslope
 	print "slope error:",pslope_err
-<<<<<<< HEAD
-=======
 	sumout.write( "C_" + str(i) + "  "+ '{0:.2}'.format(pslope) + " +/- " + '{0:.1}'.format(pslope_err) + 
                         "        " + '{0:.2}'.format(pn_o) + " +/- " + '{0:.2}'.format(pn_o_er)+ '\n' )
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
         gStyle.SetOptFit(0)
         gr.Draw("AP")
         #gr.GetYaxis().SetRange(0,500)
@@ -847,12 +813,8 @@ def ConversionPlot(rocs,output, XRSource):
         textslope.SetTextColor(kBlack)
         textslope.SetTextSize(0.05)
         textslope.DrawLatex(0.15,0.9,title)
-<<<<<<< HEAD
-	textslope.DrawLatex(0.15,0.8,"e^{-}/Vcal: "+ '{0:.2}'.format(pslope) + " \pm " + '{0:.1}'.format(pslope_err) + " Intercept: " + '{0:.2}'.format(pn_o) + " \pm " + '{0:.2}'.format(pn_o_er))
-=======
 	textslope.DrawLatex(0.15,0.8,"e^{-}/Vcal: "+ '{0:.2}'.format(pslope) + " \pm " + '{0:.1}'.format(pslope_err) + 
 			" Intercept: " + '{0:.2}'.format(pn_o) + " \pm " + '{0:.2}'.format(pn_o_er))
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
         textslope.DrawLatex(0.2,0.2,"  Cu                            Mo               Ag   In   Sn")                            
 	gStyle.SetOptFit(0)
         c1.Update()
@@ -894,10 +856,7 @@ def ConversionPlot(rocs,output, XRSource):
     slopeh.Draw()
     c3.Update()
     c3.SaveAs(output+'Distribution_Slope.png')
-<<<<<<< HEAD
-=======
     sumout.close()
->>>>>>> 13ff37b478c5706f4604dee750c7e3f8e5d56bb8
     return  
 
 #                 _       
