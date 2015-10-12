@@ -29,9 +29,9 @@ from moduleSummaryPlottingTools import *
 
 gROOT.SetBatch()
 
-canvas = produceSummaryPlot(arguments.inputFileName,
-                            arguments.pathToHistogram,
-                            arguments.version)
+canvas = produce2DSummaryPlot(arguments.inputFileName,
+                              arguments.pathToHistogram,
+                              arguments.version)
 if arguments.outputFileName:
     name = arguments.outputFileName
 else:
