@@ -570,7 +570,10 @@ def add1DDistributions(inputFileName, histogramDictionary):
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
             for distribution in distributions:
-                gDirectory.Delete(distribution.GetName()+";*")  # remove duplicates
+                # if the plot's already there, don't mess with it
+                existingPlot = gDirectory.Get(distribution.GetName())
+                if existingPlot:
+                    continue
                 print "adding 1D distribution: "+directory+"/"+distribution.GetName()
                 distribution.Write()
             inputFile.Close()
@@ -628,12 +631,13 @@ def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0):
     summaryPlot.SetName(newName + "_V" + str(version) + "_Summary")
     oldTitle = summaryPlot.GetTitle()
     if "(C" in oldTitle:
-        newTitle1 = oldTitle.split("(C")[0][:-1]
-        newTitle2 = oldTitle.split("(C")[1][2:]
+        chipIndex = oldTitle.rfind("(C")
+        versionIndex = oldTitle.rfind("(V")
     else:
         chipIndex = oldTitle.rfind("_C")
-        newTitle1 = oldTitle.split("_C")[:chipIndex]
-        newTitle2 = oldTitle.split("_C")[chipIndex+1:]
+        versionIndex = oldTitle.rfind("_V")
+    newTitle1 = oldTitle[:chipIndex]
+    newTitle2 = oldTitle[versionIndex:]
     summaryPlot.SetTitle(newTitle1 + newTitle2)
     for roc in range(1,16):
         summaryPlot.Add(plots[roc])
