@@ -26,7 +26,8 @@ or until 10 iterations have been performed.  The output is shown in Figures~\ref
 %The {\tt SetTimings} test \textcolor{red}{FIXME – talk to Doug}
 \\\\
 The {\tt SetVthrCompCalDel} subtest optimizes the values of the \vthrcomp and \caldel~\dacs.
-A sample pixel is chosen from within each \roc for this test and is assumed to be representative of normal pixel performance.
+A sample pixel is chosen from within each \roc with the {\tt
+  FindWorkingPixel} function for this test and is assumed to be representative of normal pixel performance.
 A scan is performed over \vthrcomp and \caldel to determine which combinations of them put the pixel into an operational state.
 At each point in the 256 $\times$ 256 value parameter space,
 a number of calibration pulses (default is 5) are sent to the PUC of the chosen pixel.
@@ -41,8 +42,11 @@ The region of \vthrcomp $>$ 150 has zero efficiency because
 the threshold of the comparator is so low that the pixel is constantly firing on electronic noise,
 and when the calibration pulse is injected,
 the pixel is already in an unresponsive state waiting to be read out.
-By default \vthrcomp is set 50 units higher than the lower edge of the operating plateau,
-and \caldel is set halfway between the left and right edges of the plateau at the chosen \vthrcomp value.
+By default \vthrcomp is set 50 DACs higher than the lower edge of the operating plateau,
+and \caldel is set halfway between the left and right edges of the
+plateau at the chosen \vthrcomp value. Alternatively, the working
+point can be set at a point below the higher edge of the operating
+plateau by specifying a negative {\tt DeltaVthrComp} value.
 The black dot centered within the white square denotes the chosen working point for these two parameters.
 Figure~\ref{fig:pretest_pretestCalDel} shows the values of \caldel chosen by the test.
 
@@ -54,14 +58,15 @@ Figure~\ref{fig:pretest_pretestCalDel} shows the values of \caldel chosen by the
   \includegraphics[width=1.0\textwidth]{figures/pretest_programROC.pdf}
   \caption{Created by the {\tt ProgramRoc} subtest. 
     Plotted is the difference in \iana for cases of \vana on/off, as a function of \roc number.
-    Values for programmable \rocs are non-zero.}
+    Values for programmable \rocs are non-zero. Note the
+    ordinate zero-suppression.}
   \label{fig:pretest_programROC}
 \end{minipage}
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/pretest_Iana.pdf}
   \caption{Created by the {\tt SetVana} subtest.  
-    Plotted are the final values of \iana (typo in y-axis label), as a function of \roc number.
+    Plotted are the final values of \iana, as a function of \roc number.
     The default target value for \iana is 24 mA.}
   \label{fig:pretest_Iana}
 \end{minipage}
@@ -80,7 +85,8 @@ Figure~\ref{fig:pretest_pretestCalDel} shows the values of \caldel chosen by the
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/pretest_fwp_c12_r22.pdf}
   \caption{Created by the {\tt FindWorkingPixel} subtest.
-  Similar to Figure~\ref{fig:pretest_pretestVthrCompCalDel_c12_r22}.}
+  Similar to Figure~\ref{fig:pretest_pretestVthrCompCalDel_c12_r22},
+  but not presetting \vcal.}
   \label{fig:pretest_fwp_c12_r22}
 \end{minipage}
 \end{figure}
@@ -95,7 +101,9 @@ Figure~\ref{fig:pretest_pretestCalDel} shows the values of \caldel chosen by the
 \hspace{0.3cm}
 \begin{minipage}{0.45\textwidth}
   \includegraphics[width=1.0\textwidth]{figures/pretest_pretestCalDel.pdf}
-  \caption{The chosen values of \caldel as a function of \roc number.}
+  \caption{The chosen values of \caldel as a function of \roc
+    number. The size of the error bars indicates the width of the
+    \caldel plateau.}
   \label{fig:pretest_pretestCalDel}
 \end{minipage}
 \end{figure}
