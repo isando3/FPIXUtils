@@ -22,7 +22,7 @@ Tini=os.getenv('HOME')+'/elComandante/config/elComandante.ini.default'
 Tconf=os.getenv('HOME')+'/elComandante/config/elComandante.conf.default'
 
 testString={}
-testString['Pretest']='Pretest@T'
+testString['Pretest']='Pretest@27'
 testString['Fulltest']='Fulltest@T'
 IVString = ""
 for i in range(len(moduleNames)):

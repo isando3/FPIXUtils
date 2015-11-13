@@ -27,6 +27,7 @@ import os
 import subprocess
 import sys
 import zipfile
+from shutil import rmtree
 
 if len(sys.argv)<2:
     inputDir='/Users/jstupak/CMS/pixel/ShareTestResults/M_FR_902_ElComandanteTest_2015-04-16_15h24m_1429215874'
@@ -49,6 +50,40 @@ def attachName(parent):
     name.text=moduleName
 
 ################################################################
+
+def getHAHDPlot(f, outputDir):
+
+    h=f.Get('HA')
+    
+    c=TCanvas()
+    h.Draw()
+    c.SaveAs(outputDir+'/HA.png')
+
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='HA.png'
+    #txt=SE(pic, 'TXT')
+    #txt.text='HA.txt'
+    part=SE(pic,'PART')
+    part.text='sidet_p'
+
+
+    h=f.Get('HD')
+    
+    c=TCanvas()
+    h.Draw()
+    c.SaveAs(outputDir+'/HD.png')
+
+    pic=SE(top, 'PIC')
+    attachName(pic)
+    file=SE(pic, 'FILE')
+    file.text='HD.png'
+    #txt=SE(pic, 'TXT')
+    #txt.text='HD.txt'
+    part=SE(pic,'PART')
+    part.text='sidet_p'
+
 
 def getProgramROCPlot(f, deadROCs, outputDir):
     h=f.Get('Pretest/programROC_V0')
@@ -523,6 +558,7 @@ def analyzePreTest(inputDir, outputDir, log, data):
     ct=SE(test,'CAN_TIME')
     ct.text=str(int(canTime))
 
+    getHAHDPlot(data, outputDir)
     getProgramROCPlot(data, deadROCs, outputDir)
     getVanaPlot(data, outputDir)
     getIanaPlot(data, outputDir)
@@ -887,10 +923,11 @@ def makeXML(inputDir):
 
     outputDir=os.environ['HOME']+'/dbUploads/'+moduleName
     if os.path.exists(outputDir):
-        print 'WARNING: outputDir exists'
-        if not DEBUG: exit()
-    else:
-        os.makedirs(outputDir)
+        #print 'WARNING: outputDir exists'
+        #if not DEBUG: exit()
+        rmtree(outputDir)
+    
+    os.makedirs(outputDir)
 
     log={}
     data={}
