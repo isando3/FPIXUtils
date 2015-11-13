@@ -31,14 +31,14 @@ int eff(){
 	char chpath[256];
     	getcwd(chpath, 255);
 	std::string path = chpath;
-    	std::string mod("pa236");//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
+    	std::string mod("pa225");//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
 	// <<<<<< change folder/module name to run in 
 	//std::string mod("yhc691015sn3p35");
 
 	std::string dataPath =  path + "/" + mod + "data";
     	//std::string measurementFolder =  mod + "data";
 	std::string configPath = path + "/" + mod; 
-	std::string HighRateSaveFileName( "Results_Hr" );
+	std::string HighRateSaveFileName( "Results_"+ mod );
 	std::string HighRateFileName( "hr" );//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<                 
 	int namelength = HighRateFileName.length();
 	// <<<<<<<<<<<<<<<<<<<  change Highrate File name to use

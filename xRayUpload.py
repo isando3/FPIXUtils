@@ -7,7 +7,7 @@ Usage: python xRayUpload.py <input root file>
 """
 
 ##############################################################
-outputDir='/Users/jstupak/tmp'
+outputDir='.'
 ##############################################################
 
 from xml.etree.ElementTree import Element, SubElement, Comment
@@ -15,17 +15,14 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 SE=SubElement
 
-import ROOT
-#ROOT.gErrorIgnoreLevel = ROOT.kWarning
-from ROOT import *
-gStyle.SetOptStat(0)
-gROOT.SetBatch(1)
-
 from glob import glob
 import os
 import subprocess
 import sys
 import zipfile
+import re
+import string
+from datetime import datetime
 
 DEBUG=False
 
@@ -52,113 +49,56 @@ def attachName(parent):
 ################################################################
 
 def analyze(inputFile, outputDir):
-    rocs=SE(top, 'ROCS')
-    attachName(rocs)
 
-    c=TCanvas()
-    slope=inputFile.GetKey('Ele/Vcal').ReadObj()
-    offset=inputFile.Get('Offset')
-    badBumps=inputFile.Get('BadBumps')
 
-    slopes=[]; offsets=[]; bb=[]
+    slope = range(16) 
+    offset = range(16)
+
+    qfile = open("SummaryQPlots_XRFResult_"+inputFile+".txt",'r')
+    line = qfile.readlines()
+    for l in range(2,len(line)):
+       values = string.split(line[l])
+#       slope[l-2] = values[1]+values[2]+values[3]
+#       offset[l-2] = values[4]+values[5]+values[6].strip('\n')
+       slope[l-2] = float(values[1])
+       offset[l-2] = float(values[4])
+
+    testtime = SE(top, 'TIME')
+    testtime.text = str(datetime.now()) 
+
+    test = SE(top, 'TEST')
+    attachName(test)
+
+    rocs=SE(test, 'ROCS')
+
     for i in range(16):
         roc=SE(rocs, 'ROC')
         position=SE(roc, 'POSITION')
         position.text=str(i)
         xray_offset=SE(roc, 'XRAY_OFFSET')
-        xray_offset.text=str(round(offset.GetBinContent(i+1),2))
-        offsets.append(round(offset.GetBinContent(i+1),2))
+        xray_offset.text=str(offset[i])
         xray_slope=SE(roc, 'XRAY_SLOPE')
-        xray_slope.text=str(round(slope.GetBinContent(i+1),2))
-        slopes.append(round(slope.GetBinContent(i+1),2))
-        BADBUMPS_XRAY=SE(roc, 'BADBUMPS_XRAY')
-        BADBUMPS_XRAY.text=str(int(badBumps.GetBinContent(i+1)))
-        bb.append(int(badBumps.GetBinContent(i+1)))
+        xray_slope.text=str(slope[i])
+
+    for i in range(16):
+    	pic=SE(top, 'PIC')
+    	attachName(pic)
+    	file=SE(pic, 'FILE')
+    	file.text='Qplot_XRFResult_'+inputFile+'_C' + str(i) +'.png'
+        part=SE(pic,'PART')
+        part.text='sidet_p'
 
     pic=SE(top, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
-    file.text='slope.png'
-    slope.Draw()
-    c.SaveAs(outputDir+'/'+file.text)
-    txt=SE(pic, 'TXT')
-    txt.text='slope.txt'
-    comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('\nslopes='+str(slopes))
+    file.text='Results_Hr_Eff_'+inputFile+'.png'
     part=SE(pic,'PART')
     part.text='sidet_p'
 
     pic=SE(top, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
-    file.text='offset.png'
-    offset.Draw()
-    c.SaveAs(outputDir+'/'+file.text)
-    txt=SE(pic, 'TXT')
-    txt.text='offset.txt'
-    comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('\noffsets='+str(offsets))
-    part=SE(pic,'PART')
-    part.text='sidet_p'
-
-    mean=inputFile.Get('Means')
-  
-    pic=SE(top, 'PIC')
-    attachName(pic)
-    file=SE(pic, 'FILE')
-    file.text='mean.png'
-    mean.Draw('COLZ')
-    c.SaveAs(outputDir+'/'+file.text)
-    txt=SE(pic, 'TXT')
-    txt.text='mean.txt'
-    part=SE(pic,'PART')
-    part.text='sidet_p'
-
-    comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('\n')
-    for yBin in range(mean.GetNbinsY()):
-        s=mean.GetYaxis().GetBinLabel(yBin+1)
-        l=[]
-        for xBin in range(16):
-            l.append(round(mean.GetBinContent(xBin+1,yBin+1),2))
-        comment.write(s+'='+str(l)+'\n')
-
-    pic=SE(top, 'PIC')
-    attachName(pic)
-    file=SE(pic, 'FILE')
-    file.text='BadBumps.png'
-    c.SetLogy(True)
-    badBumps.Draw()
-    c.SaveAs(outputDir+'/'+file.text)
-    c.SetLogy(False)
-    txt=SE(pic, 'TXT')
-    txt.text='BadBumps.txt'
-    comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('\nnBadBumpsXRay='+str(bb))
-    part=SE(pic,'PART')
-    part.text='sidet_p'
-
-    inefficiency=inputFile.Get('Ineffiency')  #mis-spelled to match example input
-    pic=SE(top, 'PIC')
-    attachName(pic)
-    file=SE(pic, 'FILE')
-    file.text='Inefficiency.png'
-    inefficiency.Draw('COLZ')
-    c.SaveAs(outputDir+'/'+file.text)
-    txt=SE(pic, 'TXT')
-    txt.text='Inefficiency.txt'
-    comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('\n')
-    
-    inefficiencies=[]; fluxes=[]
-    for xBin in range(inefficiency.GetNbinsX()):
-        for yBin in range(inefficiency.GetNbinsY()):
-            if inefficiency.GetBinContent(xBin,yBin)>0:
-                inefficiencies.append(round(inefficiency.GetYaxis().GetBinCenter(yBin),3))
-                fluxes.append(round(inefficiency.GetBinContent(xBin,yBin),2))
-                continue
-    comment.write('inefficiency='+str(inefficiencies)+'\n')
-    comment.write('flux='+str(fluxes))
+    file.text='Results_Hr_Rate_by_DCol_'+inputFile+'.png'
     part=SE(pic,'PART')
     part.text='sidet_p'
 
@@ -168,11 +108,10 @@ def analyze(inputFile, outputDir):
 def makeXML(inputFile):
     
     global moduleName
-    moduleName=os.path.basename(inputFile).split('.')[0]
-    inputFile=TFile(inputFile)
+    moduleName = string.upper(inputFile[0]+'-'+inputFile[1]+'-'+inputFile[2]+'-'+inputFile[3:5])
 
     global outputDir
-    outputDir+='/'+moduleName
+    outputDir+='/'+inputFile
     if os.path.exists(outputDir):
         print 'WARNING: outputDir exists'
         #exit()
@@ -194,6 +133,10 @@ def makeXML(inputFile):
     #print
     #print prettify(top)
     #print
+
+    os.system ("cp %s %s" % ("Results_Hr_Eff_"+inputFile+ ".png", outputDir))
+    os.system ("cp %s %s" % ("Results_Hr_Rate*.png", outputDir))
+    os.system ("cp %s %s" % ("Qplot_XRFResult_*.png", outputDir))
 
     os.chdir(outputDir)
     zip=zipfile.ZipFile('../'+moduleName+'.zip', mode='w')
