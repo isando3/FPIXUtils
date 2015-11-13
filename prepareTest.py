@@ -67,6 +67,8 @@ subprocess.call(['cp',Tini,ini])
 subprocess.call(['cp',Tconf,conf])
 
 for replacement in replacements:
-    print replacement
+    #print replacement
     subprocess.call(['sed','s/'+replacement[0]+'/'+replacement[1]+'/','--in-place',ini])
     subprocess.call(['sed','s/'+replacement[0]+'/'+replacement[1]+'/','--in-place',conf])
+
+print '\npreparation complete\n'

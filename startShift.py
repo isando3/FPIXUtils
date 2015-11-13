@@ -28,4 +28,4 @@ f.write(']')
 
 f.close()
 
-print 'Config file created'
+print '\nConfig file created\n'
