@@ -12,7 +12,7 @@ from sys import argv
 from shutil import move
 import os
 
-outputDir=os.environ['HOME']+'/ShareTestResults/elComandante'
+outputDir=os.environ['HOME']+'/ProductionTestResults'
 #outputDir=os.environ['HOME']+'/john'
 
 """
