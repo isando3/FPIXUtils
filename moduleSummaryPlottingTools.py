@@ -138,8 +138,10 @@ def findZRange(plots):
         if "PixelAlive" in plot.GetName() or \
            "MaskTest" in plot.GetName() or \
            "AddressDecodingTest" in plot.GetName():
-            return(plot.GetMinimum(),plot.GetMaximum())
-
+            # avoid empty ROCs screwing up the range
+            if plot.GetMinimum() != plot.GetMaximum():
+                return(plot.GetMinimum(),plot.GetMaximum())
+            continue
 
         # create 1D distribution to get mean, RMS
         rocMin = plot.GetMinimum() - 0.00001
