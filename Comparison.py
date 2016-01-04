@@ -75,9 +75,9 @@ def makeIV(input):
     nBins=len(values)
     xMin=0
     xMax=nBins*round(values[1][0]-xMin,0)
-    binWidth=float(xMax-xMin)/(nBins-1)
+    binWidth=float(xMax-xMin)/nBins
     xMin-=binWidth/2
-    xMax+=binWidth/2
+    xMax-=binWidth/2
     
     h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
     for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
