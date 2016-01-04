@@ -169,15 +169,16 @@ class Comparison:
 
         textPad.cd()
 
-        height=0.1*len(self.info.split())/4
-        text=TPaveText(.1,.9-height,.9,.9,"NB")
+        wordsPerLine=5
+        height=0.1*len(self.info.split())/wordsPerLine
+        text=TPaveText(.1,.9-min(height,0.8),.9,.9,"NB")
         text.SetFillColor(kWhite)
         text.SetTextAlign(13)
 
         t=[]
         line=[]
         for word in self.info.split():
-            if len(line)>=4: 
+            if len(line)>=wordsPerLine: 
                 t.append(line)
                 line=[word]
             else:
@@ -186,7 +187,6 @@ class Comparison:
 
         for line in t:
             text.AddText(' '.join(line))
-            print ' '.join(line)
         text.Draw()
 
         c.cd()
@@ -263,7 +263,7 @@ class Comparison:
         '''
 
         while True:
-            input=raw_input('\n'+self.info+'\n\n'+'Press enter to submit results\n'+'Enter "-1" to go back a test\n\n')
+            input=raw_input(8*'\n'+self.info+'\n\n'+'Press enter to submit results.\n'+'Enter "-1" to go back a test.\n\n')
             if input=='-1': 
                 #refPad.Close()
                 #testPad.Close()
