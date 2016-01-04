@@ -16,8 +16,11 @@ from config import *
 from fnmatch import fnmatch
 
 c=TCanvas('c','',1000,850)
-refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
+refPad=TPad('refPad','Reference Plot',.666,0,1,.5)
 refPad.Draw()
+
+textPad=TPad('textPad','',.666,.5,1,1)
+textPad.Draw()
 
 testPad=TPad('testPad','',0,0,.666,1)
 testPad.Divide(2,2)
@@ -163,6 +166,28 @@ class Comparison:
         if 'thr_scurveVcal_Vcal' in self.hName:
             #ref.GetXaxis().SetRangeUser(15,55)
             pass
+
+        textPad.cd()
+
+        height=0.1*len(self.info.split())/4
+        text=TPaveText(.1,.9-height,.9,.9,"NB")
+        text.SetFillColor(kWhite)
+        text.SetTextAlign(13)
+
+        t=[]
+        line=[]
+        for word in self.info.split():
+            if len(line)>=4: 
+                t.append(line)
+                line=[word]
+            else:
+                line.append(word)
+        t.append(line)
+
+        for line in t:
+            text.AddText(' '.join(line))
+            print ' '.join(line)
+        text.Draw()
 
         c.cd()
 
