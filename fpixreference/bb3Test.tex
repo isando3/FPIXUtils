@@ -20,7 +20,8 @@ The calibration pulse then makes its way back into the \roc via the bump bond an
 Using this signal path that contains the bump bond, 
 the presence of the bump and the quality of the electrical connection it establishes between the sensor and the \roc can be tested.
 
-Currently in pXar there are four variants of bump bonding tests, optimized to different module types.  
+Currently in pXar there are four variants of bump bonding tests,
+optimized for different bump bonding processes (and bump ball sizes).  
 For FPix modules, the standard test is the {\tt BB3} test.
 This document focuses on this specific \bb test version.
 
@@ -50,7 +51,7 @@ show the 1D distributions of the even and odd columns in Figure~\ref{fig:bb3_thr
 along with their best-fit curves and arrows located $5\times\sigma$ above the mean of the curve.
 The means of these distributions are noticeably different, which is why these two distributions are fit separately.
 These distributions are then recombined, but since they have different means and widths,
-it doesn't make sense to combine them directly.
+it does not make sense to combine them directly.
 Instead, each entry is scaled to represent the number of standard deviations it is away from the mean.
 We refer to this scaled value as the fit ``residual''.
 Figures~\ref{fig:bb3_rescaledThr} and \ref{fig:bb3_dist_rescaledThr} show a 2D \roc map and a 1D distribution of these fit residuals, respectively.

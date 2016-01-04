@@ -11,23 +11,26 @@ The \trimming test accounts for variations in the sensitivities of the 4,160 PUC
 By using the combined effect of the \vthrcomp, \vtrim, and the \trimbits,
 it attempts to calibrate every PUC to the same threshold in terms of the calibration pulse strength.
 These \dacs can be seen in Figure~\ref{fig:puc} as inputs into the ``trimming'' and ``comparator'' elements of the PUC.
-\vtrim sets a course scale for the trimming and the \trimbits further fine tune the trimming.
+\vtrim sets a coarse scale for the trimming and the \trimbits further fine tune the trimming.
 While \vthrcomp and \vtrim are \roc-wide values, there exist four \trimbits for every pixel in a \roc.
 ``Trimming'' a \roc using \vtrim and the \trimbits effectively means reducing the signal amplitude required to fire the comparator.
 Once a module is trimmed, all pixels should turn on at a user-defined threshold (default is \vcal = 35 (low range)).
 Thus, input signals with less strength than this threshold will not fire the comparator and will not be registered as a hit.
 This ensures that all pixels within a module have a uniform level of zero-suppression.
 Additionally, the \trimbit subtest verifies that all trim bits are working
-by sequentially enabling each bit and observing its effect on the pixel threshold distribution.
+by sequentially enabling each bit and observing its effect on the
+pixel threshold distribution (there is not much added benefit of this
+test once a ROC has been trimmed successfully---which would not be
+possible with defective trim bits). 
 
-s\subsubsection{Methodology}
+\subsubsection{Methodology}
 
-It's important to understanding the relevant \dacs for this test: \vthrcomp, \vtrim, and the \trimbits.
+It is important to understand the relevant \dacs for this test: \vthrcomp, \vtrim, and the \trimbits.
 \vthrcomp sets a baseline threshold for the comparator unit.
 This threshold can be reduced (i.e. ``trimmed'') through the combined effect of \vtrim and the \trimbits.
 \vtrim sets the \roc-wide scale for the effect of the \trimbits.
 Hence, it can be thought of as a multiplicative factor being applied to the \trimbits.
-It's important to note that a trim bit is ``enabled'' when set to zero, 
+It is important to note that a trim bit is ``enabled'' when set to zero, 
 such that all bits are active when \trimbits=0 [0000] and all bits are inactive when \trimbits=15 [1111].
 Thus, the combined effect of \vtrim and the \trimbits is proportional to \vtrim$\times$(15-\trimbits).
 The trimming is effectively turned off when either \vtrim=0 or when \trimbits=15.
@@ -49,7 +52,7 @@ This is because the effect of \vtrim and the \trimbits is to reduce the threshol
 Therefore, with \vcal set to the target value, none of pixels should be firing with \vtrim set to zero.
 Furthermore, this minimum \vthrcomp value is required to be at least 10 \dac units 
 below the \vthrcomp turn-off value for the pixel with the smallest \vthrcomp turn-off.
-This ensures none of the pixels could potentially fire on noise at the this \vthrcomp value.
+This ensures none of the pixels could potentially fire on noise at this \vthrcomp value.
 \\\\
 With an optimal setting for \vthrcomp, the test targets the optimization of \vtrim.
 The effect of the \trimbits on the lowering of the comparator threshold is multiplied by the value of \vtrim.
@@ -86,22 +89,22 @@ a final s-curve test is performed (Figures~\ref{fig:trim_thr_TrimThrFinal_vcal},
 The \trimbit test verifies that all \trimbits are programmable.
 Since (in conjunction with \vtrim) the \trimbits alter the threshold of the comparator,
 enabling a given bit should have a measurable effect on the \vcal turn-on for the pixel in question.
-\vtrim is set to the maximum value (255),
-and S-curves (with respect to \vcal) are obtained with all \trimbits disabled (\trimbits=15 [1111]).
+\vtrim is set to the minimum value (0),
+and s-curves (with respect to \vcal) are obtained with all \trimbits disabled (\trimbits=15 [1111]).
 The turn-on values extracted from these curves serve as untrimmed baseline values (Figure~\ref{fig:trim_thr_TrimBitsThr0_Vcal}).
 Then each bit is enabled in turn and new s-curves are recorded for values of 
 \trimbits=14 [1110] (Figure~\ref{fig:trim_thr_TrimThr_trim14_Vcal}),
 \trimbits=13 [1101] (Figure~\ref{fig:trim_thr_TrimThr_trim13_Vcal}),
 \trimbits=11 [1011] (Figure~\ref{fig:trim_thr_TrimThr_trim11_Vcal}), 
 and \trimbits=7 [0111] (Figure~\ref{fig:trim_thr_TrimThr_trim7_Vcal}).
-At each iteration, \vtrim is reduced by a factor of two to cancel out the effect of which bit is being enabled.
+At each iteration, \vtrim is reduced by a factor of (roughly) two to cancel out the effect of which bit is being enabled.
 Then each set of turn-on values is subtracted from the baseline set, to isolate the effect of enabling a single trim bit.
 Distributions of these differences are shown for 
 \trimbits=14 [1110] (Figure~\ref{fig:trim_TrimBit14}),
 \trimbits=13 [1101] (Figure~\ref{fig:trim_TrimBit13}),
 \trimbits=11 [1011] (Figure~\ref{fig:trim_TrimBit11}),
 and \trimbits=7 [0111] (Figure~\ref{fig:trim_TrimBit7}).
-If the difference is larger than zero, the trim bit in question is capable of being programmed and is having a noticeable effect.
+If the difference is larger than zero, the trim bit in question is programmable and is having a noticeable effect.
 Pixels with a defective trim bit are flagged.
 
 \subsubsection{Output}
