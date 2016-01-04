@@ -81,7 +81,7 @@ def makeIV(input):
     
     h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
     for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
-    h.SetMaximum(5*h.GetMaximum())
+    h.SetMaximum(10*h.GetMaximum())
     
     return h
 
@@ -153,6 +153,17 @@ class Comparison:
         is2D=(type(ref)==type(TH2D()))
         ref.Draw('COLZ'*is2D)
 
+        if 'programROC_V0' in self.hName: ref.SetMinimum(0)
+        if 'HA' in self.hName:
+            ref.SetTitle('Iana vs time')
+            ref.SetMaximum(0.5)
+        if 'HD'in self.hName:
+            ref.SetTitle('Idig vs time')
+            ref.SetMaximum(0.7)
+        if 'thr_scurveVcal_Vcal' in self.hName:
+            #ref.GetXaxis().SetRangeUser(15,55)
+            pass
+
         c.cd()
 
         histograms=[]
@@ -185,14 +196,25 @@ class Comparison:
                 h.Draw('COLZ'*is2D)
                 histograms.append(h)
 
+                if 'programROC_V0' in self.hName: h.SetMinimum(0)
+                if 'HA' in self.hName:
+                    h.SetTitle(self.goodModuleNames[i]+': Iana vs time')
+                    h.SetMaximum(0.5)
+                if 'HD'in self.hName:
+                    h.SetTitle(self.goodModuleNames[i]+': Idig vs time')
+                    h.SetMaximum(0.7)                    
+                if 'thr_scurveVcal_Vcal' in self.hName:
+                    #h.GetXaxis().SetRangeUser(15,55)
+                    pass
+
                 if self.hName=='IV/IV':
                     I100=h.GetBinContent(h.FindBin(100))
                     I150=h.GetBinContent(h.FindBin(150))
 
                     l=TLatex()
-                    l.DrawLatex(10,1E-5,"I(150V)="+str(round(I150*1E6,1))+"#muA")
+                    l.DrawLatexNDC(.15,.85,"I(150V)="+str(round(I150,2))+"#muA")
                     l2=TLatex()
-                    l2.DrawLatex(10,3E-6,"I(150V)/I(100V)="+str(round(I150/I100,2)))
+                    l2.DrawLatexNDC(.15,.8,"I(150V)/I(100V)="+str(round(I150/I100,2)))
 
                 gPad.SetFillColor(kWhite)
                 gPad.Modified()
@@ -204,9 +226,16 @@ class Comparison:
                 if gPad.GetListOfExecs().GetSize()==0: gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
             except: 
                 print 'Missing plot for module',self.goodModuleNames[i]
+
+        '''
+        b='foo'
+        while b:
+            b=raw_input()
+            exec(b)
                 
-        #gPad.Modified()
-        #gPad.Update()
+        gPad.Modified()
+        gPad.Update()
+        '''
 
         while True:
             input=raw_input('\n'+self.info+'\n\n'+'Press enter to submit results\n'+'Enter "-1" to go back a test\n\n')
