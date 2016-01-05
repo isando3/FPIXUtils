@@ -16,8 +16,11 @@ from config import *
 from fnmatch import fnmatch
 
 c=TCanvas('c','',1000,850)
-refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
+refPad=TPad('refPad','Reference Plot',.666,0,1,.5)
 refPad.Draw()
+
+textPad=TPad('textPad','',.666,.5,1,1)
+textPad.Draw()
 
 testPad=TPad('testPad','',0,0,.666,1)
 testPad.Divide(2,2)
@@ -75,9 +78,9 @@ def makeIV(input):
     nBins=len(values)
     xMin=0
     xMax=nBins*round(values[1][0]-xMin,0)
-    binWidth=float(xMax-xMin)/(nBins-1)
+    binWidth=float(xMax-xMin)/nBins
     xMin-=binWidth/2
-    xMax+=binWidth/2
+    xMax-=binWidth/2
     
     h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
     for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
@@ -164,6 +167,28 @@ class Comparison:
             #ref.GetXaxis().SetRangeUser(15,55)
             pass
 
+        textPad.cd()
+
+        wordsPerLine=5
+        height=0.1*len(self.info.split())/wordsPerLine
+        text=TPaveText(.1,.9-min(height,0.8),.9,.9,"NB")
+        text.SetFillColor(kWhite)
+        text.SetTextAlign(13)
+
+        t=[]
+        line=[]
+        for word in self.info.split():
+            if len(line)>=wordsPerLine: 
+                t.append(line)
+                line=[word]
+            else:
+                line.append(word)
+        t.append(line)
+
+        for line in t:
+            text.AddText(' '.join(line))
+        text.Draw()
+
         c.cd()
 
         histograms=[]
@@ -238,7 +263,7 @@ class Comparison:
         '''
 
         while True:
-            input=raw_input('\n'+self.info+'\n\n'+'Press enter to submit results\n'+'Enter "-1" to go back a test\n\n')
+            input=raw_input(8*'\n'+self.info+'\n\n'+'Press enter to submit results.\n'+'Enter "-1" to go back a test.\n\n')
             if input=='-1': 
                 #refPad.Close()
                 #testPad.Close()
