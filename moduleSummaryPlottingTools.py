@@ -134,6 +134,11 @@ def findZRange(plots):
     for roc in range(16):
         plot = plots[roc].Clone()
 
+        # don't consider empty plots from dead ROCs
+        if not plot.GetMaximum() and not plot.GetMinimum():
+            #print "found empty plot:", plot.GetName()
+            continue
+
         # treat special cases first - don't alter range
         if "PixelAlive" in plot.GetName() or \
            "MaskTest" in plot.GetName() or \
