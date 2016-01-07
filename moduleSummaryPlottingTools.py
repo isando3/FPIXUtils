@@ -134,12 +134,19 @@ def findZRange(plots):
     for roc in range(16):
         plot = plots[roc].Clone()
 
+        # don't consider empty plots from dead ROCs
+        if not plot.GetMaximum() and not plot.GetMinimum():
+            #print "found empty plot:", plot.GetName()
+            continue
+
         # treat special cases first - don't alter range
         if "PixelAlive" in plot.GetName() or \
            "MaskTest" in plot.GetName() or \
            "AddressDecodingTest" in plot.GetName():
-            return(plot.GetMinimum(),plot.GetMaximum())
-
+            # avoid empty ROCs screwing up the range
+            if plot.GetMinimum() != plot.GetMaximum():
+                return(plot.GetMinimum(),plot.GetMaximum())
+            continue
 
         # create 1D distribution to get mean, RMS
         rocMin = plot.GetMinimum() - 0.00001
@@ -206,10 +213,16 @@ def setZRange(plot, range):
 # return canvas
 def setupSummaryCanvas(summaryPlot):
 
-    canvas = TCanvas(summaryPlot.GetName(),"")
+    pathToHistogram = summaryPlot.GetName()
+    splitPath = pathToHistogram.split("/")
+    plotName = splitPath[1].split("_Summary")[0]
+    dirName = splitPath[0]
+    summaryPlot.SetName(plotName)
+    canvas = TCanvas(plotName,"")
 
-    # use numbers that are factors of 2 * ROC_SIZE to avoid rounding errors
-    topMargin = 2 * ROC_SIZE/3.
+
+    # use numbers that are factors of ROC_SIZE to avoid rounding errors
+    topMargin = ROC_SIZE
     bottomMargin = 2 * ROC_SIZE/3.
     leftMargin = 2 * ROC_SIZE/3.
     rightMargin = 2 * ROC_SIZE
@@ -239,6 +252,7 @@ def setupSummaryCanvas(summaryPlot):
     palette.SetY1NDC(0.05)
     palette.SetY2NDC(0.95)
     palette.SetLabelSize(0.06)
+    palette.SetLabelFont(42)
 
     # START ADDING AXES
 
@@ -396,6 +410,20 @@ def setupSummaryCanvas(summaryPlot):
         label.Draw()
         SetOwnership(label,False)  # avoid going out of scope at return statement
 
+    title = TPaveText(leftMargin/canvasWidth,
+                      (SENSOR_HEIGHT + bottomMargin + 0.6*topMargin)/canvasHeight,
+                      (SENSOR_WIDTH + leftMargin)/canvasWidth,
+                      (SENSOR_HEIGHT + bottomMargin + 0.95*topMargin)/canvasHeight,
+                      "NDC NB")
+    title.AddText(dirName + ": " + plotName)
+    title.SetFillColor(0)
+    title.SetTextAlign(22)
+    title.SetTextFont(42)
+    title.SetBorderSize(0)
+
+    title.Draw()
+    SetOwnership(title,False)  # avoid going out of scope at return statement
+
     return canvas
 
 ###############################################################################
@@ -442,60 +470,24 @@ def produce1DDistributions(inputFileName, pathToHistogram, version=0):
 
 ###############################################################################
 
-# look through an input file (presumably a pxar output file)
-# find all roc summary plots and return a list of them
-def produce2DHistogramDictionary(inputFileName):
+# recursively build list of directories in the input file
+def getListOfDirectories(inputFile, list = [], directory = ''):
 
-    histogramList = []
-    inputFile = TFile(inputFileName)
-
-    for dirKey in inputFile.GetListOfKeys():
+    inputFile.cd(directory)
+    list.append(directory)
+    for dirKey in gDirectory.GetListOfKeys():
         if (dirKey.GetClassName() != "TDirectoryFile"):
             continue
         dir = dirKey.GetName()
-        inputFile.cd(dir)
-        for plotKey in gDirectory.GetListOfKeys():
-            if re.match ('TH2', plotKey.GetClassName()) or \
-               re.match ('TProfile2', plotKey.GetClassName()): # found a 2-D plot
-                plotName = plotKey.GetName()
-                pathToHistogram = dir+"/"+plotName
-                plot = inputFile.Get(pathToHistogram)
-                # only consider ROC summary plots
-                if plot.GetNbinsX() != 52 or plot.GetNbinsY() != 80:
-                    continue
-                histogramList.append(pathToHistogram)
-    inputFile.Close()
+        newDirectory = directory + "/" + dir
+        getListOfDirectories(inputFile, list, newDirectory)
 
-    # dictionary of histogram names, each entry containing the versions present
-    histogramDictionary = collections.OrderedDict()
-    for histogram in histogramList:
-        version = histogram[-1:]
-        chipIndex = histogram.rfind("_C")
-        histoName = histogram[:chipIndex]
-        # if it's not already in the list, add it
-        if not histoName in histogramDictionary:
-            histogramDictionary[histoName] = []
-            histogramDictionary[histoName].append(version)
-        # if it's there but this is a new version, add this version
-        else:
-            if not version in histogramDictionary[histoName]:
-                histogramDictionary[histoName].append(version)
-
-    return histogramDictionary
-
-###############################################################################
-
-# look through an input file (presumably a pxar output file)
-# find all roc summary 1D distributions and return a list of them
-def produce1DHistogramDictionary(inputFileName):
+# build list of 1D histograms in the input file
+def getListOf1DHistograms(inputFile, directoryList):
 
     histogramList = []
-    inputFile = TFile(inputFileName)
 
-    for dirKey in inputFile.GetListOfKeys():
-        if (dirKey.GetClassName() != "TDirectoryFile"):
-            continue
-        dir = dirKey.GetName()
+    for dir in directoryList:
         inputFile.cd(dir)
         for plotKey in gDirectory.GetListOfKeys():
             if re.match ('TH1', plotKey.GetClassName()): # found a 1-D histogram
@@ -509,13 +501,52 @@ def produce1DHistogramDictionary(inputFileName):
                 pathToHistogram = dir+"/"+plotName
                 plot = inputFile.Get(pathToHistogram)
                 histogramList.append(pathToHistogram)
+
+    return histogramList
+
+# build list of 2D histograms in the input file
+def getListOf2DHistograms(inputFile, directoryList):
+
+    histogramList = []
+
+    for dir in directoryList:
+        inputFile.cd(dir)
+        for plotKey in gDirectory.GetListOfKeys():
+            if re.match ('TH2', plotKey.GetClassName()) or \
+               re.match ('TProfile2', plotKey.GetClassName()): # found a 2-D plot
+                plotName = plotKey.GetName()
+                pathToHistogram = dir+"/"+plotName
+                plot = inputFile.Get(pathToHistogram)
+                # only consider ROC summary plots
+                if plot.GetNbinsX() != 52 or plot.GetNbinsY() != 80:
+                    continue
+                histogramList.append(pathToHistogram)
+
+    return histogramList
+
+# look through an input file (presumably a pxar output file)
+# find all roc summary plots and return a list of them
+def produce2DHistogramDictionary(inputFileName, mode = 'pxar'):
+
+    directoryList = []
+
+    inputFile = TFile(inputFileName)
+
+    getListOfDirectories(inputFile, directoryList)
+    histogramList = getListOf2DHistograms(inputFile, directoryList)
+
     inputFile.Close()
 
     # dictionary of histogram names, each entry containing the versions present
     histogramDictionary = collections.OrderedDict()
     for histogram in histogramList:
-        version = histogram[-1:]
-        chipIndex = histogram.rfind("_C")
+
+        if mode == 'pxar':
+            version = histogram[-1:]
+            chipIndex = histogram.rfind("_C")
+        else:
+            version = '0'
+            chipIndex = histogram.rfind("_ROC")
         histoName = histogram[:chipIndex]
         # if it's not already in the list, add it
         if not histoName in histogramDictionary:
@@ -525,18 +556,53 @@ def produce1DHistogramDictionary(inputFileName):
         else:
             if not version in histogramDictionary[histoName]:
                 histogramDictionary[histoName].append(version)
+    return histogramDictionary
 
+###############################################################################
+
+# look through an input file (presumably a pxar output file)
+# find all roc summary 1D distributions and return a list of them
+def produce1DHistogramDictionary(inputFileName, mode = 'pxar'):
+
+    directoryList = []
+
+    inputFile = TFile(inputFileName)
+
+    getListOfDirectories(inputFile, directoryList)
+    histogramList = getListOf1DHistograms(inputFile, directoryList)
+
+    inputFile.Close()
+
+    # dictionary of histogram names, each entry containing the versions present
+    histogramDictionary = collections.OrderedDict()
+    for histogram in histogramList:
+
+        if mode == 'pxar':
+            version = histogram[-1:]
+            chipIndex = histogram.rfind("_C")
+        else:
+            version = '0'
+            chipIndex = histogram.rfind("_ROC")
+        histoName = histogram[:chipIndex]
+        # if it's not already in the list, add it
+        if not histoName in histogramDictionary:
+            histogramDictionary[histoName] = []
+            histogramDictionary[histoName].append(version)
+        # if it's there but this is a new version, add this version
+        else:
+            if not version in histogramDictionary[histoName]:
+                histogramDictionary[histoName].append(version)
     return histogramDictionary
 
 
 ###############################################################################
 
-def add2DSummaryPlots(inputFileName, histogramDictionary):
+def add2DSummaryPlots(inputFileName, histogramDictionary, mode = 'pxar'):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
-            summaryPlot = produce2DSummaryPlot(inputFileName,histoName,version)
-            directory = histoName.split("/")[0]
+            summaryPlot = produce2DSummaryPlot(inputFileName,histoName,version,mode)
+            directory = histoName.rsplit("/", 1)[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
             gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
@@ -546,12 +612,12 @@ def add2DSummaryPlots(inputFileName, histogramDictionary):
 
 ###############################################################################
 
-def add1DSummaryPlots(inputFileName, histogramDictionary):
+def add1DSummaryPlots(inputFileName, histogramDictionary, mode = 'pxar'):
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
-            summaryPlot = produce1DSummaryPlot(inputFileName,histoName,version)
-            directory = histoName.split("/")[0]
+            summaryPlot = produce1DSummaryPlot(inputFileName,histoName,version,mode)
+            directory = histoName.rsplit("/", 1)[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
             gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
@@ -566,7 +632,7 @@ def add1DDistributions(inputFileName, histogramDictionary):
     for histoName, versions in histogramDictionary.items():
         for version in versions:
             distributions = produce1DDistributions(inputFileName,histoName,version)
-            directory = histoName.split("/")[0]
+            directory = histoName.rsplit("/", 1)[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
             for distribution in distributions:
@@ -582,21 +648,27 @@ def add1DDistributions(inputFileName, histogramDictionary):
 
 # pass in the input file and location of relevant histogram
 # return the canvas with the finished summary plot
-def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0):
+def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar'):
 
     inputFile = TFile(inputFileName)
     plots = []
 
     # get plots
     for roc in range(16):
-        plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
+        if mode == 'pxar':
+            plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
+        else:
+            plotPath = pathToHistogram + "_ROC" + str(roc)
         if not inputFile.Get(plotPath):
             print "missing plot:", plotPath
             plot = TH2D("","",52,0,52,80,0,80)  # insert empty plot
         else:
             plot = inputFile.Get(plotPath).Clone()
-        plotName = pathToHistogram.split("/")[1]  # remove directory from name
-        plot.SetName(plotName + "_V" + str(version) + "_Summary" + str(roc))
+        plotName = pathToHistogram.lstrip("/")
+        if mode == 'pxar':
+            plot.SetName(plotName + "_V" + str(version) + "_Summary" + str(roc))
+        else:
+            plot.SetName(plotName + "_Summary" + str(roc))
         plots.append(plot)
     summaryPlot = makeMergedPlot(plots)
     zRange = findZRange(plots)
@@ -610,25 +682,35 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0):
 
 # pass in the input file and location of relevant histogram
 # return merged 1D summary plot
-def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0):
+def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar'):
 
     inputFile = TFile(inputFileName)
     plots = []
 
     # get plots
     for roc in range(16):
-        plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
+        if mode == 'pxar':
+            plotPath = pathToHistogram + "_C" + str(roc) + "_V" + str(version)
+        else:
+            plotPath = pathToHistogram + "_ROC" + str(roc)
         if not inputFile.Get(plotPath):
             print "missing plot:", plotPath
             plot = TH1D("","",256,0,256)  # insert empty plot
         else:
             plot = inputFile.Get(plotPath).Clone()
         plots.append(plot)
+
     summaryPlot = plots[0].Clone()
     summaryPlot.SetDirectory(0)
-    chipIndex = summaryPlot.GetName().rfind("_C")
+    if mode == 'pxar':
+        chipIndex = summaryPlot.GetName().rfind("_C")
+    else:
+        chipIndex = summaryPlot.GetName().rfind("_ROC")
     newName = summaryPlot.GetName()[:chipIndex]
-    summaryPlot.SetName(newName + "_V" + str(version) + "_Summary")
+    if mode == 'pxar':
+        summaryPlot.SetName(newName + "_V" + str(version) + "_Summary")
+    else:
+        summaryPlot.SetName(newName + "_Summary")
     oldTitle = summaryPlot.GetTitle()
     if "(C" in oldTitle:
         chipIndex = oldTitle.rfind("(C")

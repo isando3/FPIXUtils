@@ -4,7 +4,10 @@ from sys import argv
 import os
 import subprocess
 import socket
+from datetime import datetime
 from config import *
+
+testCenter='FNAL'
 
 affirmativeResponses= ['true', 'True', '1', 't', 'T', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh', 'most def']
 
@@ -22,7 +25,7 @@ Tini=os.getenv('HOME')+'/elComandante/config/elComandante.ini.default'
 Tconf=os.getenv('HOME')+'/elComandante/config/elComandante.conf.default'
 
 testString={}
-testString['Pretest']='Pretest@T'
+testString['Pretest']='Pretest@27'
 testString['Fulltest']='Fulltest@T'
 IVString = ""
 for i in range(len(moduleNames)):
@@ -31,6 +34,13 @@ for i in range(len(moduleNames)):
 IVString.rstrip(',')
 testString['IV']=IVString
 testString['FPIXTest']='FPIXTest@T,'+testString['IV']
+
+if doCold: temp='-20'
+else:      temp='17'
+
+morewebTestString={}
+morewebTestString['FPIXTest']='FPIXTest@T'.replace('@T','_'+temp+'C').replace('-','m')
+morewebTestString['Pretest']='Pretest_27C'
 
 ############################################################
 ############################################################
@@ -42,10 +52,10 @@ if test not in testString.keys():
 if len(moduleNames)==0 or len(moduleNames)>4:
     raise Exception('Too few or too many modules specified')
 
-if doCold: temp='-20'
-else:      temp='17'
+timeStamp=':'.join(str(datetime.now()).split(':')[:2]).replace('-','_').replace(' ','__').replace(':','_')
 
-replacements=[['TESTS',testString[test].replace('@T','@'+temp)]]
+replacements=[['TESTS',testString[test].replace('@T','@'+temp)],
+              ['MOREWEBTESTNAME',morewebTestString[test]+'_'+testCenter+'_'+timeStamp]]
 
 replacements.append(['OPERATOR',shifter])
 for i in range(4):
@@ -55,8 +65,9 @@ for i in range(4):
     else:
         replacements.append(['USEM'+str(i),'False'])
 
-station=os.environ['HOME'].split('/')[2]
-replacements.append(['TESTCENTER',station])
+#station=os.environ['HOME'].split('/')[2]
+#replacements.append(['TESTCENTER',station])
+replacements.append(['TESTCENTER',testCenter])
 
 replacements.append(['HOSTNAME',socket.gethostname()])
 
@@ -67,6 +78,8 @@ subprocess.call(['cp',Tini,ini])
 subprocess.call(['cp',Tconf,conf])
 
 for replacement in replacements:
-    print replacement
+    #print replacement
     subprocess.call(['sed','s/'+replacement[0]+'/'+replacement[1]+'/','--in-place',ini])
     subprocess.call(['sed','s/'+replacement[0]+'/'+replacement[1]+'/','--in-place',conf])
+
+print '\npreparation complete\n'
