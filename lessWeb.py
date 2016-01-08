@@ -652,9 +652,9 @@ def analyzeIV(inputDir, outputDir, log, data):
     nBins=len(values)
     xMin=0
     xMax=nBins*round(values[1][0]-xMin,0) #values[-1][0]
-    binWidth=float(xMax-xMin)/(nBins-1)
+    binWidth=float(xMax-xMin)/nBins
     xMin-=binWidth/2
-    xMax+=binWidth/2
+    xMax-=binWidth/2
 
     h=TH1F('IV',';-U [V];-I [#muA]',nBins,xMin,xMax)
     for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
@@ -918,7 +918,7 @@ def makeXML(inputDir):
     global moduleName
     print 'inputDir:',inputDir
     print 
-    moduleName=os.path.basename(inputDir.split('_ElComandanteTest_')[0])
+    moduleName=os.path.basename(inputDir.split('_')[0])
     print 'moduleName:',moduleName
 
     outputDir=os.environ['HOME']+'/dbUploads/'+moduleName

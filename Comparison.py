@@ -16,8 +16,11 @@ from config import *
 from fnmatch import fnmatch
 
 c=TCanvas('c','',1000,850)
-refPad=TPad('refPad','Reference Plot',.666,0.25,1,0.75)
+refPad=TPad('refPad','Reference Plot',.666,0,1,.5)
 refPad.Draw()
+
+textPad=TPad('textPad','',.666,.5,1,1)
+textPad.Draw()
 
 testPad=TPad('testPad','',0,0,.666,1)
 testPad.Divide(2,2)
@@ -75,13 +78,13 @@ def makeIV(input):
     nBins=len(values)
     xMin=0
     xMax=nBins*round(values[1][0]-xMin,0)
-    binWidth=float(xMax-xMin)/(nBins-1)
+    binWidth=float(xMax-xMin)/nBins
     xMin-=binWidth/2
-    xMax+=binWidth/2
+    xMax-=binWidth/2
     
     h=TH1F('IV','IV;-U [V];-I [#muA]',nBins,xMin,xMax)
     for i in range(len(values)): h.SetBinContent(i+1, -1E6*values[i][1])
-    h.SetMaximum(5*h.GetMaximum())
+    h.SetMaximum(10*h.GetMaximum())
     
     return h
 
@@ -98,7 +101,7 @@ class Comparison:
         #self.outputDir=outputDir
         self.info=info
 
-        self.goodModuleNames=[f.split('_ElComandanteTest')[0].split('/')[-1] for f in self.testFiles]
+        self.goodModuleNames=[f.split('_')[0].split('/')[-1] for f in self.testFiles]
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -153,6 +156,39 @@ class Comparison:
         is2D=(type(ref)==type(TH2D()))
         ref.Draw('COLZ'*is2D)
 
+        if 'programROC_V0' in self.hName: ref.SetMinimum(0)
+        if 'HA' in self.hName:
+            ref.SetTitle('Iana vs time')
+            ref.SetMaximum(0.5)
+        if 'HD'in self.hName:
+            ref.SetTitle('Idig vs time')
+            ref.SetMaximum(0.7)
+        if 'thr_scurveVcal_Vcal' in self.hName:
+            #ref.GetXaxis().SetRangeUser(15,55)
+            pass
+
+        textPad.cd()
+
+        wordsPerLine=5
+        height=0.1*len(self.info.split())/wordsPerLine
+        text=TPaveText(.1,.9-min(height,0.8),.9,.9,"NB")
+        text.SetFillColor(kWhite)
+        text.SetTextAlign(13)
+
+        t=[]
+        line=[]
+        for word in self.info.split():
+            if len(line)>=wordsPerLine: 
+                t.append(line)
+                line=[word]
+            else:
+                line.append(word)
+        t.append(line)
+
+        for line in t:
+            text.AddText(' '.join(line))
+        text.Draw()
+
         c.cd()
 
         histograms=[]
@@ -185,14 +221,25 @@ class Comparison:
                 h.Draw('COLZ'*is2D)
                 histograms.append(h)
 
+                if 'programROC_V0' in self.hName: h.SetMinimum(0)
+                if 'HA' in self.hName:
+                    h.SetTitle(self.goodModuleNames[i]+': Iana vs time')
+                    h.SetMaximum(0.5)
+                if 'HD'in self.hName:
+                    h.SetTitle(self.goodModuleNames[i]+': Idig vs time')
+                    h.SetMaximum(0.7)                    
+                if 'thr_scurveVcal_Vcal' in self.hName:
+                    #h.GetXaxis().SetRangeUser(15,55)
+                    pass
+
                 if self.hName=='IV/IV':
                     I100=h.GetBinContent(h.FindBin(100))
                     I150=h.GetBinContent(h.FindBin(150))
 
                     l=TLatex()
-                    l.DrawLatex(10,1E-5,"I(150V)="+str(round(I150*1E6,1))+"#muA")
+                    #l.DrawLatexNDC(.15,.85,"I(150V)="+str(round(I150,2))+"#muA")
                     l2=TLatex()
-                    l2.DrawLatex(10,3E-6,"I(150V)/I(100V)="+str(round(I150/I100,2)))
+                    #l2.DrawLatexNDC(.15,.8,"I(150V)/I(100V)="+str(round(I150/I100,2)))
 
                 gPad.SetFillColor(kWhite)
                 gPad.Modified()
@@ -204,12 +251,19 @@ class Comparison:
                 if gPad.GetListOfExecs().GetSize()==0: gPad.AddExec('exec','TPython::Exec( "click('+str(i)+')" );')
             except: 
                 print 'Missing plot for module',self.goodModuleNames[i]
+
+        '''
+        b='foo'
+        while b:
+            b=raw_input()
+            exec(b)
                 
-        #gPad.Modified()
-        #gPad.Update()
+        gPad.Modified()
+        gPad.Update()
+        '''
 
         while True:
-            input=raw_input('\n'+self.info+'\n\n'+'Press enter to submit results\n'+'Enter "-1" to go back a test\n\n')
+            input=raw_input(8*'\n'+self.info+'\n\n'+'Press enter to submit results.\n'+'Enter "-1" to go back a test.\n\n')
             if input=='-1': 
                 #refPad.Close()
                 #testPad.Close()
