@@ -45,7 +45,7 @@ else:
     for module in moduleNames:
         if module=='0': continue
         print module
-        input=sorted(glob('/home/fnalpix?/allTestResults/'+module+'_ElComandanteTest_*[0-9]'))[-1]
+        input=sorted(glob('/home/fnalpix?/allTestResults/'+module+'_*[0-9]'))[-1]
         makeXML(input)
         move(input,outputDir+'/'+os.path.basename(input))
 

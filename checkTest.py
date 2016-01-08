@@ -40,14 +40,14 @@ if inputDirs:
     if testName=='FPIXTest': IVFiles=[glob(d+'/*_IV_*/ivCurve.log')[0] for d in inputDirs]
 else:
     for module in goodModuleNames:
-        s=os.environ['HOME']+'/allTestResults/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
+        s=os.environ['HOME']+'/allTestResults/'+module+'_*/*_'+testName+'_*/commander_'+testName+'.root'
         try: testFiles.append(sorted(glob(s))[-1])
         except: 
             print 'Found no files matching:',s
             exit()
 
         if testName=='FPIXTest': 
-            s=os.environ['HOME']+'/allTestResults/'+module+'_ElComandanteTest_*/*_IV_*/ivCurve.log'
+            s=os.environ['HOME']+'/allTestResults/'+module+'_*/*_IV_*/ivCurve.log'
             try: IVFiles.append(sorted(glob(s))[-1])
             except:
                 print 'Found no files matching:',s
