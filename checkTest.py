@@ -98,9 +98,9 @@ if __name__=='__main__':
 
     if testName=='Pretest':
         if len(badModules)>0:
-            print 'Replace the following module(s) and repeat pre-test:'
+            print 'Replace the following module(s) and repeat the pre-test:'
             for m in badModules:
                 print '    - '+str(m)
         else:
-            print 'Rock on'
+            print 'All modules are good.  Continue to the next test.\n\n'
 
