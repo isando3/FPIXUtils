@@ -134,6 +134,11 @@ def findZRange(plots):
     for roc in range(16):
         plot = plots[roc].Clone()
 
+        # don't consider empty plots from dead ROCs
+        if not plot.GetMaximum() and not plot.GetMinimum():
+            #print "found empty plot:", plot.GetName()
+            continue
+
         # treat special cases first - don't alter range
         if "PixelAlive" in plot.GetName() or \
            "MaskTest" in plot.GetName() or \
@@ -208,10 +213,16 @@ def setZRange(plot, range):
 # return canvas
 def setupSummaryCanvas(summaryPlot):
 
-    canvas = TCanvas(summaryPlot.GetName(),"")
+    pathToHistogram = summaryPlot.GetName()
+    splitPath = pathToHistogram.split("/")
+    plotName = splitPath[1].split("_Summary")[0]
+    dirName = splitPath[0]
+    summaryPlot.SetName(plotName)
+    canvas = TCanvas(plotName,"")
 
-    # use numbers that are factors of 2 * ROC_SIZE to avoid rounding errors
-    topMargin = 2 * ROC_SIZE/3.
+
+    # use numbers that are factors of ROC_SIZE to avoid rounding errors
+    topMargin = ROC_SIZE
     bottomMargin = 2 * ROC_SIZE/3.
     leftMargin = 2 * ROC_SIZE/3.
     rightMargin = 2 * ROC_SIZE
@@ -241,6 +252,7 @@ def setupSummaryCanvas(summaryPlot):
     palette.SetY1NDC(0.05)
     palette.SetY2NDC(0.95)
     palette.SetLabelSize(0.06)
+    palette.SetLabelFont(42)
 
     # START ADDING AXES
 
@@ -397,6 +409,20 @@ def setupSummaryCanvas(summaryPlot):
         label.SetBorderSize(0)
         label.Draw()
         SetOwnership(label,False)  # avoid going out of scope at return statement
+
+    title = TPaveText(leftMargin/canvasWidth,
+                      (SENSOR_HEIGHT + bottomMargin + 0.6*topMargin)/canvasHeight,
+                      (SENSOR_WIDTH + leftMargin)/canvasWidth,
+                      (SENSOR_HEIGHT + bottomMargin + 0.95*topMargin)/canvasHeight,
+                      "NDC NB")
+    title.AddText(dirName + ": " + plotName)
+    title.SetFillColor(0)
+    title.SetTextAlign(22)
+    title.SetTextFont(42)
+    title.SetBorderSize(0)
+
+    title.Draw()
+    SetOwnership(title,False)  # avoid going out of scope at return statement
 
     return canvas
 
@@ -606,7 +632,7 @@ def add1DDistributions(inputFileName, histogramDictionary):
     for histoName, versions in histogramDictionary.items():
         for version in versions:
             distributions = produce1DDistributions(inputFileName,histoName,version)
-            directory = histoName.split("/")[0]
+            directory = histoName.rsplit("/", 1)[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
             for distribution in distributions:
@@ -638,7 +664,7 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar')
             plot = TH2D("","",52,0,52,80,0,80)  # insert empty plot
         else:
             plot = inputFile.Get(plotPath).Clone()
-        plotName = pathToHistogram.rsplit("/", 1)[1]  # remove directory from name
+        plotName = pathToHistogram.lstrip("/")
         if mode == 'pxar':
             plot.SetName(plotName + "_V" + str(version) + "_Summary" + str(roc))
         else:

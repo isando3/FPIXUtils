@@ -933,7 +933,7 @@ def makeXML(inputDir):
     global moduleName
     print 'inputDir:',inputDir
     print 
-    moduleName=os.path.basename(inputDir.split('_ElComandanteTest_')[0])
+    moduleName=os.path.basename(inputDir.split('_')[0])
     print 'moduleName:',moduleName
 
     outputDir=os.environ['HOME']+'/dbUploads/'+moduleName

@@ -101,7 +101,7 @@ class Comparison:
         #self.outputDir=outputDir
         self.info=info
 
-        self.goodModuleNames=[f.split('_ElComandanteTest')[0].split('/')[-1] for f in self.testFiles]
+        self.goodModuleNames=[f.split('_')[0].split('/')[-1] for f in self.testFiles]
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -237,9 +237,9 @@ class Comparison:
                     I150=h.GetBinContent(h.FindBin(150))
 
                     l=TLatex()
-                    l.DrawLatexNDC(.15,.85,"I(150V)="+str(round(I150,2))+"#muA")
+                    #l.DrawLatexNDC(.15,.85,"I(150V)="+str(round(I150,2))+"#muA")
                     l2=TLatex()
-                    l2.DrawLatexNDC(.15,.8,"I(150V)/I(100V)="+str(round(I150/I100,2)))
+                    #l2.DrawLatexNDC(.15,.8,"I(150V)/I(100V)="+str(round(I150/I100,2)))
 
                 gPad.SetFillColor(kWhite)
                 gPad.Modified()
