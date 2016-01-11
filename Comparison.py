@@ -9,7 +9,7 @@ Usage: ./checkPretest.py <input dir>
 import ROOT
 #ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
-#gStyle.SetOptStat(0)
+gStyle.SetOptStat(0)
 import math
 import os
 from config import *
@@ -166,7 +166,11 @@ class Comparison:
         if 'thr_scurveVcal_Vcal' in self.hName:
             #ref.GetXaxis().SetRangeUser(15,55)
             pass
-
+        if 'Scurves/dist' in self.hName or 'gainPedestalNonLinearity' in self.hName:
+            gStyle.SetOptStat(1)
+        else:
+            gStyle.SetOptStat(0)
+            
         textPad.cd()
 
         wordsPerLine=5
@@ -174,7 +178,7 @@ class Comparison:
         text=TPaveText(.1,.9-min(height,0.8),.9,.9,"NB")
         text.SetFillColor(kWhite)
         text.SetTextAlign(13)
-
+   
         t=[]
         line=[]
         for word in self.info.split():
