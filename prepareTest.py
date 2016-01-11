@@ -4,7 +4,7 @@ from sys import argv
 import os
 import subprocess
 import socket
-from datetime import datetime
+from time import strftime
 from config import *
 
 testCenter='FNAL'
@@ -39,8 +39,8 @@ if doCold: temp='-20'
 else:      temp='17'
 
 morewebTestString={}
-morewebTestString['FPIXTest']='FPIXTest@T'.replace('@T','_'+temp+'C').replace('-','m')
-morewebTestString['Pretest']='Pretest_27C'
+morewebTestString['FPIXTest']='FPIXTest@T'.replace('@T','@'+temp+'C').replace('-','m').replace('@','-')
+morewebTestString['Pretest']='Pretest-27C'
 
 ############################################################
 ############################################################
@@ -52,10 +52,10 @@ if test not in testString.keys():
 if len(moduleNames)==0 or len(moduleNames)>4:
     raise Exception('Too few or too many modules specified')
 
-timeStamp=':'.join(str(datetime.now()).split(':')[:2]).replace('-','_').replace(' ','__').replace(':','_')
+timeStamp=strftime('%y%m%d-%H%M')
 
 replacements=[['TESTS',testString[test].replace('@T','@'+temp)],
-              ['MOREWEBTESTNAME',morewebTestString[test]+'_'+testCenter+'_'+timeStamp]]
+              ['MOREWEBTESTNAME',morewebTestString[test]+'-'+testCenter+'-'+timeStamp]]
 
 replacements.append(['OPERATOR',shifter])
 for i in range(4):
