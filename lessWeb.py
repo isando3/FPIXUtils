@@ -820,6 +820,18 @@ def analyzeFullTest(inputDir, outputDir, log, data):
             badBumps=[int(x) for x in line.split()[-16:]]
             print 'badBumps:',badBumps
             
+        if 'Final Module Temperature:' in line:
+            finalTemp=line.split('Temperature:')[1].split()[0]
+            print 'finalTemp:',finalTemp
+            
+        if 'Final Analog Current:' in line:
+            finalIana=line.split('Current:')[1].strip()
+            print 'finalIana:',finalIana
+
+        if 'Final Digital Current:' in line:
+            finalIdig=line.split('Current:')[1].strip()
+            print 'finalIdig:',finalIdig
+
         """
         if 'separation cut       (per ROC):' in line:
             bbCuts=[int(x) for x in line.split()[-16:]]
@@ -832,8 +844,11 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         print deadPixels
         print maskDefectPixels 
         print addressDefectPixels
-        print badBumps 
+        print badBumps
         #print bbCuts
+
+    RTD_TEMP=SE(test,'RTD_TEMP')
+    RTD_TEMP.text=str(finalTemp)
 
     ROCS=SE(test,'ROCS')
     for i in range(16):
