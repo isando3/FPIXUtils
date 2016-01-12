@@ -215,7 +215,6 @@ def setupSummaryCanvas(summaryPlot):
 
     pathToHistogram = summaryPlot.GetName()
     splitPath = pathToHistogram.split("/")
-    print splitPath
     plotName = splitPath[1].split("_Summary")[0]
     dirName = splitPath[0]
     summaryPlot.SetName(plotName)
