@@ -215,6 +215,7 @@ def setupSummaryCanvas(summaryPlot):
 
     pathToHistogram = summaryPlot.GetName()
     splitPath = pathToHistogram.split("/")
+    print splitPath
     plotName = splitPath[1].split("_Summary")[0]
     dirName = splitPath[0]
     summaryPlot.SetName(plotName)
@@ -648,7 +649,7 @@ def add1DDistributions(inputFileName, histogramDictionary):
 
 # pass in the input file and location of relevant histogram
 # return the canvas with the finished summary plot
-def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar'):
+def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar', zRange=()):
 
     inputFile = TFile(inputFileName)
     plots = []
@@ -671,7 +672,7 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar')
             plot.SetName(plotName + "_Summary" + str(roc))
         plots.append(plot)
     summaryPlot = makeMergedPlot(plots)
-    zRange = findZRange(plots)
+    if not zRange: zRange = findZRange(plots)
     setZRange(summaryPlot,zRange)
 
     summaryCanvas = setupSummaryCanvas(summaryPlot)
