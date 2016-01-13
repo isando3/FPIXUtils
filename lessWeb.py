@@ -485,7 +485,7 @@ def getGainPedestalPlots(f,outputDir):
 def makeSummaryPlots(inputDir, outputDir, log, data):
     data=TFile(data['fulltest'])
 
-    produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=[-5,5], isBB3=True)
+    produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=(-5,5), isBB3=True)
     pic=SE(top, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
@@ -515,7 +515,7 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
         comment=open(outputDir+'/'+txt.text,'w')
         comment.write('\n'+file.text.split('.')[0])
 
-    produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=[0,15])
+    produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=(0,15))
     pic=SE(top, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
