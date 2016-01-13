@@ -215,7 +215,7 @@ def setupSummaryCanvas(summaryPlot):
 
     pathToHistogram = summaryPlot.GetName()
     splitPath = pathToHistogram.split("/")
-    plotName = splitPath[1].split("_V0")[0]
+    plotName = splitPath[1].split("_Summary")[0]
     dirName = splitPath[0]
     summaryPlot.SetName(plotName)
     canvas = TCanvas(plotName,"")
@@ -750,7 +750,7 @@ def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, zRange=(), 
         step=float(zMax-zMin)/(len(colors)-1)
         levels = array('d',[zMin + i*step for i in range(len(colors)-1)]+[4.9999999])
 
-        summaryPlot=summaryCanvas.GetPrimitive(pathToHistogram.split("/")[-1])
+        summaryPlot=summaryCanvas.GetPrimitive(pathToHistogram.split("/")[-1]+'_V0')
         summaryPlot.SetContour(len(levels),levels)
 
     outputFileName = pathToHistogram.replace("/","_")
