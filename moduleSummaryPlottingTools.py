@@ -225,7 +225,6 @@ def findZRange(plots):
             zMin = rocMin
 
     # round to nearest integer before returning
-    print "final range:", floor(zMin), ceil(zMax)
     return (floor(zMin), ceil(zMax))
 
 ###############################################################################
