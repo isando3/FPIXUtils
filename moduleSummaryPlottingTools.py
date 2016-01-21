@@ -129,14 +129,15 @@ def makeMergedPlot(plots):
 def findZRange(plots):
     zMax = -999
     zMin = 999
-    nSigma = 5
+    nSigma = 3
+    globalMin = 0.00002
 
     for roc in range(16):
         plot = plots[roc].Clone()
 
         # don't consider empty plots from dead ROCs
         if not plot.GetMaximum() and not plot.GetMinimum():
-            #print "found empty plot:", plot.GetName()
+#            print "found empty plot:", plot.GetName()
             continue
 
         # treat special cases first - don't alter range
@@ -148,14 +149,25 @@ def findZRange(plots):
                 return(plot.GetMinimum(),plot.GetMaximum())
             continue
 
-        # create 1D distribution to get mean, RMS
-        rocMin = plot.GetMinimum() - 0.00001
+
+        if "rescaledThr" in plot.GetName():
+            rocMin = plot.GetMinimum() - 0.00001
+        else:
+            rocMin = max(plot.GetMinimum(), globalMin) - 0.00001
         rocMax = plot.GetMaximum() + 0.00001
+        # create 1D distribution to get mean, RMS
         oneDPlot = TH1F("1d","1d",10000,rocMin,rocMax)
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
+                # ignore empty bins
+                if content == 0:
+                    continue
+                # remove things close to -2 (failed s-curve thr)
+                if abs(content + 2) < 0.01:
+                    continue
                 oneDPlot.Fill(content)
+
         mean = oneDPlot.GetMean()
         sigma = oneDPlot.GetRMS()
         plotMin = mean - nSigma*sigma
@@ -168,13 +180,22 @@ def findZRange(plots):
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
-                if content > plotMin and content < plotMax:
-                    oneDPlotZoomed.Fill(content)
+                if content < plotMin or content > plotMax or content < rocMin:
+                    continue
+                # ignore empty bins
+                if content == 0:
+                    continue
+                # remove things close to -2 (failed s-curve thr)
+                if abs(content + 2) < 0.01:
+                    continue
+                oneDPlotZoomed.Fill(content)
+
         mean = oneDPlotZoomed.GetMean()
         sigma = oneDPlotZoomed.GetRMS()
         oneDPlotZoomed.Delete()
         plotMin = mean - nSigma*sigma
         plotMax = mean + nSigma*sigma
+
 
         binWidth = (plotMax - plotMin)/float(NBINS)
         # create groomed 1D distribution to find min/max filled bins
@@ -182,8 +203,16 @@ def findZRange(plots):
         for x in range(1,plot.GetNbinsX()+1):
             for y in range(1,plot.GetNbinsY()+1):
                 content = plot.GetBinContent(x,y)
-                if content > plotMin and content < plotMax:
-                    oneDPlotGroomed.Fill(content)
+                if content < plotMin and content > plotMax or content < rocMin:
+                    continue
+                # ignore empty bins
+                if content == 0:
+                    continue
+                # remove things close to -2 (failed s-curve thr)
+                if abs(content + 2) < 0.01:
+                    continue
+                oneDPlotGroomed.Fill(content)
+
         # get position of first and last bins with non-zero entries
         rocMin = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindFirstBinAbove()) + binWidth
         rocMax = oneDPlotGroomed.GetBinLowEdge(oneDPlotGroomed.FindLastBinAbove())
@@ -196,6 +225,7 @@ def findZRange(plots):
             zMin = rocMin
 
     # round to nearest integer before returning
+    print "final range:", floor(zMin), ceil(zMax)
     return (floor(zMin), ceil(zMax))
 
 ###############################################################################
@@ -215,8 +245,12 @@ def setupSummaryCanvas(summaryPlot):
 
     pathToHistogram = summaryPlot.GetName()
     splitPath = pathToHistogram.split("/")
-    plotName = splitPath[1].split("_Summary")[0]
-    dirName = splitPath[0]
+    plotName = splitPath[-1].split("_Summary")[0]
+    if len(splitPath) > 1:
+        dirName = splitPath[0]
+    else:
+        dirName = None
+
     summaryPlot.SetName(plotName)
     canvas = TCanvas(plotName,"")
 
@@ -415,7 +449,10 @@ def setupSummaryCanvas(summaryPlot):
                       (SENSOR_WIDTH + leftMargin)/canvasWidth,
                       (SENSOR_HEIGHT + bottomMargin + 0.95*topMargin)/canvasHeight,
                       "NDC NB")
-    title.AddText(dirName + ": " + plotName)
+    if dirName is not None:
+        title.AddText(dirName + ": " + plotName)
+    else:
+        title.AddText(plotName)
     title.SetFillColor(0)
     title.SetTextAlign(22)
     title.SetTextFont(42)
