@@ -9,7 +9,8 @@ Usage: python uploadTest.py <testName> <isCold> [input dir]
 from config import *
 from lessWeb import *
 from sys import argv
-from shutil import move
+#from shutil import copytree
+import distutils.dir_util
 import os
 
 outputDir=os.environ['HOME']+'/ProductionTestResults'
@@ -40,13 +41,13 @@ if inputDirs:
             exit()
         i=inputs[0]
         makeXML(i)
-        move(i,outputDir+'/'+os.path.basename(i))
+        distutils.dir_util.copy_tree(i,outputDir+'/'+os.path.basename(i))
 else:
     for module in moduleNames:
         if module=='0': continue
         print module
-        input=sorted(glob('/home/fnalpix?/allTestResults/'+module+'_*[0-9]'))[-1]
+        input=sorted(glob('/home/fnalpix?/allTestResults/'+module+'_*[0-9]'),key=lambda name: name.split('_')[-1])[-1]
         makeXML(input)
-        move(input,outputDir+'/'+os.path.basename(input))
+        distutils.dir_util.copy_tree(input,outputDir+'/'+os.path.basename(input))
 
     
