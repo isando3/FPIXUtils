@@ -9,7 +9,7 @@ Usage: ./checkPretest.py <input dir>
 import ROOT
 #ROOT.gErrorIgnoreLevel = ROOT.kWarning
 from ROOT import *
-#gStyle.SetOptStat(0)
+gStyle.SetOptStat(0)
 import math
 import os
 from config import *
@@ -101,7 +101,7 @@ class Comparison:
         #self.outputDir=outputDir
         self.info=info
 
-        self.goodModuleNames=[f.split('_ElComandanteTest')[0].split('/')[-1] for f in self.testFiles]
+        self.goodModuleNames=[f.split('_')[0].split('/')[-1] for f in self.testFiles]
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -166,7 +166,11 @@ class Comparison:
         if 'thr_scurveVcal_Vcal' in self.hName:
             #ref.GetXaxis().SetRangeUser(15,55)
             pass
-
+        if 'Scurves/dist' in self.hName or 'gainPedestalNonLinearity' in self.hName:
+            gStyle.SetOptStat(1)
+        else:
+            gStyle.SetOptStat(0)
+            
         textPad.cd()
 
         wordsPerLine=5
@@ -174,7 +178,7 @@ class Comparison:
         text=TPaveText(.1,.9-min(height,0.8),.9,.9,"NB")
         text.SetFillColor(kWhite)
         text.SetTextAlign(13)
-
+   
         t=[]
         line=[]
         for word in self.info.split():
@@ -237,9 +241,9 @@ class Comparison:
                     I150=h.GetBinContent(h.FindBin(150))
 
                     l=TLatex()
-                    l.DrawLatexNDC(.15,.85,"I(150V)="+str(round(I150,2))+"#muA")
+                    #l.DrawLatexNDC(.15,.85,"I(150V)="+str(round(I150,2))+"#muA")
                     l2=TLatex()
-                    l2.DrawLatexNDC(.15,.8,"I(150V)/I(100V)="+str(round(I150/I100,2)))
+                    #l2.DrawLatexNDC(.15,.8,"I(150V)/I(100V)="+str(round(I150/I100,2)))
 
                 gPad.SetFillColor(kWhite)
                 gPad.Modified()

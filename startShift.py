@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 import os
+import re
+import sys
 
 print '\n'
 shifter=raw_input('Enter your name:\n')
@@ -9,7 +11,13 @@ for i in range(4):
     print '\n'
     moduleName=raw_input('Enter module '+str(i)+' (starting from rear of coldbox) name, or press enter for no module:\n')
     moduleName=moduleName.upper()
-    if moduleName: moduleNames.append(moduleName)
+    if moduleName:
+        r = re.compile('[A-Z]-[A-Z]-\d-\d\d')
+        if r.match(moduleName) is not None:
+            moduleNames.append(moduleName)
+        else: 
+            print 'Incorrect module name format. Aborting'
+            sys.exit()
     else: moduleNames.append('0')
 
 f=open(os.environ['HOME']+'/FPIXUtils/config.py','w')

@@ -40,14 +40,14 @@ if inputDirs:
     if testName=='FPIXTest': IVFiles=[glob(d+'/*_IV_*/ivCurve.log')[0] for d in inputDirs]
 else:
     for module in goodModuleNames:
-        s=os.environ['HOME']+'/allTestResults/'+module+'_ElComandanteTest_*/*_'+testName+'_*/commander_'+testName+'.root'
+        s=os.environ['HOME']+'/allTestResults/'+module+'_*/*_'+testName+'_*/commander_'+testName+'.root'
         try: testFiles.append(sorted(glob(s))[-1])
         except: 
             print 'Found no files matching:',s
             exit()
 
         if testName=='FPIXTest': 
-            s=os.environ['HOME']+'/allTestResults/'+module+'_ElComandanteTest_*/*_IV_*/ivCurve.log'
+            s=os.environ['HOME']+'/allTestResults/'+module+'_*/*_IV_*/ivCurve.log'
             try: IVFiles.append(sorted(glob(s))[-1])
             except:
                 print 'Found no files matching:',s
@@ -99,9 +99,9 @@ if __name__=='__main__':
 
     if testName=='Pretest':
         if len(badModules)>0:
-            print 'Replace the following module(s) and repeat pre-test:'
+            print 'Replace the following module(s) and repeat the pre-test:'
             for m in badModules:
                 print '    - '+str(m)
         else:
-            print 'Rock on'
+            print 'All modules are good.  Continue to the next test.\n\n'
 

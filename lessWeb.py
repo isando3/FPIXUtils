@@ -485,7 +485,7 @@ def getGainPedestalPlots(f,outputDir):
 def makeSummaryPlots(inputDir, outputDir, log, data):
     data=TFile(data['fulltest'])
 
-    produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=[-5,5], isBB3=True)
+    produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=(-5,5), isBB3=True)
     pic=SE(top, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
@@ -515,7 +515,7 @@ def makeSummaryPlots(inputDir, outputDir, log, data):
         comment=open(outputDir+'/'+txt.text,'w')
         comment.write('\n'+file.text.split('.')[0])
 
-    produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=[0,15])
+    produceLessWebSummaryPlot(data,'Trim/TrimMap',outputDir,zRange=(0,15))
     pic=SE(top, 'PIC')
     attachName(pic)
     file=SE(pic, 'FILE')
@@ -820,6 +820,18 @@ def analyzeFullTest(inputDir, outputDir, log, data):
             badBumps=[int(x) for x in line.split()[-16:]]
             print 'badBumps:',badBumps
             
+        if 'Final Module Temperature:' in line:
+            finalTemp=line.split('Temperature:')[1].split()[0]
+            print 'finalTemp:',finalTemp
+            
+        if 'Final Analog Current:' in line:
+            finalIana=line.split('Current:')[1].strip()
+            print 'finalIana:',finalIana
+
+        if 'Final Digital Current:' in line:
+            finalIdig=line.split('Current:')[1].strip()
+            print 'finalIdig:',finalIdig
+
         """
         if 'separation cut       (per ROC):' in line:
             bbCuts=[int(x) for x in line.split()[-16:]]
@@ -832,8 +844,11 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         print deadPixels
         print maskDefectPixels 
         print addressDefectPixels
-        print badBumps 
+        print badBumps
         #print bbCuts
+
+    RTD_TEMP=SE(test,'RTD_TEMP')
+    RTD_TEMP.text=str(finalTemp)
 
     ROCS=SE(test,'ROCS')
     for i in range(16):
@@ -918,7 +933,7 @@ def makeXML(inputDir):
     global moduleName
     print 'inputDir:',inputDir
     print 
-    moduleName=os.path.basename(inputDir.split('_ElComandanteTest_')[0])
+    moduleName=os.path.basename(inputDir.split('_')[0])
     print 'moduleName:',moduleName
 
     outputDir=os.environ['HOME']+'/dbUploads/'+moduleName
