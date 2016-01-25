@@ -31,7 +31,14 @@ date = XrayInDir.split('_')[2]
 time = XrayInDir.split('_')[3]
 number = XrayInDir.split('_')[4]
 
-topDir = module + '_XrayQualification_' + date + '_' + time + '_' + number
+if '/' in number:
+  number = int(number.replace("/", ""))
+else:
+  number = int(number)
+
+number += 550
+
+topDir = module + '_XrayQualification_' + date + '_' + time + '_' + str(number)
 print 'Creating directory: ' + topDir
 print 'tarring directory...'
 
@@ -55,6 +62,4 @@ subprocess.call('cp ' + XrayInDir + '/000_FPIXTest_p17/dc20*' + ' ' + topDir + '
 placeHRFiles()
 writeIniFile()
 
-if '/' in topDir:
-  topDir = topDir.replace("/", "")
 subprocess.call('tar -zcvf ' + topDir + '.tar.gz ' + topDir, shell = True)
