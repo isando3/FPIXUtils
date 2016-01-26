@@ -110,7 +110,7 @@ def getProgramROCPlot(f, deadROCs, outputDir):
 
 #---------------------------------------------------------------
 
-def getVthrCompCalDelPlot(f, VthrComps, CalDels, outputDir):
+def getVthrCompCalDelPlot(f, CalDels, VthrComps, outputDir):
     
     c=TCanvas()
     for key in f.Get('Pretest').GetListOfKeys():
@@ -554,7 +554,7 @@ def analyzePreTest(inputDir, outputDir, log, data):
             calDels=[int(i) for i in line.split('CalDel:')[1].split()]
             line=next(f)
             VthrComps=[int(i) for i in line.split('VthrComp:')[1].split()]
-            
+
     ct=SE(test,'CAN_TIME')
     ct.text=str(int(canTime))
 
