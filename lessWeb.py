@@ -640,7 +640,8 @@ def analyzeIV(inputDir, outputDir, log, data):
     scan=SE(top,'SCAN')
     attachName(scan)
     level=SE(scan,'LEVEL')
-    level.text='FNAL'
+    if doCold: level.text='FNAL'
+    else: level.text='FNAL_17C'
     type=SE(scan,'TYPE')
     type.text='IV'
     file=SE(scan,'FILE')
@@ -669,24 +670,25 @@ def analyzeIV(inputDir, outputDir, log, data):
     compliance=SE(scan,'COMPLIANCE')
     compliance.text=str(round(c,1))
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    c=TCanvas()
-    c.SetLogy()
-    h.Draw()
-    l=TLine(b,h.GetYaxis().GetXmin(),b,h.GetMaximum()); l.SetLineColor(kRed)
-    l.Draw('same')
-    c.SaveAs(outputName.replace('xml','png'))
 
-    pic=SE(top,'PIC')
-    attachName(pic)
-    file=SE(pic,'FILE')
-    file.text=os.path.basename(outputName.replace('xml','png'))
-    txt=SE(pic,'TXT')
-    txt.text=os.path.basename(outputName).replace('xml','txt')
-    part=SE(pic,'PART')
-    part.text='sidet_p'
-    comment=open(outputDir+'/'+txt.text,'w')
-    comment.write('\nbreakdown='+str(b)+'\n')
+    if doCold:
+        c=TCanvas()
+        c.SetLogy()
+        h.Draw()
+        l=TLine(b,h.GetYaxis().GetXmin(),b,h.GetMaximum()); l.SetLineColor(kRed)
+        l.Draw('same')
+        c.SaveAs(outputName.replace('xml','png'))
+
+        pic=SE(top,'PIC')
+        attachName(pic)
+        file=SE(pic,'FILE')
+        file.text=os.path.basename(outputName.replace('xml','png'))
+        txt=SE(pic,'TXT')
+        txt.text=os.path.basename(outputName).replace('xml','txt')
+        part=SE(pic,'PART')
+        part.text='sidet_p'
+        comment=open(outputDir+'/'+txt.text,'w')
+        comment.write('\nbreakdown='+str(b)+'\n')
 
     #to do:
     # -V(100uA)
@@ -935,6 +937,9 @@ def makeXML(inputDir):
     print 
     moduleName=os.path.basename(inputDir.split('_')[0])
     print 'moduleName:',moduleName
+    
+    global doCold
+    doCold='m20C' in inputDir
 
     outputDir=os.environ['HOME']+'/dbUploads/'+moduleName
     if os.path.exists(outputDir):
@@ -981,12 +986,16 @@ def makeXML(inputDir):
     notes=SE(test,'NOTES')
     notes.text='Test results and config files can be found in: '+os.path.basename(inputDir)
 
-    for f in [analyzeIV,
+    if doCold: tests=[analyzeIV,
               makeSummaryPlots,
               analyzePreTest,
               analyzeFullTest,
               getConfigs,
-              ]:
+              ]
+    else:
+        tests=[analyzeIV]
+    
+    for f in tests:
         try:
             f(inputDir, outputDir, log, data)
         except: 
