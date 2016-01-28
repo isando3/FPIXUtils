@@ -149,7 +149,6 @@ def findZRange(plots):
                 return(plot.GetMinimum(),plot.GetMaximum())
             continue
 
-
         if "rescaledThr" in plot.GetName():
             rocMin = plot.GetMinimum() - 0.00001
         else:
@@ -255,7 +254,11 @@ def setupSummaryCanvas(summaryPlot):
 
 
     # use numbers that are factors of ROC_SIZE to avoid rounding errors
-    topMargin = ROC_SIZE
+    # dirName will be empty in the MoReWeb case
+    if dirName is not None:
+        topMargin = ROC_SIZE
+    else:
+        topMargin = 2 * ROC_SIZE/3.
     bottomMargin = 2 * ROC_SIZE/3.
     leftMargin = 2 * ROC_SIZE/3.
     rightMargin = 2 * ROC_SIZE
@@ -450,8 +453,6 @@ def setupSummaryCanvas(summaryPlot):
                       "NDC NB")
     if dirName is not None:
         title.AddText(dirName + ": " + plotName)
-    else:
-        title.AddText(plotName)
     title.SetFillColor(0)
     title.SetTextAlign(22)
     title.SetTextFont(42)
@@ -777,7 +778,7 @@ def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar')
 def produceLessWebSummaryPlot(inputFile, pathToHistogram, outputDir, zRange=(), isBB3=False, version=0):
 
     summaryCanvas=produce2DSummaryPlot(inputFile.GetName(), pathToHistogram, zRange=zRange)
-    
+
     if isBB3 and zRange:
         colors = array("i",[51+i for i in range(40)] + [kRed])
         gStyle.SetPalette(len(colors), colors);
