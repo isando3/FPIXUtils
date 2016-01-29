@@ -24,27 +24,22 @@
 #include <string>
 #include <numeric>
 
-int eff( string newmod, string fileDesg ){
+int eff(){
     
     	cout << "Starting Efficency Script" << endl;
-
-	cout << "Usage:  eff( module_name_string , starting_hr_file_string )" << endl;
-	cout << "for defaults enter \"hr\" for starting hr file designator. " << endl;
 
 	char chpath[256];
     	getcwd(chpath, 255);
 	std::string path = chpath;
-    	std::string mod("pa315");//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 
-	if( newmod != "" )  mod = newmod;
+    	std::string mod("pa225");//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
 	// <<<<<< change folder/module name to run in 
 	//std::string mod("yhc691015sn3p35");
 
 	std::string dataPath =  path + "/" + mod + "data";
     	//std::string measurementFolder =  mod + "data";
 	std::string configPath = path + "/" + mod; 
-	std::string HighRateSaveFileName( "Results_Hr" );
-	std::string HighRateFileName( "hr" );//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 
-	if( fileDesg != "" ) HighRateFileName = fileDesg;                
+	std::string HighRateSaveFileName( "Results_"+ mod );
+	std::string HighRateFileName( "hr" );//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<                 
 	int namelength = HighRateFileName.length();
 	// <<<<<<<<<<<<<<<<<<<  change Highrate File name to use
     	//  assumes something like hr08ma_pa225_082715.root
@@ -67,6 +62,10 @@ int eff( string newmod, string fileDesg ){
 	int nRocs = 16;
 	int nDCol = 25;
 	
+	double worstDCol[nRocs] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	double worstDColEff[nrocs] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
+
+
 	std::string directoryList = mod;
 
 	std::string outFileName = dataPath + "/" + HighRateFileName + "Efficiency.log";
@@ -118,6 +117,8 @@ int eff( string newmod, string fileDesg ){
 	std::vector< std::vector< std::vector< double > > > dcolHitErrors;
 	std::vector< std::vector< std::vector< double > > > dcolRates;
         std::vector< std::vector< std::vector< double > > > dcolRateErrors;
+        std::vector< std::vector< std::vector< double > > > dcolEff;
+        std::vector< std::vector< std::vector< double > > > dcolEffErrors;
 
 	std::vector< std::vector< double > > lineList;
 
@@ -170,6 +171,8 @@ int eff( string newmod, string fileDesg ){
          	dcolHitErrors.push_back(bigempty);
 	        dcolRates.push_back(bigempty);
                 dcolRateErrors.push_back(bigempty);
+                dcolEff.push_back(bigempty);
+                dcolEffErrors.push_back(bigempty);
 	}
 	
 
@@ -179,6 +182,8 @@ int eff( string newmod, string fileDesg ){
 			dcolHitErrors[i].push_back(empty);
 	                dcolRates[i].push_back(empty);
 	                dcolRateErrors[i].push_back(empty);
+                	dcolEff[i].push_back(empty);
+                	dcolEffErrors[i].push_back(empty);
 		}
 	}
 
@@ -389,7 +394,9 @@ int eff( string newmod, string fileDesg ){
 					rates[iRoc].push_back(rate);
 					rateErrors[iRoc].push_back(rateError);
                                         dcolHits[iRoc][dcol].push_back(totXHits);
-                                        dcolHitErrors[iRoc][dcol].push_back(totXHitErrors);
+                                        dcolHitErrors[iRoc][dcol].push_back(std::sqrt(totXHits));
+					dcolEff[iRoc][dcol].push_back(efficiency);
+					dcolEffError[iroc][dcol].push_back(efficiencyError);
 					dcolRates[iRoc][dcol].push_back(rate);
                                         dcolRateErrors[iRoc][dcol].push_back(rateError);
 
@@ -407,7 +414,9 @@ int eff( string newmod, string fileDesg ){
 					
 					dColModCount++;		
 
-					if( efficiency < 0.9 ){	
+					if( worstDColEff[iRoc] < efficiency ) { worstDColEff[iRoc] = efficiency; worstDCol[iRoc] = dcol; }
+
+					if( efficiency < 0.98 ){	
 						log << "Roc: " << iRoc << " dc: " << dcol << " nPixelsDC: " << nPixelsDC << " rate: " << rate << " eff: " << efficiency << std::endl;
 					}
 					if (VERBOSE) {
@@ -436,7 +445,7 @@ int eff( string newmod, string fileDesg ){
 		std::cout << "Working in ROC " << iRoc << endl;
 		TCanvas *c1 = new TCanvas("c1", "efficiency", 200, 10, 700, 500);
 		c1->Range(0,0,1, 300);
-		TGraphErrors* TGE = new TGraphErrors(efficiencies[iRoc].size(), &rates[iRoc][0], &efficiencies[iRoc][0], &rateErrors[iRoc][0] , &efficiencyErrors[iRoc][0]);
+		TGraphErrors* TGE = new TGraphErrors( rates[iRoc].size(), &rates[iRoc][0], &efficiencies[iRoc][0], &rateErrors[iRoc][0] , &efficienciesErrors[iRoc][0] ) ;
 		TGraph* tge2 = new TGraph( lineList[0].size(), &lineList[0][0], &lineList[1][0] );
                 TGraph* tge3 = new TGraph( lineList[2].size(), &lineList[2][0], &lineList[3][0] );
 
@@ -485,6 +494,52 @@ int eff( string newmod, string fileDesg ){
 		myfit->Clear();
 		delete myfit;
 		delete c1;
+
+		TCanvas *c1 = new TCanvas("c1", "worst_dcol", 200, 10, 700, 500);
+                c1->Range(0,0,1, 300);
+		int use = worstDCol[iRoc];
+                TGraphErrors* TGE = new TGraphErrors(dcolEff[iRoc][use].size(), &dcolRates[iRoc][use][0], &dcolEff[iRoc][use][0], &dcolRateErrors[iRoc][use][0] , &dcolEffErrors[iRoc][use][0]);
+                TGraph* tge2 = new TGraph( lineList[0].size(), &lineList[0][0], &lineList[1][0] );
+                TGraph* tge3 = new TGraph( lineList[2].size(), &lineList[2][0], &lineList[3][0] );
+		
+		char graphTitle[256];
+                sprintf(graphTitle, "Fiducial Efficiency vs Rate for %s ROC %d", moduleName.c_str(), iRoc);
+                TGE->SetTitle(graphTitle);
+                TGE->SetMarkerStyle(3);
+                TGE->SetMarkerSize(1);
+                TGE->GetXaxis()->SetTitle("Rate: MHz/cm^2");
+                TGE->GetYaxis()->SetTitle("Efficency 1.00 = 100%");
+                TGE->Draw("ap");
+
+                tge2->SetMarkerColor( kRed );
+                tge2->SetMarkerStyle(21);
+ 
+                tge3->SetMarkerColor( kRed );
+                tge3->SetMarkerStyle(21);
+
+                TF1* myfit = new TF1("fitfun", "([0]-[1]*x*x*x)", 70, 170);
+                myfit->SetParameter(0, 1);
+                myfit->SetParLimits(0, 0.9, 1.1);
+                myfit->SetParameter(1, 5e-9);
+                myfit->SetParLimits(1, 1e-10, 5e-8);
+
+                tge2->Draw("same");
+                tge3->Draw("same");
+                TGE->Fit(myfit, "BR");
+                c1->Update();
+
+                c1->Modified();
+                gPad->Modified();
+                char saveFileName[256];
+                sprintf(saveFileName, "%s_Eff_C%d_DC%d.png",HighRateSaveFileName.c_str(), iRoc, use);
+                c1->SaveAs(saveFileName);
+                c1->Clear();
+                TGE->Clear();
+
+                myfit->Clear();
+                delete myfit;
+                delete c1;
+
 		
 	}
 
@@ -511,7 +566,7 @@ int eff( string newmod, string fileDesg ){
         tge3->SetMarkerColor(2 );
         tge3->SetMarkerStyle(21);
 
-        TF1* myfit = new TF1("fitfun", "([0]-[1]*x*x*x)", 70, 170);
+        TF1* myfit = new TF1("fitfun", "([0]-[1]*x*x*x)", 40, 120);
         myfit->SetParameter(0, 1);
         myfit->SetParLimits(0, 0.9, 1.1);
         myfit->SetParameter(1, 5e-9);
