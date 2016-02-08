@@ -108,7 +108,7 @@ argv = []
 #Comments on get_gpeaks: To get rid of the polymarkers of the Spectrum method, use the option ='goff' in the search function
 def get_gpeaks(h,lrange=[0,180],sigma=6,opt="goff",thres=0.05,niter=1000,exp=0,i=0):
     s = TSpectrum(niter,1)
-    h.GetXaxis().SetRange(lrange[0],lrange[1])
+    h.GetXaxis().SetRangeUser(lrange[0],lrange[1])
     
     for sigma_temp in range(sigma,0,-1):
         s.Search(h,sigma_temp,"",thres)
@@ -206,7 +206,7 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
         print "Opening file:"+ hist
         tgt.Rebin(rebin)
         tgt.Draw()
-        tgt.GetXaxis().SetRange(0,250)
+        tgt.GetXaxis().SetRangeUser(0,250)
         peaks = get_gpeaks(tgt,[0,250],6,"goff",.05,1000,exp,i)
 	print len(peaks), "Roc: ", i, material
         if len(peaks)==0:
@@ -305,19 +305,19 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
             tgt.Draw()
 	    print tgt.GetFunction("gaus2").GetParameter(1)
             mu1 = tgt.GetFunction("gaus1").GetParameter(1)
-            mu2 = newhisto.GetFunction("gaus2").GetParameter(1)
+            mu2 = tgt.GetFunction("gaus2").GetParameter(1)
             sigma1 = tgt.GetFunction("gaus1").GetParameter(2)
-            sigma2 = newhisto.GetFunction("gaus2").GetParameter(2)
+            sigma2 = tgt.GetFunction("gaus2").GetParameter(2)
             c1.SaveAs(output+'FitC_'+str(i)+material+'.png')
            
 	    if material == 'Ag' or material == 'In' or material == 'Sn':
                 newhisto = rm_peak(tgt,tgt.GetFunction("gaus1"))
                 print "Got new histo"
-                c1.Update()
+                  c1.Update()
                 newhisto.Fit("gaus3","+R")
-                newhisto.Draw()
+                  newhisto.Draw()
                 mu2 = newhisto.GetFunction("gaus3").GetParameter(1)
-                print "new mu2: ", mu2
+                  print "new mu2: ", mu2
                 sigma2 = newhisto.GetFunction("gaus3").GetParameter(2)
                 c1.Update()
                 c1.SaveAs(output+'Stripped_C'+str(i)+'_'+material+'.png')
