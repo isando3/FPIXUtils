@@ -27,12 +27,12 @@ from ROOT import *
 #|_| 
 #
 
-myfilename1 = "floro_mg204_03022016.root" #"pa207_071615.root"
+myfilename1 = "floro_mg246_08022016.root" #"pa207_071615.root"
 myfilename2 = myfilename1; #"floro_122915.root"
 myfilename3 = myfilename1; #"floro2_122915.root" #"pa207_071615.root"
 myfilename4 = myfilename1; #"floro2_122915.root"
-myfileoutname = "XRFResult_"
-rocs =  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15
+myfileoutname = "XRFResult_mg246"
+rocs = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]
 
 
 parser.add_option('--setup', type='string', action='store',
@@ -888,7 +888,7 @@ if options.setup == 'UIC':
     rootfile1name = options.MoFile
     material1 = 'Mo'
     XRSource  = 'Cu'
-elif options.setuo =='KU':
+elif options.setup =='KU':
     rootfile1 = TFile(options.CuFile)
     rootfile1name = options.CuFile
     material1 = 'Cu'
@@ -902,8 +902,8 @@ rootfile4name = options.InFile
 outrootfile = TFile('histos.root')
 histname = options.histoname
 nrocs = options.nrocs
-for item in badrocs.split():
-    rocs.remove( item )
+for item in options.badrocs.split():
+    if item in rocs: rocs.remove( item )
 output = options.outputfile
 material2 = 'Ag'
 material3 = 'Sn'
