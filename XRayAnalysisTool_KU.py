@@ -31,8 +31,8 @@ myfilename1 = "floro_mg204_03022016.root" #"pa207_071615.root"
 myfilename2 = myfilename1; #"floro_122915.root"
 myfilename3 = myfilename1; #"floro2_122915.root" #"pa207_071615.root"
 myfilename4 = myfilename1; #"floro2_122915.root"
-myfileoutname = "XRFResult_"
-rocs =  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15
+myfileoutname = "XRFResult_mg204"
+rocs =  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15 
 
 
 parser.add_option('--setup', type='string', action='store',
@@ -41,7 +41,7 @@ parser.add_option('--setup', type='string', action='store',
                   help='Setup corresponding to KU or UIC?: Options KU or UIC only')
 
 parser.add_option('--outputfile', type='string', action='store',
-                  default=myfileoutname, #''M_',
+                  default= myfileoutname, #'M_pa207_',
                   dest='outputfile',
                   help='Set first part of the name of outputfile: Usually M_XX_YYY')
 
@@ -66,26 +66,27 @@ parser.add_option('--XRSource', type='string', action='store',
                   help='Name of the XRay source, valid options: Cu or Mo ')
 
 parser.add_option('--CuFile', type='string', action='store',
-                  default=myfilename1, #''Fluorescence.root',
+                  default= myfilename1, #'CuXray.root',
                   dest='CuFile',
                   help='Name of the Cu root file (when Mo is the XRaySource) ')
 
 parser.add_option('--MoFile', type='string', action='store',
-                  default='Fluorescence.root',
+                  default= 'MoXray.root',
                   dest='MoFile',
                   help='Name of the Mo root file (when Cu is the XRaySource ')
 
 parser.add_option('--AgFile', type='string', action='store',
-                  default=myfilename2, #''Fluorescence.root',
+                  default= myfilename2, #'AgXray.root',
                   dest='AgFile',
                   help='Name of the Ag root file ')
 
 parser.add_option('--SnFile', type='string', action='store',
-                  default=myfilename3, #''Fluorescence.root',
+                  default= myfilename3, #'SnXray.root',
                   dest='SnFile',
                   help='Name of the Sn root file ')
+
 parser.add_option('--InFile', type='string', action='store',
-                  default=myfilename4, #'Fluorescence.root',
+                  default= myfilename4, #'InXray.root',
                   dest='InFile',
                   help='Name of the In root file ')
 
@@ -94,7 +95,7 @@ parser.add_option('--nrocs', type='int', action='store',
                   dest='nrocs',
                   help='Number or rocs')
 parser.add_option('--badrocs', type='string', action='store',
-                  default='17',
+                  default= "",
                   dest='badrocs',
                   help='List of bad rocs, for example [2,4,5]')
 (options, args) = parser.parse_args()
@@ -108,18 +109,19 @@ argv = []
 #Comments on get_gpeaks: To get rid of the polymarkers of the Spectrum method, use the option ='goff' in the search function
 def get_gpeaks(h,lrange=[0,180],sigma=6,opt="goff",thres=0.05,niter=1000,exp=0,i=0):
     s = TSpectrum(niter,1)
-    h.GetXaxis().SetRange(lrange[0],lrange[1])
-    
+    h.GetXaxis().SetRangeUser(lrange[0],lrange[1])
+
     for sigma_temp in range(sigma,0,-1):
         s.Search(h,sigma_temp,"",thres)
-        print "sigma", sigma_temp, s.GetNPeaks()
+	print "sigma", sigma_temp, s.GetNPeaks()
         h.Draw()
         c1.Update()
-        name = h.GetName()
+	name = h.GetName()
         c1.SaveAs(output+'Sigma_'+str(sigma_temp)+name+'.png')
 
-        if s.GetNPeaks() >= exp:
-           break
+	if s.GetNPeaks() >= exp:
+	   break
+	 
 
     s.SetAverageWindow(2)
     bufX, bufY = s.GetPositionX(), s.GetPositionY()
@@ -143,6 +145,8 @@ def rm_peak(histo, gaus):
 
 #Comments on FitPeaks: It has 2 variants  depending on the Xray source used. It will get the peaks and fit them and save the stats info in .txt files per Material and ROC.
 def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
+    print "In fit Peaks"
+    print material	
     arrayMo = false
     arrayCu = false
     arrayIn = false 
@@ -153,29 +157,29 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
     if material == 'Mo':
         arrayMo = true
         ArrayMo = TObjArray(16)
-        if XRSource == 'Mo':
-           exp = 2
+	if XRSource == 'Mo': 
+	   exp = 2
     elif material == 'Ag':
         arrayAg = true
         ArrayAg = TObjArray(16)
-        if XRSource == 'Mo':
-           exp = 3
+	if XRSource == 'Mo': 
+	   exp = 3
     elif material == 'Sn':
         arraySn =true
         ArraySn = TObjArray(16)
-        if XRSource == 'Mo':
-           exp = 3
+	if XRSource == 'Mo': 
+	   exp = 3
     elif material == 'In':
         arrayIn = true
         ArrayIn = TObjArray(16)
-        if XRSource == 'Mo':
-           exp = 3
+	if XRSource == 'Mo': 
+	   exp = 3
     elif material == 'Cu':
         arrayCu = true
         ArrayCu = TObjArray(16)
-        if XRSource == 'Mo':
-           exp = 2 
-   #for i in range(0,int(nrocs)-1):
+	if XRSource == 'Mo': 
+	   exp = 2
+    #for i in range(0,int(nrocs)-1):
 
 
     for i in range(0,16):
@@ -184,13 +188,14 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
             continue  
         stats= open(output+material+'C_'+str(i)+'_stats.txt','w')
         if material == 'not': #'In':
-                hl = len( histo )
-                hist = histo[0 : hl-4] + "Ag_C" + str(i) + "_V0"
-        else:
-                hist = histo +str(i)+"_V0"
+		hl = len( histo )
+		hist = histo[0 : hl-4] + "Ag_C" + str(i) + "_V0"
+	else:
+		hist = histo +str(i)+"_V0"
         directory = rootfile.Get('Xray')
         keys = directory.GetListOfKeys()
         allkeys = []
+
         for key in keys:
             allkeys.append(key.GetName())
         print hist, hist.strip('Xray/')
@@ -200,15 +205,16 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
                 #print 'Target foil not found'
                 #continue
         else:
-            print 'Histogram needed not  found',hist.strip('Xray/')
+            print 'Histogram needed not  found ',hist.strip('Xray/')
             continue   
         tgt = rootfile.Get(hist)
+	tgt.GetXaxis().SetRangeUser(0,250)
         print "Opening file:"+ hist
         tgt.Rebin(rebin)
         tgt.Draw()
         tgt.GetXaxis().SetRange(0,250)
         peaks = get_gpeaks(tgt,[0,250],6,"goff",.05,1000,exp,i)
-	print len(peaks), "Roc: ", i, material
+        print len(peaks), "Roc: ", i, material
         if len(peaks)==0:
             print 'Couldnt find peaks, check here!'
             continue
@@ -282,7 +288,7 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
                         sigma2l = k
                         break
         if (XRSource  == 'Mo'):
-            print "Mo source" ,len(peaks)
+	    print "Mo source" ,len(peaks)
             if (material == 'Cu'):
                 gaus1 = TF1("gaus1","gaus",peaks[1][0]-15, peaks[1][0]+15)
                 gaus2 = TF1("gaus2","gaus",peaks[0][0]-15, peaks[0][0]+15)
@@ -291,41 +297,40 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
                 gaus2 = TF1("gaus2","gaus",peaks[2][0]-20, peaks[2][0]+20)
                 gaus3 = TF1("gaus3","gaus",peaks[2][0]-20, peaks[2][0]+20)
             elif ((material == 'Sn' or material == 'Ag' or material == 'In') and len(peaks) == 2):
-                if peaks[0][0] > 70 and peaks[0][0] < 100:
-                    gaus1 = TF1("gaus1","gaus",peaks[0][0]-15, peaks[0][0]+15)
+	        if peaks[0][0] > 70 and peaks[0][0] < 100:
+	            gaus1 = TF1("gaus1","gaus",peaks[0][0]-15, peaks[0][0]+15)
                     gaus2 = TF1("gaus2","gaus",peaks[1][0]-15, peaks[1][0]+15)
                     gaus3 = TF1("gaus3","gaus",peaks[1][0]-15, peaks[1][0]+15)
-                else:
-                    gaus1 = TF1("gaus1","gaus",peaks[1][0]-15, peaks[1][0]+15)
+		else:
+	            gaus1 = TF1("gaus1","gaus",peaks[1][0]-15, peaks[1][0]+15)
                     gaus2 = TF1("gaus2","gaus",peaks[0][0]-15, peaks[0][0]+15)
                     gaus3 = TF1("gaus3","gaus",peaks[0][0]-15, peaks[0][0]+15)
-
-	    tgt.Fit("gaus1","R")
+		    
+            tgt.Fit("gaus1","R")
             tgt.Fit("gaus2","+R")
             tgt.Draw()
 	    print tgt.GetFunction("gaus2").GetParameter(1)
             mu1 = tgt.GetFunction("gaus1").GetParameter(1)
-            mu2 = newhisto.GetFunction("gaus2").GetParameter(1)
+	    mu2 = tgt.GetFunction("gaus2").GetParameter(1)
             sigma1 = tgt.GetFunction("gaus1").GetParameter(2)
-            sigma2 = newhisto.GetFunction("gaus2").GetParameter(2)
+  	    sigma2 = tgt.GetFunction("gaus2").GetParameter(2)
             c1.SaveAs(output+'FitC_'+str(i)+material+'.png')
-           
-	    if material == 'Ag' or material == 'In' or material == 'Sn':
-                newhisto = rm_peak(tgt,tgt.GetFunction("gaus1"))
-                print "Got new histo"
-                c1.Update()
-                newhisto.Fit("gaus3","+R")
-                newhisto.Draw()
-                mu2 = newhisto.GetFunction("gaus3").GetParameter(1)
-                print "new mu2: ", mu2
-                sigma2 = newhisto.GetFunction("gaus3").GetParameter(2)
-                c1.Update()
-                c1.SaveAs(output+'Stripped_C'+str(i)+'_'+material+'.png')
+
+            if material == 'Ag' or material == 'In' or material == 'Sn':  
+	       newhisto = rm_peak(tgt,tgt.GetFunction("gaus1"))
+	       print "Got new histo"
+               c1.Update()
+	       newhisto.Fit("gaus3","+R")
+               newhisto.Draw()
+	       mu2 = newhisto.GetFunction("gaus3").GetParameter(1)
+               print "new mu2: ", mu2  
+  	       sigma2 = newhisto.GetFunction("gaus3").GetParameter(2)
+	       c1.Update()
+	       c1.SaveAs(output+'Stripped_C'+str(i)+'_'+material+'.png')
 
             print material, "roc: "+str(i), mu1 , sigma1, mu2, sigma2
-	    stats.writelines(["Mean_Mo_C"+str(i)+":\t"+str(mu1)+"\n", "Sigma_Mo_C"+str(i)+":\t"+str(sigma1)+"\n","Mean_"+material+"_C"+str(i)+":\t"+str(mu2)+"\n", "Sigma_"+material+"_C"+str(i)+":\t"+str(sigma2)+"\n"])
-            
-	    if arrayCu:
+            stats.writelines(["Mean_Mo_C"+str(i)+":\t"+str(mu1)+"\n", "Sigma_Mo_C"+str(i)+":\t"+str(sigma1)+"\n","Mean_"+material+"_C"+str(i)+":\t"+str(mu2)+"\n", "Sigma_"+material+"_C"+str(i)+":\t"+str(sigma2)+"\n"])
+            if arrayCu:
                 ArrayCu.AddAt(tgt,i)
             elif arrayAg:
                 ArrayAg.AddAt(tgt,i)
@@ -333,7 +338,6 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
                 ArraySn.AddAt(tgt,i)
             elif arrayIn:
                 ArrayIn.AddAt(tgt,i)
-
         elif (XRSource == 'Cu'):
             gaus1 = TF1("gaus1","gaus",peaks[0][0]-15, peaks[0][0]+15)
             if len(peaks)==2: gaus2 = TF1("gaus2","gaus",peaks[1][0]-15,peaks[1][0]+15)
@@ -371,8 +375,7 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
         ArrayG = ArrayMo
     elif arrayIn:
         ArrayG = ArrayIn
-
-    print "fit Peaks Finished"
+    print "fit Peaks Finished"	
     return ArrayG
    
 #Comments on  : 
@@ -532,8 +535,8 @@ def ConversionPlot(rocs,output, XRSource):
     convfactsn= 25271/3.6
     convfactin = 24207/3.6
     sumoutfile = "SummaryQPlots_" + output + ".txt"
-    sumout = open(sumoutfile, "w")
-    sumout.write(myfileoutname + "Summary of QPlots Slopes.\n"+ " e^{-}/Vcal: Intercept: \n" )
+    sumout = open( sumoutfile, "w" )
+    sumout.write( myfileoutname + " Summury of QPlots Slopes.\n" +  "      e^{-}/Vcal:    Intercept: \n" )
     qplotfit = open("SummaryQplots.txt",'w')
     n_oh = TH1F('n_oh','N_o', 100,0,1000)
     slopeh = TH1F('Slope','Slope',100, 0,100)
@@ -767,48 +770,47 @@ def ConversionPlot(rocs,output, XRSource):
         k = k_cu + k_mo + k_ag + k_sn+k_in
         matrix = np.zeros(((len(mus)),4))
         print "mus", mus, len(matrix)
-	a=0
+	a = 0
         for j in [0,1,2, 3, 4 ,5 ,6, 7]: #range(0,len(mus)):
             matrix[a][1] = float(mus[j])
             matrix[a][0] = float(k[j])
             matrix[a][3] = float(sigma_x[j])
-	    a=a+1
-        table = open('SummaryTable'+'_'+output+'_'+'C_'+str(i)+'.txt','w')
-        np.savetxt("SummaryTable"+'_'+output+'_'+"C_"+str(i)+".txt",matrix, delimiter="\t", fmt="%s", newline='\n' )
+            a=a+1
+        table = open('SummaryTable'+'_'+output+'_'+'C'+str(i)+'.txt','w')
+        np.savetxt("SummaryTable"+'_'+output+'_'+"C"+str(i)+".txt",matrix, delimiter="\t", fmt="%s"  )
         gStyle.SetOptFit(1)
         c1 = TCanvas('c1',"Fluorescence test",1)
         c1.cd()
         c1.Update()
         gStyle.SetOptStat(0)
-        gr = TGraphErrors("SummaryTable"+'_'+output+'_'+"C_"+str(i)+".txt")
+        gr = TGraphErrors("SummaryTable"+'_'+output+'_'+"C"+str(i)+".txt")
         gr.SetMarkerStyle(41)
         fit = TF1("fit","pol1",1000,10000)
         gr.Fit("fit","w","l",1000,10000)
         gr.SetMarkerStyle(20)
         n_o = gr.GetFunction("fit").GetParameter(0)
-        n_o_er = gr.GetFunction("fit").GetParError(0)
+	n_o_er = gr.GetFunction("fit").GetParError(0)
         slope = gr.GetFunction("fit").GetParameter(1)
-        pn_o = -(n_o/slope)
-        pn_o_er =abs(n_o_er/slope)
-        pslope = 1/slope
+	pn_o = -(n_o/slope)
+	pn_o_er =abs(n_o_er/slope)
+	pslope = 1/slope
         slope_err = gr.GetFunction("fit").GetParError(1)
-        pslope_err = slope_err /( slope*slope)
-        chisquare = gr.GetFunction("fit").GetChisquare()
-        ndf = gr.GetFunction("fit").GetNDF()
-        print "no:",pn_o
-        print "no error:", pn_o_er
+	pslope_err = slope_err /( slope*slope)
+	print "no:",pn_o
+	print "no error:", pn_o_er 
         print "slope:",pslope
-        print "slope error:",pslope_err
-        sumout.write( "C_" + str(i) + " "+ '{0:.2}'.format(pslope) + " +/- " + '{0:.1}'.format(pslope_err) +" " + '{0:.2}'.format(pn_o) + " +/- " + '{0:.2}'.format(pn_o_er)+ '\n' )
+	print "slope error:",pslope_err
+	sumout.write( "C_" + str(i) + "  "+ '{0:.2}'.format(pslope) + " +/- " + '{0:.1}'.format(pslope_err) + 
+                        "        " + '{0:.2}'.format(pn_o) + " +/- " + '{0:.2}'.format(pn_o_er)+ '\n' )
         gStyle.SetOptFit(0)
         gr.Draw("AP")
-        #gr.GetYaxis().SetRange(0,300)
-        #gr.GetXaxis().SetRange(0,8000)
-        title = "Graph eV vs Vcal for ROC " + str(i) + " "
-        gr.SetTitle( title )
+        #gr.GetYaxis().SetRange(0,500)
+        #gr.GetXaxis().SetRange(0,10000)
         gr.GetYaxis().SetTitle("Vcal")
         gr.GetXaxis().SetTitle("No.Electrons")
-        gStyle.SetOptStat(0)
+	title = "Graph eV vs Vcal for ROC " + str(i) + " "
+        gr.SetTitle( title )
+	gStyle.SetOptStat(0)
         c1.Update()
         gStyle.SetOptFit(0)
         gr.Draw("AP")
@@ -821,16 +823,16 @@ def ConversionPlot(rocs,output, XRSource):
         textslope = TLatex()
         textslope.SetNDC()
         textslope.SetTextColor(kBlack)
-	textslope.SetTextSize(0.05)
+        textslope.SetTextSize(0.05)
         textslope.DrawLatex(0.15,0.9,title)
-        textslope.DrawLatex(0.15,0.8,"e^{-}/Vcal: "+ '{0:.2}'.format(pslope) + " \pm " + '{0:.1}'.format(pslope_err) +
-                        " Intercept: " + '{0:.2}'.format(pn_o) + " \pm " + '{0:.2}'.format(pn_o_er))
-        textslope.DrawLatex(0.2,0.2,"  Cu                            Mo               Ag   In   Sn")
-	textslope.DrawLatex(0.15,0.7,"#chi^{2}/ndf = " + '{:.4}'.format(chisquare/ndf))
-        gStyle.SetOptFit(0)
+	textslope.DrawLatex(0.15,0.8,"e^{-}/Vcal: "+ '{0:.2}'.format(pslope) + " \pm " + '{0:.1}'.format(pslope_err) + 
+			" Intercept: " + '{0:.2}'.format(pn_o) + " \pm " + '{0:.2}'.format(pn_o_er))
+        textslope.DrawLatex(0.2,0.2,"  Cu                            Mo               Ag   In   Sn")                            
+	gStyle.SetOptFit(0)
         c1.Update()
         gStyle.SetOptFit(0)
-        c1.Update()
+        gr.SetTitle( title )
+	c1.Update()
         c1.SaveAs('Qplot'+'_'+output+'_C'+str(i)+'.png')
         c1.Close()
         c1.Update()
@@ -841,16 +843,8 @@ def ConversionPlot(rocs,output, XRSource):
         slopeh.Fill(1/slope)
         qmatrix[i][0] = 1/slope
         qmatrix[i][1] = -n_o/slope
-        qmatrix[i][2] = chisquare
-        qmatrix[i][3] = ndf
-        qmatrix[i][4] = slope_err/pow(slope,2)
     	# Create SummaryQPlots txt file:
-    np.savetxt("SummaryDistributionTable"+'_'+output+'_'+".txt",qmatrix, delimiter="\t", fmt="%s", newline='\n' )
-    FormattedFile = open("FluorFormatedOutput" + output + ".txt", "w")
-    FormattedFile.write("Roc Number    Slope (e-/Vcal)     Offset (Vcal)    Chi2/NDf\n")
-    for iroc in rocs:
-        FormattedFile.write("ROC "+str(iroc)+"         "+str(round(qmatrix[iroc][0],2))+" +/- "+str(round(qmatrix[iroc][4],4))+"       "+str(int(round(qmatrix[iroc][1])))+"             "+str(round(qmatrix[iroc][2]/qmatrix[iroc][3],4))+"\n")
-    FormattedFile.close()
+    np.savetxt("SumDistTable"+'_'+output+".txt",qmatrix, delimiter="\t", fmt="%s" )
     c2 = TCanvas('c2',"Distribution N_o",1)
     c2.cd()
     gStyle.SetOptStat(1)
@@ -888,7 +882,7 @@ if options.setup == 'UIC':
     rootfile1name = options.MoFile
     material1 = 'Mo'
     XRSource  = 'Cu'
-elif options.setuo =='KU':
+elif options.setup =='KU':
     rootfile1 = TFile(options.CuFile)
     rootfile1name = options.CuFile
     material1 = 'Cu'
@@ -902,8 +896,13 @@ rootfile4name = options.InFile
 outrootfile = TFile('histos.root')
 histname = options.histoname
 nrocs = options.nrocs
-for item in badrocs.split():
-    rocs.remove( item )
+#Badrocs = options.badrocs
+#badrocs = Badrocs.split(',')
+#badrocs = [int(x) for x in badrocs]    
+#print 'Removing the following ROCs', Badrocs
+#rocs = range(0,16)
+#for x in Badrocs:
+#    rocs.remove( int(x) )
 output = options.outputfile
 material2 = 'Ag'
 material3 = 'Sn'
@@ -912,7 +911,6 @@ hist1 = histname+"_"+material1+"_C"
 hist2 = histname+"_"+material2+"_C"
 hist3 = histname+"_"+material3+"_C"
 hist4 = histname+"_"+material4+"_C"
-gROOT.SetBatch(kTRUE)
 Arraytgt1 = FitPeaks(rootfile1,hist1,material1,rocs,output, XRSource, 2)
 Arraytgt2 = FitPeaks(rootfile2,hist2,material2,rocs,output,XRSource, 2)
 Arraytgt3 = FitPeaks(rootfile3,hist3,material3,rocs,output,XRSource, 2)
