@@ -313,11 +313,11 @@ def FitPeaks(rootfile,histo,material,rocs,output,XRSource,rebin):
 	    if material == 'Ag' or material == 'In' or material == 'Sn':
                 newhisto = rm_peak(tgt,tgt.GetFunction("gaus1"))
                 print "Got new histo"
-                  c1.Update()
+                c1.Update()
                 newhisto.Fit("gaus3","+R")
-                  newhisto.Draw()
+                newhisto.Draw()
                 mu2 = newhisto.GetFunction("gaus3").GetParameter(1)
-                  print "new mu2: ", mu2
+                print "new mu2: ", mu2
                 sigma2 = newhisto.GetFunction("gaus3").GetParameter(2)
                 c1.Update()
                 c1.SaveAs(output+'Stripped_C'+str(i)+'_'+material+'.png')
@@ -537,7 +537,7 @@ def ConversionPlot(rocs,output, XRSource):
     qplotfit = open("SummaryQplots.txt",'w')
     n_oh = TH1F('n_oh','N_o', 100,0,1000)
     slopeh = TH1F('Slope','Slope',100, 0,100)
-    qmatrix = np.zeros((16,2))
+    qmatrix = np.zeros((16,5))
     for i in rocs:
         mu_cu =[]
         sig_cu=[]
@@ -769,10 +769,10 @@ def ConversionPlot(rocs,output, XRSource):
         print "mus", mus, len(matrix)
 	a=0
         for j in [0,1,2, 3, 4 ,5 ,6, 7]: #range(0,len(mus)):
-            matrix[a][1] = float(mus[j])
+            a = j
+	    matrix[a][1] = float(mus[j])
             matrix[a][0] = float(k[j])
             matrix[a][3] = float(sigma_x[j])
-	    a=a+1
         table = open('SummaryTable'+'_'+output+'_'+'C_'+str(i)+'.txt','w')
         np.savetxt("SummaryTable"+'_'+output+'_'+"C_"+str(i)+".txt",matrix, delimiter="\t", fmt="%s", newline='\n' )
         gStyle.SetOptFit(1)
@@ -826,7 +826,7 @@ def ConversionPlot(rocs,output, XRSource):
         textslope.DrawLatex(0.15,0.8,"e^{-}/Vcal: "+ '{0:.2}'.format(pslope) + " \pm " + '{0:.1}'.format(pslope_err) +
                         " Intercept: " + '{0:.2}'.format(pn_o) + " \pm " + '{0:.2}'.format(pn_o_er))
         textslope.DrawLatex(0.2,0.2,"  Cu                            Mo               Ag   In   Sn")
-	textslope.DrawLatex(0.15,0.7,"#chi^{2}/ndf = " + '{:.4}'.format(chisquare/ndf))
+	textslope.DrawLatex(0.15,0.7,"#chi^{2}/ndf = " + '{0:.4}'.format(chisquare/ndf))
         gStyle.SetOptFit(0)
         c1.Update()
         gStyle.SetOptFit(0)
