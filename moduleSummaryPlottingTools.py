@@ -3,6 +3,7 @@ from ROOT import *
 from array import array
 import collections
 import re
+import os
 
 # true dimensions of a sensor in 10^-4 m (active area + periphery)
 PERIPHERY = 12.  # 1.2 mm
@@ -634,17 +635,27 @@ def produce1DHistogramDictionary(inputFileName, mode = 'pxar'):
 
 ###############################################################################
 
-def add2DSummaryPlots(inputFileName, histogramDictionary, mode = 'pxar'):
+def add2DSummaryPlots(inputFileName, histogramDictionary, mode = 'pxar', savePlots = False):
+
+    if savePlots:
+        outputDir = inputFileName.split(".root")[0] + "_2DModuleSummaryPlots"
+        if not os.path.isdir(outputDir):
+            os.mkdir(outputDir)
 
     for histoName, versions in histogramDictionary.items():
         for version in versions:
             summaryPlot = produce2DSummaryPlot(inputFileName,histoName,version,mode)
+            if summaryPlot is None:
+                continue
             directory = histoName.rsplit("/", 1)[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
             gDirectory.Delete(summaryPlot.GetName()+";*")  # remove duplicates
             print "adding 2D summary plot: "+directory+"/"+summaryPlot.GetName()
             summaryPlot.Write()
+            if savePlots:
+                outputFileName = directory + "_" + summaryPlot.GetName() + ".png"
+                summaryPlot.SaveAs(outputDir + "/" + outputFileName)
             inputFile.Close()
 
 ###############################################################################
@@ -654,6 +665,8 @@ def add1DSummaryPlots(inputFileName, histogramDictionary, mode = 'pxar'):
     for histoName, versions in histogramDictionary.items():
         for version in versions:
             summaryPlot = produce1DSummaryPlot(inputFileName,histoName,version,mode)
+            if summaryPlot is None:
+                continue
             directory = histoName.rsplit("/", 1)[0]
             inputFile = TFile(inputFileName, "UPDATE")
             inputFile.cd(directory)
@@ -689,6 +702,7 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar',
 
     inputFile = TFile(inputFileName)
     plots = []
+    foundPlot = False
 
     # get plots
     for roc in range(16):
@@ -700,6 +714,7 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar',
             print "missing plot:", plotPath
             plot = TH2D("","",52,0,52,80,0,80)  # insert empty plot
         else:
+            foundPlot = True
             plot = inputFile.Get(plotPath).Clone()
         plotName = pathToHistogram.lstrip("/")
         if mode == 'pxar':
@@ -707,6 +722,10 @@ def produce2DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar',
         else:
             plot.SetName(plotName + "_Summary" + str(roc))
         plots.append(plot)
+    if not foundPlot:
+        print "no valid plots found, skipping"
+        return None
+
     summaryPlot = makeMergedPlot(plots)
     if not zRange: zRange = findZRange(plots)
     setZRange(summaryPlot,zRange)
@@ -723,6 +742,7 @@ def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar')
 
     inputFile = TFile(inputFileName)
     plots = []
+    foundPlot = False
 
     # get plots
     for roc in range(16):
@@ -734,8 +754,12 @@ def produce1DSummaryPlot(inputFileName, pathToHistogram, version=0, mode='pxar')
             print "missing plot:", plotPath
             plot = TH1D("","",256,0,256)  # insert empty plot
         else:
+            foundPlot = True
             plot = inputFile.Get(plotPath).Clone()
         plots.append(plot)
+    if not foundPlot:
+        print "no valid plots found, skipping"
+        return None
 
     summaryPlot = plots[0].Clone()
     summaryPlot.SetDirectory(0)
