@@ -955,7 +955,8 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         UNMASKABLE_PIX.text=str(maskDefectPixels[i])
         UNADDRESSABLE_PIX=SE(ROC,'UNADDRESSABLE_PIX')
         UNADDRESSABLE_PIX.text=str(addressDefectPixels[i])
-        #add Vcal thr defects here
+        VCAL_THRESH=SE(ROC,'VCAL_THRESH')
+        VCAL_THRESH.text=str(trimDefectPixels[i])
 
 #---------------------------------------------------------------
 
