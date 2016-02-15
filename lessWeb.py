@@ -206,6 +206,8 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
                 print '       From root file:',len(deadPixels)
                 exit()
 
+            defectivePixels.append(deadPixels)
+
             """
             pic=SE(top, 'PIC')
             attachName(pic)
@@ -236,8 +238,10 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             for xBin in range(1,h.GetNbinsX()+1):
                 for yBin in range(1,h.GetNbinsY()+1):
                     if [xBin-1,yBin-1] in deadPixels: continue
-                    if h.GetBinContent(xBin, yBin)<0: maskDefectPixels.append([xBin-1,yBin-1])
-
+                    if h.GetBinContent(xBin, yBin)<0: 
+                        maskDefectPixels.append([xBin-1,yBin-1])
+                        defectivePixels[n].append([xBin-1,yBin-1])
+                                                
             if len(maskDefectPixels)!=nMaskDefectPixels[n]:
                 print 'ERROR: Wrong number of un-maskable pixels found'
                 print '       From pXar log:', nMaskDefectPixels[n]
@@ -275,7 +279,9 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
             for xBin in range(1,h.GetNbinsX()+1):
                 for yBin in range(1,h.GetNbinsY()+1):
                     if [xBin-1,yBin-1] in deadPixels: continue
-                    if h.GetBinContent(xBin, yBin)<0: addressDefectPixels.append([xBin-1,yBin-1])
+                    if h.GetBinContent(xBin, yBin)<0: 
+                        addressDefectPixels.append([xBin-1,yBin-1])
+                        defectivePixels[n].append([xBin-1,yBin-1])
 
             if len(addressDefectPixels)!=nAddressDefectPixels[n]:
                 print 'ERROR: Wrong number of un-addressable pixels found'
@@ -305,7 +311,7 @@ def getPixelAlivePlots(f, nDeadPixels, nMaskDefectPixels, nAddressDefectPixels, 
 #---------------------------------------------------------------
 
 #def getBumpBondingPlots(f, badBumpsFromLog, bbCuts, outputDir):
-def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
+def getBumpBondingPlots(f, outputDir):
 
     c=TCanvas()
     #summary=doIt(f, 'BB3', 'rescaledThr', 0)
@@ -341,20 +347,26 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
             c.SaveAs(outputDir+'/'+key.GetName()+'.png')
             n=int(key.GetName().split('_')[1][1:])
 
-            badBumps=[]
+            badBumps.append([])
             for xBin in range(1, h.GetNbinsX()+1):
                 for yBin in range(1, h.GetNbinsY()+1):
                     #if h.GetBinContent(xBin,yBin)+1>=bbCuts[n]:
                     if h.GetBinContent(xBin,yBin)>=5:
-                        badBumps.append([xBin-1,yBin-1])
-            if DEBUG: print badBumps, badBumpsFromLog[n]
+                        pix=[xBin-1,yBin-1]
+                        if pix not in defectivePixels[n]:                                                                                                                                              
+                            badBumps[n].append(pix)
+                            defectivePixels[n].append(pix)
             
+            #Can't check this anymore - We count pixels which fail both trimming and BB3 as trimming issues (to avoid double counting) so our pumber will not necesarrily agree with pXar
+            """
+            if DEBUG: print badBumps, badBumpsFromLog[n]
             if len(badBumps)!=badBumpsFromLog[n]:
                 print 'ERROR: Wrong number of bad bump bonds found'
                 print '       From pXar log:', badBumpsFromLog[n]
                 print '       From root file:',len(badBumps)
                 print n
                 exit()                        
+            """
 
             """
             pic=SE(top, 'PIC')
@@ -375,6 +387,7 @@ def getBumpBondingPlots(f, badBumpsFromLog, outputDir):
                 if i!=len(badBumps)-1: comment.write(', ')
             comment.write(']\n')
             """
+
 #---------------------------------------------------------------
 
 def getSCurvePlots(f, outputDir):
@@ -402,6 +415,21 @@ def getSCurvePlots(f, outputDir):
                     file.text=key.GetName()+'.png'
                     part=SE(pic,'PART')
                     part.text='sidet_p'
+
+        #get pixels which can't be trimmed
+        if key.GetName().startswith('thr_scurveVcal_Vcal_C'):
+            h=key.ReadObj()
+            n=int(key.GetName().split('_')[3][1:])
+
+            trimDefectPixels.append([])
+
+            for xBin in range(1,h.GetNbinsX()+1):
+                for yBin in range(1,h.GetNbinsY()+1):
+                    if h.GetBinContent(xBin, yBin)<25 or h.GetBinContent(xBin, yBin)>45: 
+                        pix=[xBin-1,yBin-1]
+                        if pix not in defectivePixels[n]:
+                            trimDefectPixels[n].append(pix)
+                            defectivePixels[n].append(pix)
 
 #---------------------------------------------------------------
 
@@ -535,7 +563,7 @@ def analyzePreTest(inputDir, outputDir, log, data):
 
     f=iter(open(log,'r'))
 
-    #canTime=True
+    canTime=True
     for line in f:
 
         """
@@ -544,7 +572,7 @@ def analyzePreTest(inputDir, outputDir, log, data):
         """
         if 'INFO: TBM phases:  160MHz:' in line:
             if '-1' in line: canTime=False
-            else: canTime=True
+            #else: canTime=True
 
         if 'ROCs are all programmable' in line: deadROCs=[]
         elif 'cannot be programmed! Error' in line: deadROCs=[int(i) for i in line[line.find('ROCs')+len('ROCs'):line.find('cannot')].split()]
@@ -818,10 +846,12 @@ def analyzeFullTest(inputDir, outputDir, log, data):
             addressDefectPixels=[int(x) for x in line.split()[-16:]]
             print 'addressDefectPixels:',addressDefectPixels
 
+        """
         if 'number of dead bumps (per ROC)' in line:
             badBumps=[int(x) for x in line.split()[-16:]]
             print 'badBumps:',badBumps
-            
+        """
+ 
         if 'Final Module Temperature:' in line:
             finalTemp=line.split('Temperature:')[1].split()[0]
             print 'finalTemp:',finalTemp
@@ -840,18 +870,19 @@ def analyzeFullTest(inputDir, outputDir, log, data):
             if DEBUG: print 'bbCuts:',bbCuts
         """
 
-    try: deadPixels, maskDefectPixels, addressDefectPixels, badBumps#, bbCuts
+    try: deadPixels, maskDefectPixels, addressDefectPixels#, badBumps#, bbCuts
     except: 
-        print 'WARNING: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels, badBumps'
+        print 'WARNING: Missing data - some subset of deadPixels, maskDefectPixels, addressDefectPixels'
         print deadPixels
         print maskDefectPixels 
         print addressDefectPixels
-        print badBumps
+        #print badBumps
         #print bbCuts
 
     RTD_TEMP=SE(test,'RTD_TEMP')
     RTD_TEMP.text=str(finalTemp)
 
+    """
     ROCS=SE(test,'ROCS')
     for i in range(16):
         ROC=SE(ROCS,'ROC')
@@ -867,6 +898,7 @@ def analyzeFullTest(inputDir, outputDir, log, data):
         UNMASKABLE_PIX.text=str(maskDefectPixels[i])
         UNADDRESSABLE_PIX=SE(ROC,'UNADDRESSABLE_PIX')
         UNADDRESSABLE_PIX.text=str(addressDefectPixels[i])
+    """
 
     """
     n=0
@@ -893,13 +925,38 @@ def analyzeFullTest(inputDir, outputDir, log, data):
     """
 
     getPixelAlivePlots(data, deadPixels, maskDefectPixels, addressDefectPixels, outputDir)
-    #getBumpBondingPlots(data, badBumps, bbCuts, outputDir)
-    getBumpBondingPlots(data, badBumps, outputDir)
-    getSCurvePlots(data,outputDir)
+    #getBumpBondingPlots(data, badBumps, outputDir)
     getTrimPlots(data,outputDir)
+    getSCurvePlots(data,outputDir)
     getPulseHeightOptPlots(data,outputDir)
     getGainPedestalPlots(data,outputDir)
-    
+    getBumpBondingPlots(data, outputDir)
+
+    global badBumps
+    badBumps=[len(e) for e in badBumps]
+    print 'badBumps:',badBumps
+
+    global trimDefectPixels
+    trimDefectPixels=[len(e) for e in trimDefectPixels]
+    print 'trimDefectPixels:',trimDefectPixels
+
+    ROCS=SE(test,'ROCS')
+    for i in range(16):
+        ROC=SE(ROCS,'ROC')
+        POSITION=SE(ROC,'POSITION')
+        POSITION.text=str(i)
+        IS_DEAD=SE(ROC,'IS_DEAD')
+        IS_DEAD.text=str(int((i in deadROCs)))
+        BADBUMPS_ELEC=SE(ROC,'BADBUMPS_ELEC')
+        BADBUMPS_ELEC.text=str(badBumps[i])
+        DEAD_PIX=SE(ROC,'DEAD_PIX')
+        DEAD_PIX.text=str(deadPixels[i])
+        UNMASKABLE_PIX=SE(ROC,'UNMASKABLE_PIX')
+        UNMASKABLE_PIX.text=str(maskDefectPixels[i])
+        UNADDRESSABLE_PIX=SE(ROC,'UNADDRESSABLE_PIX')
+        UNADDRESSABLE_PIX.text=str(addressDefectPixels[i])
+        #add Vcal thr defects here
+
 #---------------------------------------------------------------
 
 def getConfigs(inputDir, outputDir, log, data):
@@ -994,12 +1051,18 @@ def makeXML(inputDir):
               ]
     else:
         tests=[analyzeIV]
+
+    global defectivePixels, badBumps, trimDefectPixels
+    defectivePixels=[]
+    badBumps=[]
+    trimDefectPixels=[]
     
     for f in tests:
         try:
             f(inputDir, outputDir, log, data)
-        except: 
+        except Exception,e: 
             print 'WARNING: unable to run',f.__name__
+            print str(e)
 
     output=open(outputDir+'/master.xml','w')
     output.write(prettify(top))
