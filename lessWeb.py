@@ -7,6 +7,7 @@ Usage: python dbUpload.py <input dir>
 """
 
 DEBUG=False
+makePlots=True
 
 from xml.etree.ElementTree import Element, SubElement, Comment
 from xml.etree import ElementTree
@@ -252,17 +253,18 @@ def getBumpBondingPlots(f, outputDir):
     for key in f.Get('BB3').GetListOfKeys():
 
         if 'dist_rescaledThr_C' in key.GetName():
-            c.SetLogy(True)
-            key.ReadObj().Draw()
-            c.SaveAs(outputDir+'/'+key.GetName()+'.png')
-            c.SetLogy(False)
-            
-            pic=SE(top, 'PIC')
-            attachName(pic)
-            file=SE(pic, 'FILE')
-            file.text=key.GetName()+'.png'
-            part=SE(pic,'PART')
-            part.text='sidet_p'
+            if makePlots:
+                c.SetLogy(True)
+                key.ReadObj().Draw()
+                c.SaveAs(outputDir+'/'+key.GetName()+'.png')
+                c.SetLogy(False)
+
+                pic=SE(top, 'PIC')
+                attachName(pic)
+                file=SE(pic, 'FILE')
+                file.text=key.GetName()+'.png'
+                part=SE(pic,'PART')
+                part.text='sidet_p'
 
         # - - - - - - - - - - - - - - - - - - - - - - - - -
         
@@ -292,20 +294,21 @@ def getSCurvePlots(f, outputDir):
 
     c=TCanvas()
     for key in f.Get('Scurves').GetListOfKeys():
-        for plot in goodPlots:
-            if plot in key.GetName():
-                if 'dist' in key.GetName(): key.ReadObj().Draw()
-                else: key.ReadObj().Draw('COLZ')
-                c.SaveAs(outputDir+'/'+key.GetName()+'.png')
-                
-                is2D=(type(key.ReadObj())==type(TH2D()))
-                if not is2D:
-                    pic=SE(top, 'PIC')
-                    attachName(pic)
-                    file=SE(pic, 'FILE')
-                    file.text=key.GetName()+'.png'
-                    part=SE(pic,'PART')
-                    part.text='sidet_p'
+        if makePlots:
+            for plot in goodPlots:
+                if plot in key.GetName():
+                    if 'dist' in key.GetName(): key.ReadObj().Draw()
+                    else: key.ReadObj().Draw('COLZ')
+                    c.SaveAs(outputDir+'/'+key.GetName()+'.png')
+
+                    is2D=(type(key.ReadObj())==type(TH2D()))
+                    if not is2D:
+                        pic=SE(top, 'PIC')
+                        attachName(pic)
+                        file=SE(pic, 'FILE')
+                        file.text=key.GetName()+'.png'
+                        part=SE(pic,'PART')
+                        part.text='sidet_p'
 
         #get pixels which can't be trimmed
         if key.GetName().startswith('thr_scurveVcal_Vcal_C'):
@@ -325,7 +328,8 @@ def getSCurvePlots(f, outputDir):
 #---------------------------------------------------------------
 
 def getTrimPlots(f, outputDir):
-    
+    if not makePlots: return
+
     goodPlots=['dist_TrimMap_C',
                ]
 
@@ -349,6 +353,7 @@ def getTrimPlots(f, outputDir):
 #---------------------------------------------------------------
 
 def getPulseHeightOptPlots(f, outputDir):
+    if not makePlots: return
 
     goodPlots=['dist_PH_mapHiVcal_C',
                'dist_PH_mapLowVcal_C']
@@ -373,6 +378,7 @@ def getPulseHeightOptPlots(f, outputDir):
 #---------------------------------------------------------------
 
 def getGainPedestalPlots(f,outputDir):
+    if not makePlots: return
 
     goodPlots=['gainPedestalNonLinearity',
                ]
@@ -394,6 +400,8 @@ def getGainPedestalPlots(f,outputDir):
 ################################################################
 
 def makeSummaryPlots(inputDir, outputDir, log, data):
+    if not makePlots: return
+
     data=TFile(data['fulltest'])
 
     produceLessWebSummaryPlot(data,'BB3/rescaledThr',outputDir,zRange=(-5,5), isBB3=True)
@@ -463,12 +471,13 @@ def analyzePreTest(inputDir, outputDir, log, data):
     ct=SE(test,'CAN_TIME')
     ct.text=str(int(canTime))
 
-    getHAHDPlot(data, outputDir)
-    getProgramROCPlot(data, deadROCs, outputDir)
-    getVanaPlot(data, outputDir)
-    getIanaPlot(data, outputDir)
-    getVthrCompCalDelPlot(data, calDels, VthrComps, outputDir)
-
+    if makePlots:
+        getHAHDPlot(data, outputDir)
+        getProgramROCPlot(data, deadROCs, outputDir)
+        getVanaPlot(data, outputDir)
+        getIanaPlot(data, outputDir)
+        getVthrCompCalDelPlot(data, calDels, VthrComps, outputDir)
+        
 ################################################################
 
 def analyzeIV(inputDir, outputDir, log, data):
@@ -568,7 +577,7 @@ def analyzeIV(inputDir, outputDir, log, data):
     compliance.text=str(round(c,1))
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    if doCold:
+    if doCold and makePlots:
         c=TCanvas()
         c.SetLogy()
         h.Draw()
@@ -728,6 +737,8 @@ def analyzeFullTest(inputDir, outputDir, log, data):
 #---------------------------------------------------------------
 
 def getConfigs(inputDir, outputDir, log, data):
+    if not makePlots: return
+
     for config in ['configParameters.dat', 
                    'tbParameters.dat', 
                    'tbmParameters_C*a.dat','tbmParameters_C*b.dat', 
@@ -804,8 +815,12 @@ def makeXML(inputDir):
     global test
     test=SE(top,'TEST')
     attachName(test)
+    
     notes=SE(test,'NOTES')
-    notes.text='Test results and config files can be found in: '+os.path.basename(inputDir)
+    if makePlots:
+        notes.text='Test results and config files can be found in: '+os.path.basename(inputDir)
+    else:
+        notes.text='Re-uploading new data from: '+os.path.basename(inputDir)
 
     if doCold: tests=[analyzeIV,
               makeSummaryPlots,
@@ -822,11 +837,11 @@ def makeXML(inputDir):
     trimDefectPixels=[]
     
     for f in tests:
-        try:
-            f(inputDir, outputDir, log, data)
-        except Exception,e: 
-            print 'WARNING: unable to run',f.__name__
-            print str(e)
+        #try:
+        f(inputDir, outputDir, log, data)
+        #except Exception,e: 
+        #print 'WARNING: unable to run',f.__name__
+        #print str(e)
 
     output=open(outputDir+'/master.xml','w')
     output.write(prettify(top))
